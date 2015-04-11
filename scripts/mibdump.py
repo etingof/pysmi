@@ -30,7 +30,12 @@ mibSources = []
 mibSearchers = []
 mibStubs = []
 dstFormat = 'pysnmp'
-dstDirectory = None
+dstDirectory = os.path.join(os.path.expanduser("~"), '.pysnmp', 'mibs')
+dstDirectory = os.path.expanduser("~")
+if sys.platform[:3] == 'win':
+    dstDirectory = os.path.join(dstDirectory, 'PySNMP Configuration', 'mibs')
+else:
+    dstDirectory = os.path.join(dstDirectory, '.pysnmp', 'mibs')
 nodepsFlag = False
 rebuildFlag = False
 dryrunFlag = False
@@ -114,10 +119,6 @@ Software documentation and support at http://pysmi.sf.net
     if opt[0] == '--generate-mib-texts':
         genMibTextsFlag = True
 
-if not dstDirectory:
-    sys.stderr.write('ERROR: destination directory not specified\r\n%s\r\n' % helpMessage)
-    sys.exit(-1)
-
 if not inputMibs:
     sys.stderr.write('ERROR: MIB modules names not specified\r\n%s\r\n' % helpMessage)
     sys.exit(-1)
@@ -130,10 +131,6 @@ if not mibSearchers:
 
 if not mibStubs:
     mibStubs = baseMibs
-
-if not dstDirectory:
-    sys.stderr.write('ERROR: destination directory not specified\r\n%s\r\n' % helpMessage)
-    sys.exit(-1)
 
 if not inputMibs:
     sys.stderr.write('ERROR: MIB modules names not specified\r\n%s\r\n' % helpMessage)
