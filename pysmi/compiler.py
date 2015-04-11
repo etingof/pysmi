@@ -9,7 +9,6 @@ class MibCompiler(object):
         self._writer = writer
         self._sources = []
         self._compiled = []
-        self._cachedir = None
 
     def addSources(self, *sources):
         self._sources.extend(sources)
@@ -19,11 +18,6 @@ class MibCompiler(object):
     def addSearchers(self, *compiled):
         self._compiled.extend(compiled)
         debug.logger & debug.flagCompiler and debug.logger('current compiled MIBs location(s): %s' % ', '.join([str(x) for x in self._compiled]))
-        return self
-
-    def addTempDirectory(self, tempdir):
-        self._tempdir = tempdir
-        debug.logger & debug.flagCompiler and debug.logger('current temp files location: %s' % self._tempdir)
         return self
 
     def compile(self, *mibnames, **kwargs):
