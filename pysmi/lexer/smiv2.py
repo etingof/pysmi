@@ -225,7 +225,7 @@ class SmiV2Lexer(AbstractLexer):
     while True:
       tok = self.lexer.token()
       if not tok: break
-      print tok
+      print(tok)
 
 
 # Build the lexer and try it out
@@ -236,6 +236,6 @@ class SmiV2Lexer(AbstractLexer):
 #for f in files:
 #  if f[-3:] != 'MIB':
 #    break
-#  print 'file %s' % f
+#  print('file %s' % f)
 #  m.test(open(directory+f).read())
-#  print 'done' 
+#  print('done')

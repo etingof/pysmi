@@ -1,5 +1,10 @@
+from sys import version_info
 from time import strptime, strftime
 from pysmi.codegen.base import AbstractCodeGen
+
+if version_info[0] > 2:
+    unicode = str
+    long = int
 
 # default pysnmp MIB packages
 defaultMibPackages = ('pysnmp.smi.mibs', 'pysnmp_mibs')
@@ -231,7 +236,7 @@ class PySnmpCodeGen(AbstractCodeGen):
     exportsNum = len(exports)
     chunkNum = exportsNum/254
     outStr = ''
-    for i in range(chunkNum+1):
+    for i in range(int(chunkNum+1)):
       outStr += 'mibBuilder.exportSymbols("' + self.moduleName[0] + '", '
       outStr += ', '.join(exports[254*i:254*(i+1)]) + ')\n'
     return self._exports and outStr or ''
@@ -410,7 +415,7 @@ class PySnmpCodeGen(AbstractCodeGen):
     namedval = [ '("' + bit[0] + '", ' +  str(bit[1]) + '),' for bit in bits ] 
     numFuncCalls = len(namedval)/255 + 1
     funcCalls = ''
-    for i in range(numFuncCalls):
+    for i in range(int(numFuncCalls)):
       funcCalls += 'NamedValues(' + ' '.join(namedval[255*i:255*(i+1)]) + ') + ' 
     funcCalls = funcCalls[:-3]
     outStr = classmode and \
@@ -476,7 +481,7 @@ class PySnmpCodeGen(AbstractCodeGen):
     singleCall = numFuncCalls == 1 or False
     funcCalls = ''
     outStr += not singleCall and 'ConstraintsUnion(' or ''
-    for i in range(numFuncCalls):
+    for i in range(int(numFuncCalls)):
       funcCalls += 'SingleValueConstraint(' + \
                         ' '.join(singleval[255*i:255*(i+1)]) + '), '
     funcCalls = funcCalls[:-2]

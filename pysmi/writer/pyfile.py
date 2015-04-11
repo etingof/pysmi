@@ -31,7 +31,7 @@ class PyFileWriter(AbstractWriter):
 
         pyfile = os.path.join(self._path, mibname.upper()) + self.suffixes[imp.PY_SOURCE][0][0]
         try:
-            f = open(pyfile, 'w')
+            f = open(pyfile, 'wb')
             f.write(data.encode('utf-8'))
             f.close()
         except (IOError, UnicodeEncodeError):
