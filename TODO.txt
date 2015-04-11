@@ -1,0 +1,9 @@
+* add more tests on edge cases
+* generate reverse OID -> MIB index
+* handle wrongly ordered MIB symbols
+* handle SMIv1 MAX clause in range constraint
+* handle SMIv1 MIB Table INDEX clause
+* handle MIB symbol reference prior to its definition
+* report MIB line number on parse errors
+* possibly add additional AST processing phase to resolve imported symbols
+  in a more consistent way

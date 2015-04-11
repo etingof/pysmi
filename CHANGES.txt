@@ -1,0 +1,4 @@
+Revision 0.0.0, 11-04-2015
+--------------------------
+
+* First public release, not fully operational yet
