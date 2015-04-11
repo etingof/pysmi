@@ -1,0 +1,203 @@
+#!/usr/bin/env python
+#
+# SNMP SMI/MIB data management tool
+#
+# Written by Ilya Etingof <ilya@glas.net>, 2015
+#
+import os
+import sys
+import getopt
+import urlparse
+from pysmi.reader.localfile import FileReader
+from pysmi.reader.httpclient import HttpReader
+from pysmi.reader.ftpclient import FtpReader
+from pysmi.searcher.pyfile import PyFileSearcher
+from pysmi.searcher.pypackage import PyPackageSearcher
+from pysmi.searcher.stub import StubSearcher
+from pysmi.writer.pyfile import PyFileWriter
+from pysmi.parser.smiv2 import SmiV2Parser
+from pysmi.codegen.pysnmp import PySnmpCodeGen, defaultMibPackages, baseMibs
+from pysmi.compiler import MibCompiler
+from pysmi import debug
+from pysmi import error
+
+# Defaults
+verboseFlag = True
+mibSources = []
+mibSearchers = []
+mibStubs = []
+dstFormat = 'pysnmp'
+dstDirectory = None
+nodepsFlag = False
+rebuildFlag = False
+dryrunFlag = False
+genMibTextsFlag = False
+
+helpMessage = """\
+Usage: %s [--help]
+      [--version]
+      [--quiet]
+      [--debug=<%s>]
+      [--mib-source=<url>]
+      [--mib-searcher=<path|package>]
+      [--mib-stub=<mibname>]
+      [--destination-format=<format>]
+      [--destination-directory=<directory>]
+      [--no-dependencies]
+      [--rebuild]
+      [--dry-run]
+      [--generate-mib-texts]
+      [ mibfile [ mibfile [...]]]
+Where:
+    url      - file, http, https, ftp, sftp schemes are supported. 
+               Use <mib> placeholder token in URL location to refer
+               to MIB module name requested.
+    format   - pysnmp format is only supported.""" % (
+          sys.argv[0],
+          '|'.join([ x for x in sorted(debug.flagMap) ])
+      )
+
+try:
+    opts, inputMibs = getopt.getopt(sys.argv[1:], 'hv',
+        ['help', 'version', 'quiet', 'debug=',
+         'mib-source=', 'mib-searcher=', 'mib-stub=', 
+         'destination-format=', 'destination-directory=',
+         'no-dependencies', 'rebuild', 'dry-run',
+         'generate-mib-texts' ]
+    )
+except Exception:
+    if verboseFlag:
+        sys.stderr.write('ERROR: %s\r\n%s\r\n' % (sys.exc_info()[1], helpMessage))
+    sys.exit(-1)
+
+for opt in opts:
+    if opt[0] == '-h' or opt[0] == '--help':
+        sys.stderr.write("""\
+Synopsis:
+  SNMP SMI/MIB files conversion tool
+Documentation:
+  http://pysmi.sourceforge.net
+%s
+""" % helpMessage)
+        sys.exit(-1)
+    if opt[0] == '-v' or opt[0] == '--version':
+        sys.stderr.write("""\
+SNMP SMI/MIB library version %s, written by Ilya Etingof <ilya@snmplabs.com>
+Python interpreter: %s
+Software documentation and support at http://pysmi.sf.net
+%s
+""" % (sys.version, helpMessage))
+        sys.exit(-1)
+    if opt[0] == '--quiet':
+        verboseFlag = False
+    if opt[0] == '--debug':
+        debug.setLogger(debug.Debug(*opt[1].split(',')))
+    if opt[0] == '--mib-source':
+        mibSources.append(opt[1])
+    if opt[0] == '--mib-searcher':
+        mibSearchers.append(opt[1])
+    if opt[0] == '--mib-stub':
+        mibStubs.append(opt[1])
+    if opt[0] == '--destination-format':
+        dstFormat = opt[1]
+    if opt[0] == '--destination-directory':
+        dstDirectory = opt[1]
+    if opt[0] == '--no-dependencies':
+        nodepsFlag = True
+    if opt[0] == '--rebuild':
+        rebuildFlag = True
+    if opt[0] == '--dry-run':
+        dryrunFlag = True
+    if opt[0] == '--generate-mib-texts':
+        genMibTextsFlag = True
+
+if not dstDirectory:
+    sys.stderr.write('ERROR: destination directory not specified\r\n%s\r\n' % helpMessage)
+    sys.exit(-1)
+
+if not inputMibs:
+    sys.stderr.write('ERROR: MIB modules names not specified\r\n%s\r\n' % helpMessage)
+    sys.exit(-1)
+
+if not mibSources:
+    mibSources.append('file:///usr/share/snmp/mibs')
+
+if not mibSearchers:
+    mibSearchers = defaultMibPackages
+
+if not mibStubs:
+    mibStubs = baseMibs
+
+if not dstDirectory:
+    sys.stderr.write('ERROR: destination directory not specified\r\n%s\r\n' % helpMessage)
+    sys.exit(-1)
+
+if not inputMibs:
+    sys.stderr.write('ERROR: MIB modules names not specified\r\n%s\r\n' % helpMessage)
+    sys.exit(-1)
+
+if not mibSources:
+    mibSources.append('file:///usr/share/snmp/mibs')
+
+if not mibSearchers:
+    mibSearchers = [ 'pysnmp.smi.mibs', 'pysnmp_mibs' ]
+
+if not mibStubs:
+    mibStubs = baseMibs
+
+if verboseFlag:
+    sys.stderr.write("""Source MIB repositories: %s
+Existing/compiled MIB locations: %s
+Compiled MIBs destination directory: %s
+MIBs excluded from compilation: %s
+MIBs to compile: %s
+Destination format: %s
+Rebuild MIBs regardless of age: %s
+Do not create/update MIBs: %s
+Generate texts in MIBs: %s
+""" % (', '.join(mibSources),
+       ', '.join(mibSearchers), 
+       dstDirectory,
+       ', '.join(mibStubs), 
+       ', '.join(inputMibs), 
+       dstFormat,
+       rebuildFlag and 'yes' or 'no',
+       dryrunFlag and 'yes' or 'no',
+       genMibTextsFlag and 'yes' or 'no'))
+
+# Initialize compiler infrastructure
+
+mibCompiler = MibCompiler(SmiV2Parser(), 
+                          PySnmpCodeGen(),
+                          PyFileWriter(dstDirectory))
+
+try:
+    for mibSource in mibSources:
+        mibSource = urlparse.urlparse(mibSource)
+        if not mibSource.scheme or mibSource.scheme == 'file':
+            mibCompiler.addSources(FileReader(mibSource.path))
+        elif mibSource.scheme in ('http', 'https'):
+            mibCompiler.addSources(HttpReader(mibSource.hostname, mibSource.port or 80, mibSource.path, ssl=mibSource.scheme == 'https'))
+        elif mibSource.scheme in ('ftp', 'sftp'):
+            mibCompiler.addSources(FtpReader(mibSource.hostname, mibSource.path, ssl=mibSource.scheme == 'sftp', port=mibSource.port or 21, user=mibSource.username or 'anonymous', password=mibSource.password or 'anonymous@'))
+        else:
+            sys.stderr.write('ERROR: unsupported URL scheme %s\r\n%s\r\n' % (opt[1], helpMessage))
+            sys.exit(-1)
+        
+    mibCompiler.addSearchers(PyFileSearcher(dstDirectory))
+
+    for mibSearcher in mibSearchers:
+        mibCompiler.addSearchers(PyPackageSearcher(mibSearcher))
+
+    mibCompiler.addSearchers(StubSearcher(*mibStubs))
+
+    processed = mibCompiler.compile(*inputMibs, noDeps=nodepsFlag, rebuild=rebuildFlag, dryRun=dryrunFlag, genTexts=genMibTextsFlag)
+
+    if verboseFlag:
+        sys.stderr.write('%sreated/updated MIBs: %s\r\n' % (dryrunFlag and 'Would be c' or 'C', ', '.join(processed)))
+
+except error.PySmiError:
+    sys.stderr.write('ERROR: %s\r\n' % sys.exc_info()[1])
+    sys.exit(-1)
+else:
+    sys.exit(0)
