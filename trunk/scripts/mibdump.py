@@ -7,7 +7,10 @@
 import os
 import sys
 import getopt
-import urlparse
+try:
+    import urlparse
+except ImportError:
+    from urllib import parse as urlparse
 from pysmi.reader.localfile import FileReader
 from pysmi.reader.httpclient import HttpReader
 from pysmi.reader.ftpclient import FtpReader
