@@ -101,7 +101,7 @@ if unittest:
         def finalize_options(self): pass
 
         def run(self):
-            suite = unittest.defaultTestLoader.discover('.')
+            suite = unittest.defaultTestLoader.discover('tests')
             unittest.TextTestRunner(verbosity=2).run(suite)
 
     params['cmdclass'] = { 'test': PyTest }
