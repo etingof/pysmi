@@ -75,7 +75,7 @@ class SmiV2Lexer(AbstractLexer):
    
   t_ignore = ' \t'
 
-  def __init__(self, *kwargs):
+  def __init__(self, tempdir=''):
     if debug.logger & debug.flagLexer:
       logger=debug.logger.getCurrentLogger()
     else:
@@ -83,6 +83,7 @@ class SmiV2Lexer(AbstractLexer):
 
     self.lexer = lex.lex(module=self,
                          reflags=re.DOTALL,
+                         outputdir=tempdir,
                          debuglog=logger,
                          errorlog=logger)
 

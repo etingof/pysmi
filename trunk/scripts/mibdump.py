@@ -36,6 +36,7 @@ if sys.platform[:3] == 'win':
     dstDirectory = os.path.join(dstDirectory, 'PySNMP Configuration', 'mibs')
 else:
     dstDirectory = os.path.join(dstDirectory, '.pysnmp', 'mibs')
+cacheDirectory = ''
 nodepsFlag = False
 rebuildFlag = False
 dryrunFlag = False
@@ -51,6 +52,7 @@ Usage: %s [--help]
       [--mib-stub=<mibname>]
       [--destination-format=<format>]
       [--destination-directory=<directory>]
+      [--cache-directory=<directory>]
       [--no-dependencies]
       [--rebuild]
       [--dry-run]
@@ -69,7 +71,7 @@ try:
     opts, inputMibs = getopt.getopt(sys.argv[1:], 'hv',
         ['help', 'version', 'quiet', 'debug=',
          'mib-source=', 'mib-searcher=', 'mib-stub=', 
-         'destination-format=', 'destination-directory=',
+         'destination-format=', 'destination-directory=', 'cache-directory=',
          'no-dependencies', 'rebuild', 'dry-run',
          'generate-mib-texts' ]
     )
@@ -110,6 +112,8 @@ Software documentation and support at http://pysmi.sf.net
         dstFormat = opt[1]
     if opt[0] == '--destination-directory':
         dstDirectory = opt[1]
+    if opt[0] == '--cache-directory':
+        cacheDirectory = opt[1]
     if opt[0] == '--no-dependencies':
         nodepsFlag = True
     if opt[0] == '--rebuild':
@@ -152,6 +156,7 @@ Compiled MIBs destination directory: %s
 MIBs excluded from compilation: %s
 MIBs to compile: %s
 Destination format: %s
+Parser grammar cache directory: %s
 Rebuild MIBs regardless of age: %s
 Do not create/update MIBs: %s
 Generate texts in MIBs: %s
@@ -161,13 +166,14 @@ Generate texts in MIBs: %s
        ', '.join(mibStubs), 
        ', '.join(inputMibs), 
        dstFormat,
+       cacheDirectory or 'no',
        rebuildFlag and 'yes' or 'no',
        dryrunFlag and 'yes' or 'no',
        genMibTextsFlag and 'yes' or 'no'))
 
 # Initialize compiler infrastructure
 
-mibCompiler = MibCompiler(SmiV2Parser(), 
+mibCompiler = MibCompiler(SmiV2Parser(tempdir=cacheDirectory), 
                           PySnmpCodeGen(),
                           PyFileWriter(dstDirectory))
 

@@ -1,4 +1,6 @@
 import inspect
+import os
+import sys
 import ply.yacc as yacc
 from pysmi.lexer.smiv2 import SmiV2Lexer 
 from pysmi.parser.base import AbstractParser
@@ -6,8 +8,16 @@ from pysmi import error
 from pysmi import debug
 
 class SmiV2Parser(AbstractParser):
-  def __init__(self, startSym='mibFile', tempdir=None):
-    self.lexer = SmiV2Lexer()
+  def __init__(self, startSym='mibFile', tempdir=''):
+    if tempdir:
+        tempdir = os.path.join(tempdir, startSym)
+        try:
+          os.makedirs(tempdir)
+        except OSError:
+          if sys.exc_info()[1].errno != 17:
+            raise error.PySmiError('Failed to create cache directory %s: %s' % (tempdir, sys.exc_info()[1]))
+
+    self.lexer = SmiV2Lexer(tempdir=tempdir)
 
     # tokens are required for parser
     self.tokens = self.lexer.tokens
@@ -21,6 +31,7 @@ class SmiV2Parser(AbstractParser):
                             start=startSym,
                             write_tables=bool(tempdir),
                             debug=False,
+                            outputdir=tempdir,
                             debuglog=logger,
                             errorlog=logger)
 
