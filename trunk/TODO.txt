@@ -7,3 +7,4 @@
 * report MIB line number on parse errors
 * possibly add additional AST processing phase to resolve imported symbols
   in a more consistent way
+* add comments (when, where, who) into generated code
