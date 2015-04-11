@@ -27,12 +27,17 @@ class SmiV2Parser(AbstractParser):
     else:
       logger = yacc.NullLogger()
 
+    if debug.logger & debug.flagGrammar:
+      debuglogger = debug.logger.getCurrentLogger()
+    else:
+      debuglogger = None
+
     self.parser = yacc.yacc(module=self,
                             start=startSym,
                             write_tables=bool(tempdir),
                             debug=False,
                             outputdir=tempdir,
-                            debuglog=logger,
+                            debuglog=debuglogger,
                             errorlog=logger)
 
   def parse(self, data, **kwargs):

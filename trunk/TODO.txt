@@ -8,3 +8,5 @@
 * possibly add additional AST processing phase to resolve imported symbols
   in a more consistent way
 * add comments (when, where, who) into generated code
+* generate MIB files using canonical MIB module name
+* are uppercase-identifiers valid in enumeration?
