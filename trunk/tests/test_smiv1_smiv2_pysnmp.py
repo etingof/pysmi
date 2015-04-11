@@ -1,6 +1,11 @@
-try:
-    import unittest2 as unittest
-except ImportError:
+import sys
+if sys.version_info[0:2] < (2, 7) or \
+   sys.version_info[0:2] in ( (3, 0), (3, 1) ):
+    try:
+        import unittest2 as unittest
+    except ImportError:
+        import unittest
+else:
     import unittest
 from pysmi.parser.smiv2 import SmiV2Parser
 from pysmi.codegen.pysnmp import PySnmpCodeGen
@@ -9,7 +14,6 @@ from pysnmp.smi.builder import MibBuilder
 class SmiV1TestCase(unittest.TestCase):
     """
 TEST-MIB DEFINITIONS ::= BEGIN
-IMPORTS
 
 IMPORTS
     Counter, IpAddress, TimeTicks
@@ -17,10 +21,10 @@ IMPORTS
     DisplayString, mib-2
         FROM RFC1213-MIB
     OBJECT-TYPE
-        FROM RFC-1212;
+        FROM RFC-1212
 
-  NOTIFICATION-GROUP
-    FROM SNMPv2-CONF;
+    NOTIFICATION-GROUP
+        FROM SNMPv2-CONF;
 
 testSmiV1 NOTIFICATION-GROUP
    NOTIFICATIONS    {

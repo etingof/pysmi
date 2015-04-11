@@ -1,6 +1,11 @@
-try:
-    import unittest2 as unittest
-except ImportError:
+import sys
+if sys.version_info[0:2] < (2, 7) or \
+   sys.version_info[0:2] in ( (3, 0), (3, 1) ):
+    try:
+        import unittest2 as unittest
+    except ImportError:
+        import unittest
+else:
     import unittest
 from pysmi.parser.smiv2 import SmiV2Parser
 from pysmi.codegen.pysnmp import PySnmpCodeGen

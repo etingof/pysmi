@@ -13,9 +13,13 @@ import test_valuedeclaration_smiv2_pysnmp
 
 testModules = [ x[1] for x in globals().items() if x[0][:5] == 'test_' ]
 
-try:
-    import unittest2 as unittest
-except ImportError:
+if sys.version_info[0:2] < (2, 7) or \
+   sys.version_info[0:2] in ( (3, 0), (3, 1) ):
+    try:
+        import unittest2 as unittest
+    except ImportError:
+        unittest = None
+else:
     import unittest
 
 suite = unittest.TestSuite()
