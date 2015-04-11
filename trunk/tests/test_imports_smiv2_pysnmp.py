@@ -3,6 +3,7 @@ try:
 except ImportError:
     import unittest
 from pysmi.parser.smiv2 import SmiV2Parser
+from pysmi.codegen.pysnmp import PySnmpCodeGen
 from pysnmp.smi.builder import MibBuilder
 
 class ImportClauseTestCase(unittest.TestCase):
@@ -18,7 +19,7 @@ IMPORTS
 END
  """
     def setUp(self):
-        self.otherMibs, pycode = SmiV2Parser().parse(self.__class__.__doc__)
+        self.otherMibs, pycode = PySnmpCodeGen().genCode(SmiV2Parser().parse(self.__class__.__doc__))
         codeobj = compile(pycode, 'test', 'exec')
 
         self.ctx = { 'mibBuilder': MibBuilder() }
