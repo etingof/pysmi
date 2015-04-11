@@ -5,17 +5,19 @@ from pysmi import __version__
 
 flagNone     = 0x0000
 flagReader   = 0x0001
-flagLexer    = 0x0004
-flagParser   = 0x0002
-flagSearcher = 0x0008
-flagWriter   = 0x0010
-flagCompiler = 0x0020
+flagLexer    = 0x0002
+flagParser   = 0x0004
+flagGrammar  = 0x0008
+flagSearcher = 0x0010
+flagWriter   = 0x0020
+flagCompiler = 0x0040
 flagAll      = 0xffff
 
 flagMap = {
     'reader': flagReader,
     'lexer': flagLexer,
     'parser': flagParser,
+    'grammar': flagGrammar,
     'searcher': flagSearcher,
     'writer': flagWriter,
     'compiler': flagCompiler,

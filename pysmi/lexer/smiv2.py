@@ -81,10 +81,15 @@ class SmiV2Lexer(AbstractLexer):
     else:
       logger=lex.NullLogger()
 
+    if debug.logger & debug.flagGrammar:
+      debuglogger = debug.logger.getCurrentLogger()
+    else:
+      debuglogger = None
+
     self.lexer = lex.lex(module=self,
                          reflags=re.DOTALL,
                          outputdir=tempdir,
-                         debuglog=logger,
+                         debuglog=debuglogger,
                          errorlog=logger)
 
   def t_newline(self, t):
