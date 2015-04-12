@@ -40,44 +40,43 @@ class FtpReader(AbstractReader):
 
         debug.logger & debug.flagReader and debug.logger('looking for MIB %s that is newer than %s' % (mibname, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(timestamp))))
 
-        for ext in self.exts:
-            for mibfile in mibname, mibname.upper(), mibname.lower():
-                location = self._locationTemplate.replace('<mib>', mibfile+ext)
-                debug.logger & debug.flagReader and debug.logger('trying to fetch MIB %s from %s:%s' % (location, self._host, self._port))
-                data = []
+        for mibfile in self.getMibVariants():
+            location = self._locationTemplate.replace('<mib>', mibfile)
+            debug.logger & debug.flagReader and debug.logger('trying to fetch MIB %s from %s:%s' % (location, self._host, self._port))
+            data = []
+            try:
                 try:
-                    try:
-                        response = conn.sendcmd('MDTM %s' % location)
-                    except ftplib.all_errors:
-                        debug.logger & debug.flagReader and debug.logger('server %s:%s does not support MDTM command, fetching file %s' % (self._host, self._port, location))
-                        lastModified = timestamp+1
-                    else:
-                        debug.logger & debug.flagReader and debug.logger('server %s:%s MDTM response is %s' % (self._host, self._port, response))
-                        if response[:3] == 213:
-                            lastModified = time.mktime(time.strptime(response[4:], "%Y%m%d%H%M%S"))
-                        else:
-                            lastModified = timestamp+1
-
-                    if lastModified > timestamp:
-                        debug.logger & debug.flagReader and debug.logger('source MIB %s is new enough (%s), fetching data...' % (location, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(lastModified))))
-                        conn.retrlines('RETR %s' % location, lambda x, y=data: y.append(x))
-                    else:
-                        debug.logger & debug.flagReader and debug.logger('source MIB %s is older than needed' % location)
-                        conn.close()
-                        raise error.PySmiSourceNotModified(mibname, timestamp)
-
+                    response = conn.sendcmd('MDTM %s' % location)
                 except ftplib.all_errors:
-                    debug.logger & debug.flagReader and debug.logger('failed to fetch MIB %s from %s:%s: %s' % (location, self._host, self._port, sys.exc_info()[1]))
-                    continue
+                    debug.logger & debug.flagReader and debug.logger('server %s:%s does not support MDTM command, fetching file %s' % (self._host, self._port, location))
+                    lastModified = timestamp+1
+                else:
+                    debug.logger & debug.flagReader and debug.logger('server %s:%s MDTM response is %s' % (self._host, self._port, response))
+                    if response[:3] == 213:
+                        lastModified = time.mktime(time.strptime(response[4:], "%Y%m%d%H%M%S"))
+                    else:
+                        lastModified = timestamp+1
 
-                data = '\n'.join(data)
+                if lastModified > timestamp:
+                    debug.logger & debug.flagReader and debug.logger('source MIB %s is new enough (%s), fetching data...' % (location, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(lastModified))))
+                    conn.retrlines('RETR %s' % location, lambda x, y=data: y.append(x))
+                else:
+                    debug.logger & debug.flagReader and debug.logger('source MIB %s is older than needed' % location)
+                    conn.close()
+                    raise error.PySmiSourceNotModified(mibname, timestamp)
 
-                data = data.decode('utf-8', 'ignore')
+            except ftplib.all_errors:
+                debug.logger & debug.flagReader and debug.logger('failed to fetch MIB %s from %s:%s: %s' % (location, self._host, self._port, sys.exc_info()[1]))
+                continue
 
-                debug.logger & debug.flagReader and debug.logger('fetched %s bytes in %s' % (len(data), location))
+            data = '\n'.join(data)
 
-                conn.close()
-                return data
+            data = data.decode('utf-8', 'ignore')
+
+            debug.logger & debug.flagReader and debug.logger('fetched %s bytes in %s' % (len(data), location))
+
+            conn.close()
+            return data
 
         conn.close()
 

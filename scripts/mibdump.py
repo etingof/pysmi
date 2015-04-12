@@ -200,7 +200,7 @@ try:
     processed = mibCompiler.compile(*inputMibs, noDeps=nodepsFlag, rebuild=rebuildFlag, dryRun=dryrunFlag, genTexts=genMibTextsFlag)
 
     if verboseFlag:
-        sys.stderr.write('%sreated/updated MIBs: %s\r\n' % (dryrunFlag and 'Would be c' or 'C', ', '.join(processed)))
+        sys.stderr.write('%sreated/dependend MIBs: %s\r\n' % (dryrunFlag and 'Would be c' or 'C', ', '.join(processed)))
 
 except error.PySmiError:
     sys.stderr.write('ERROR: %s\r\n' % sys.exc_info()[1])
