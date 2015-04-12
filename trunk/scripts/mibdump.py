@@ -27,6 +27,7 @@ from pysmi import error
 # Defaults
 verboseFlag = True
 mibSources = []
+doFuzzyMatchingFlag = True
 mibSearchers = []
 mibStubs = []
 dstFormat = 'pysnmp'
@@ -48,6 +49,7 @@ Usage: %s [--help]
       [--quiet]
       [--debug=<%s>]
       [--mib-source=<url>]
+      [--disable-fuzzy-source]
       [--mib-searcher=<path|package>]
       [--mib-stub=<mibname>]
       [--destination-format=<format>]
@@ -73,7 +75,7 @@ try:
          'mib-source=', 'mib-searcher=', 'mib-stub=', 
          'destination-format=', 'destination-directory=', 'cache-directory=',
          'no-dependencies', 'rebuild', 'dry-run',
-         'generate-mib-texts' ]
+         'generate-mib-texts', 'disable-fuzzy-source' ]
     )
 except Exception:
     if verboseFlag:
@@ -122,8 +124,12 @@ Software documentation and support at http://pysmi.sf.net
         dryrunFlag = True
     if opt[0] == '--generate-mib-texts':
         genMibTextsFlag = True
+    if opt[0] == '--disable-fuzzy-source':
+        doFuzzyMatchingFlag = False
 
-if not inputMibs:
+if inputMibs:
+    inputMibs = [ os.path.splitext(x)[0] for x in inputMibs ]
+else:
     sys.stderr.write('ERROR: MIB modules names not specified\r\n%s\r\n' % helpMessage)
     sys.exit(-1)
 
@@ -147,6 +153,7 @@ Parser grammar cache directory: %s
 Rebuild MIBs regardless of age: %s
 Do not create/update MIBs: %s
 Generate texts in MIBs: %s
+Try various filenames while searching for MIB module: %s
 """ % (', '.join(mibSources),
        ', '.join(mibSearchers), 
        dstDirectory,
@@ -156,7 +163,8 @@ Generate texts in MIBs: %s
        cacheDirectory or 'no',
        rebuildFlag and 'yes' or 'no',
        dryrunFlag and 'yes' or 'no',
-       genMibTextsFlag and 'yes' or 'no'))
+       genMibTextsFlag and 'yes' or 'no',
+       doFuzzyMatchingFlag and 'yes' or 'no'))
 
 # Initialize compiler infrastructure
 
@@ -168,11 +176,11 @@ try:
     for mibSource in mibSources:
         mibSource = urlparse.urlparse(mibSource)
         if not mibSource.scheme or mibSource.scheme == 'file':
-            mibCompiler.addSources(FileReader(mibSource.path))
+            mibCompiler.addSources(FileReader(mibSource.path).setOptions(fuzzyMatching=doFuzzyMatchingFlag))
         elif mibSource.scheme in ('http', 'https'):
-            mibCompiler.addSources(HttpReader(mibSource.hostname, mibSource.port or 80, mibSource.path, ssl=mibSource.scheme == 'https'))
+            mibCompiler.addSources(HttpReader(mibSource.hostname, mibSource.port or 80, mibSource.path, ssl=mibSource.scheme == 'https').setOptions(fuzzyMatching=doFuzzyMatchingFlag))
         elif mibSource.scheme in ('ftp', 'sftp'):
-            mibCompiler.addSources(FtpReader(mibSource.hostname, mibSource.path, ssl=mibSource.scheme == 'sftp', port=mibSource.port or 21, user=mibSource.username or 'anonymous', password=mibSource.password or 'anonymous@'))
+            mibCompiler.addSources(FtpReader(mibSource.hostname, mibSource.path, ssl=mibSource.scheme == 'sftp', port=mibSource.port or 21, user=mibSource.username or 'anonymous', password=mibSource.password or 'anonymous@').setOptions(fuzzyMatching=doFuzzyMatchingFlag))
         else:
             sys.stderr.write('ERROR: unsupported URL scheme %s\r\n%s\r\n' % (opt[1], helpMessage))
             sys.exit(-1)
@@ -184,7 +192,11 @@ try:
 
     mibCompiler.addSearchers(StubSearcher(*mibStubs))
 
-    processed = mibCompiler.compile(*inputMibs, noDeps=nodepsFlag, rebuild=rebuildFlag, dryRun=dryrunFlag, genTexts=genMibTextsFlag)
+    processed = mibCompiler.compile(*inputMibs,
+                                    noDeps=nodepsFlag,
+                                    rebuild=rebuildFlag,
+                                    dryRun=dryrunFlag,
+                                    genTexts=genMibTextsFlag)
 
     if verboseFlag:
         sys.stderr.write('%sreated/dependent MIBs: %s\r\n' % (dryrunFlag and 'Would be c' or 'C', ', '.join(processed)))

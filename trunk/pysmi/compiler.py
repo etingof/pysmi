@@ -39,7 +39,7 @@ class MibCompiler(object):
                 try:
                     thismib, othermibs, data = self._codegen.genCode(
                         self._parser.parse(
-                            source.getData(timeStamp, mibname),
+                            source.getData(timeStamp, mibname)
                         ),
                         genTexts=kwargs.get('genTexts')
                     )
