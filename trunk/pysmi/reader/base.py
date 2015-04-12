@@ -6,5 +6,13 @@ class AbstractReader(object):
             os.path.extsep + 'txt',
             os.path.extsep + 'mib',
             os.path.extsep + 'my')
+    def getMibVariants(self, filename):
+        filenames = [ filename, filename.upper(), filename.lower() ]
+        if filenames[-1][-4:] == '-mib': 
+            filenames.append(filenames[-1][:-4])
+            filenames.append(filenames[-1].upper())
+
+        return (x+y for x in filenames for y in self.exts)
+
     def getData(self, timestamp, filename):
         raise NotImplementedError()

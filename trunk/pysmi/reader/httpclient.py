@@ -31,33 +31,32 @@ class HttpReader(AbstractReader):
 
         debug.logger & debug.flagReader and debug.logger('looking for MIB %s that is newer than %s' % (mibname, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(timestamp))))
 
-        for ext in self.exts:
-            for mibfile in mibname, mibname.upper(), mibname.lower():
-                location = self._locationTemplate.replace('<mib>', mibfile+ext)
-                debug.logger & debug.flagReader and debug.logger('trying to fetch MIB from %s://%s:%s%s' % (self._schema, self._host, self._port, location))
+        for mibfile in self.getMibVariants(mibname):
+            location = self._locationTemplate.replace('<mib>', mibfile)
+            debug.logger & debug.flagReader and debug.logger('trying to fetch MIB from %s://%s:%s%s' % (self._schema, self._host, self._port, location))
+            try:
+                conn.request('GET', location, '', headers)
+                response = conn.getresponse()
+            except Exception:
+                debug.logger & debug.flagReader and debug.logger('failed to fetch MIB from %s://%s:%s%s: %s' % (self._schema, self._host, self._port, location, sys.exc_info()[1]))
+                continue
+
+            debug.logger & debug.flagReader and debug.logger('HTTP response %s' % response.status)
+
+            if response.status == 304:
+                raise error.PySmiSourceNotModified(mibname, timestamp)
+            if response.status == 200:
                 try:
-                    conn.request('GET', location, '', headers)
-                    response = conn.getresponse()
-                except Exception:
-                    debug.logger & debug.flagReader and debug.logger('failed to fetch MIB from %s://%s:%s%s: %s' % (self._schema, self._host, self._port, location, sys.exc_info()[1]))
-                    continue
-
-                debug.logger & debug.flagReader and debug.logger('HTTP response %s' % response.status)
-
-                if response.status == 304:
+                    lastModified = time.mktime(time.strptime(response.getheader('Last-Modified'), "%a, %d %b %Y %H:%M:%S %Z"))
+                except:
+                    debug.logger & debug.flagReader and debug.logger('malformed HTTP headers')
+                    lastModified = 0
+                if lastModified > timestamp:
+                    debug.logger & debug.flagReader and debug.logger('source MIB %s is new enough (%s), fetching data...' % (response.getheader('Last-Modified'), location))
+                    return response.read(self.maxMibSize).decode('utf-8', 'ignore')
+                else:
+                    debug.logger & debug.flagReader and debug.logger('source MIB %s is older than needed' % location)
                     raise error.PySmiSourceNotModified(mibname, timestamp)
-                if response.status == 200:
-                    try:
-                        lastModified = time.mktime(time.strptime(response.getheader('Last-Modified'), "%a, %d %b %Y %H:%M:%S %Z"))
-                    except:
-                        debug.logger & debug.flagReader and debug.logger('malformed HTTP headers')
-                        lastModified = 0
-                    if lastModified > timestamp:
-                        debug.logger & debug.flagReader and debug.logger('source MIB %s is new enough (%s), fetching data...' % (response.getheader('Last-Modified'), location))
-                        return response.read(self.maxMibSize).decode('utf-8', 'ignore')
-                    else:
-                        debug.logger & debug.flagReader and debug.logger('source MIB %s is older than needed' % location)
-                        raise error.PySmiSourceNotModified(mibname, timestamp)
 
         debug.logger & debug.flagReader and debug.logger('source MIB %s not found' % mibname)
 
