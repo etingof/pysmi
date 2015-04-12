@@ -24,7 +24,7 @@ IMPORTS
 END
  """
     def setUp(self):
-        self.otherMibs, pycode = PySnmpCodeGen().genCode(SmiV2Parser().parse(self.__class__.__doc__))
+        self.thisMib, self.otherMibs, pycode = PySnmpCodeGen().genCode(SmiV2Parser().parse(self.__class__.__doc__))
         codeobj = compile(pycode, 'test', 'exec')
 
         self.ctx = { 'mibBuilder': MibBuilder() }
