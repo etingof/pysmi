@@ -127,27 +127,14 @@ if not inputMibs:
     sys.stderr.write('ERROR: MIB modules names not specified\r\n%s\r\n' % helpMessage)
     sys.exit(-1)
 
-if not mibSources:
-    mibSources.append('file:///usr/share/snmp/mibs')
-
 if not mibSearchers:
     mibSearchers = defaultMibPackages
 
 if not mibStubs:
     mibStubs = baseMibs
 
-if not inputMibs:
-    sys.stderr.write('ERROR: MIB modules names not specified\r\n%s\r\n' % helpMessage)
-    sys.exit(-1)
-
 if not mibSources:
     mibSources.append('file:///usr/share/snmp/mibs')
-
-if not mibSearchers:
-    mibSearchers = [ 'pysnmp.smi.mibs', 'pysnmp_mibs' ]
-
-if not mibStubs:
-    mibStubs = baseMibs
 
 if verboseFlag:
     sys.stderr.write("""Source MIB repositories: %s
@@ -200,7 +187,7 @@ try:
     processed = mibCompiler.compile(*inputMibs, noDeps=nodepsFlag, rebuild=rebuildFlag, dryRun=dryrunFlag, genTexts=genMibTextsFlag)
 
     if verboseFlag:
-        sys.stderr.write('%sreated/dependend MIBs: %s\r\n' % (dryrunFlag and 'Would be c' or 'C', ', '.join(processed)))
+        sys.stderr.write('%sreated/dependent MIBs: %s\r\n' % (dryrunFlag and 'Would be c' or 'C', ', '.join(processed)))
 
 except error.PySmiError:
     sys.stderr.write('ERROR: %s\r\n' % sys.exc_info()[1])
