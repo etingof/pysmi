@@ -8,5 +8,8 @@
 * possibly add additional AST processing phase to resolve imported symbols
   in a more consistent way
 * add comments (when, where, who) into generated code
-* generate MIB files using canonical MIB module name
+* symlink generated MIB files to canonical MIB module name to make it available
+  for importing even if original filename is wrong
 * are uppercase-identifiers valid in enumeration?
+* codegen does repr() on unicode strings, it should either not doing that or
+  encode such strings into utf-8 first

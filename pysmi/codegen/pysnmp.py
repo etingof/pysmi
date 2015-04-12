@@ -1,6 +1,7 @@
 from sys import version_info
 from time import strptime, strftime
 from pysmi.codegen.base import AbstractCodeGen
+from pysmi import debug
 
 if version_info[0] > 2:
     unicode = str
@@ -676,5 +677,6 @@ class PySnmpCodeGen(AbstractCodeGen):
 #      clausetype = ast[0]
 #      classmode = clausetype == 'typeDeclaration'
 #      out += self.handlersTable[ast[0]](self, self.prepData(ast[1:], classmode=classmode), classmode=classmode) 
-    return importedModules, out
+    debug.logger & debug.flagCodegen and debug.logger('canonical MIB name %s, imported MIB(s) %s, Python code size %s bytes' % (self.moduleName[0], ','.join(importedModules) or '<none>', len(out)))
+    return self.moduleName[0], importedModules, out
 
