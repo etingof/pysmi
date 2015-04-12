@@ -44,7 +44,7 @@ class SmiV2Lexer(AbstractLexer):
   ]
 
   # Token names required!
-  tokens = [
+  tokens = list(set([
     'BIN_STRING',
     'CHOICE',
     'COLON_COLON_EQUAL',
@@ -60,6 +60,7 @@ class SmiV2Lexer(AbstractLexer):
     'QUOTED_STRING',
     'UPPERCASE_IDENTIFIER',
   ] + list(reserved.values())
+  ))
  
   states = (
     ('macro','exclusive'),
