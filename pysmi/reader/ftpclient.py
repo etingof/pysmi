@@ -40,7 +40,7 @@ class FtpReader(AbstractReader):
 
         debug.logger & debug.flagReader and debug.logger('looking for MIB %s that is newer than %s' % (mibname, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(timestamp))))
 
-        for mibfile in self.getMibVariants():
+        for mibfile in self.getMibVariants(mibname):
             location = self._locationTemplate.replace('<mib>', mibfile)
             debug.logger & debug.flagReader and debug.logger('trying to fetch MIB %s from %s:%s' % (location, self._host, self._port))
             data = []
