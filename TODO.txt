@@ -13,3 +13,4 @@
 * are uppercase-identifiers valid in enumeration?
 * codegen does repr() on unicode strings, it should either not doing that or
   encode such strings into utf-8 first
+* make codegen surviving IMPORT-less MIBs
