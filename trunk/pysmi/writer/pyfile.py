@@ -19,7 +19,7 @@ class PyFileWriter(AbstractWriter):
 
     def __str__(self): return '%s{"%s"}' % (self.__class__.__name__, self._path)
 
-    def putData(self, mibname, data, dryRun=False):
+    def putData(self, mibname, data, alias='', dryRun=False):
         if dryRun:
             debug.logger & debug.flagWriter and debug.logger('dry run mode')
             return
@@ -29,32 +29,35 @@ class PyFileWriter(AbstractWriter):
             except OSError:
                 raise error.PySmiError('failure creating destination directory %s: %s' % (self._path, sys.exc_info()[1]))
 
-        pyfile = os.path.join(self._path, mibname.upper()) + self.suffixes[imp.PY_SOURCE][0][0]
-        try:
-            f = open(pyfile, 'wb')
-            f.write(data.encode('utf-8'))
-            f.close()
-        except (IOError, UnicodeEncodeError):
+        for filename in mibname, alias:
+            if not filename:
+                continue
+            pyfile = os.path.join(self._path, filename) + self.suffixes[imp.PY_SOURCE][0][0]
             try:
-                os.unlink(pyfile)
-            except:
-                pass
-            raise error.PySmiError('failure writing file %s: %s' % (pyfile, sys.exc_info()[1]))
+                f = open(pyfile, 'wb')
+                f.write(data.encode('utf-8'))
+                f.close()
+            except (IOError, UnicodeEncodeError):
+                try:
+                    os.unlink(pyfile)
+                except:
+                    pass
+                raise error.PySmiError('failure writing file %s: %s' % (pyfile, sys.exc_info()[1]))
 
-        debug.logger & debug.flagWriter and debug.logger('file %s created' % pyfile)
+            debug.logger & debug.flagWriter and debug.logger('file %s created' % pyfile)
 
-        try:
-            py_compile.compile(pyfile, doraise=True)
-        except (SyntaxError, py_compile.PyCompileError):
-            pass  # XXX
-        except:
             try:
-                os.unlink(pyfile)
+                py_compile.compile(pyfile, doraise=True)
+            except (SyntaxError, py_compile.PyCompileError):
+                pass  # XXX
             except:
-                pass
-            raise error.PySmiError('failure compiling %s: %s' % (pyfile, sys.exc_info()[1]))
+                try:
+                    os.unlink(pyfile)
+                except:
+                    pass
+                raise error.PySmiError('failure compiling %s: %s' % (pyfile, sys.exc_info()[1]))
 
-        debug.logger & debug.flagWriter and debug.logger('compiled %s' % pyfile)
+            debug.logger & debug.flagWriter and debug.logger('compiled %s' % pyfile)
 
 if __name__ == '__main__':
     from pysmi import debug

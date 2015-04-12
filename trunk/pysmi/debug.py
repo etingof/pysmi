@@ -4,21 +4,23 @@ from pysmi import error
 from pysmi import __version__
 
 flagNone     = 0x0000
-flagReader   = 0x0001
-flagLexer    = 0x0002
-flagParser   = 0x0004
-flagGrammar  = 0x0008
-flagSearcher = 0x0010
-flagWriter   = 0x0020
-flagCompiler = 0x0040
+flagSearcher = 0x0001
+flagReader   = 0x0002
+flagLexer    = 0x0004
+flagParser   = 0x0008
+flagGrammar  = 0x0010
+flagCodegen  = 0x0020
+flagWriter   = 0x0040
+flagCompiler = 0x0080
 flagAll      = 0xffff
 
 flagMap = {
+    'searcher': flagSearcher,
     'reader': flagReader,
     'lexer': flagLexer,
     'parser': flagParser,
     'grammar': flagGrammar,
-    'searcher': flagSearcher,
+    'codegen': flagCodegen,
     'writer': flagWriter,
     'compiler': flagCompiler,
     'all': flagAll

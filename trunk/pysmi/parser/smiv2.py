@@ -43,7 +43,6 @@ class SmiV2Parser(AbstractParser):
   def parse(self, data, **kwargs):
     debug.logger & debug.flagParser and debug.logger('source MIB size is %s characters, first 50 characters are "%s..."' % (len(data), data[:50]))
     return self.parser.parse(data, lexer=self.lexer.lexer)
-#    debug.logger & debug.flagCompiler and debug.logger('required MIB(s): %s, Python code size is %s bytes' % (','.join(othermibs) or '<none>', len(data)))
 
   #
   # SMIv2 grammar follows

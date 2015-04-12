@@ -37,19 +37,20 @@ class MibCompiler(object):
             for source in self._sources:
                 debug.logger & debug.flagCompiler and debug.logger('trying source %s' % source)
                 try:
-                    othermibs, data = self._codegen.genCode(
+                    thismib, othermibs, data = self._codegen.genCode(
                         self._parser.parse(
                             source.getData(timeStamp, mibname),
                         ),
                         genTexts=kwargs.get('genTexts')
                     )
                     self._writer.putData(
-                        mibname, data,
+                        thismib, data,
+                        alias=mibname != thismib and mibname or '',
                         dryRun=kwargs.get('dryRun')
                     )
-                    processed.add(mibname)
+                    processed.add(thismib)
                     if not kwargs.get('noDeps'):
-                        debug.logger & debug.flagCompiler and debug.logger('%s compiled by %s%s' % (mibname, self._writer, othermibs and 'checking dependencies' or ' '))
+                        debug.logger & debug.flagCompiler and debug.logger('%s (%s) compiled by %s%s' % (thismib, mibname, self._writer, othermibs and 'checking dependencies' or ' '))
                         processed.update(self.compile(*othermibs, **kwargs))
                     break
                 except error.PySmiSourceNotModified:
