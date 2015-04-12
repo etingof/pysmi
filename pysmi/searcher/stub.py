@@ -11,7 +11,7 @@ class StubSearcher(AbstractSearcher):
 
     def getTimestamp(self, mibname, rebuild=False):
         if mibname in self._mibnames:
-            debug.logger & debug.flagSearcher and debug.logger('pretend compiled %s exists' % mibname)
+            debug.logger & debug.flagSearcher and debug.logger('pretend compiled %s exists and is very new' % mibname)
             return 0x7fffffff  # end of time
 
         debug.logger & debug.flagSearcher and debug.logger('no compiled file %s found among %s' % (mibname, ', '.join(self._mibnames)))
