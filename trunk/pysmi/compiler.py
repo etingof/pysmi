@@ -1,3 +1,4 @@
+import sys
 from pysmi import error
 from pysmi import debug
 
@@ -59,6 +60,8 @@ class MibCompiler(object):
                 except error.PySmiSourceNotFound:
                     debug.logger & debug.flagCompiler and debug.logger('no %s found at %s' % (mibname, source))
                     continue
+                except error.PySmiError:
+                    raise error.PySmiError('%s at MIB %s' % (sys.exc_info()[1], mibname))
             else:
                 debug.logger & debug.flagCompiler and debug.logger('source MIB %s not found, but compiled version exists' % mibname)
                 if not timeStamp:
