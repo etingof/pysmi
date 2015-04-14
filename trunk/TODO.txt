@@ -14,5 +14,6 @@
 * codegen does repr() on unicode strings, it should either not doing that or
   encode such strings into utf-8 first
 * make codegen surviving IMPORT-less MIBs
-* support SMIv1 and common broken SMI constructs
+* support SMIv1 and common broken SMI constructs in form of SMI parser
+  that inherits from base SMIv2 parser
 * support MAX clause mapping it into type-specific value
