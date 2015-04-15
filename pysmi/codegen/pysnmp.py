@@ -443,10 +443,10 @@ class PySnmpCodeGen(AbstractCodeGen):
 
   def genContactInfo(self, data, classmode=0):
     text = data[0]
-    return '.setContactInfo(' + repr(text) + ')'
+    return '.setContactInfo(' + repr(text.encode('utf-8')).decode('utf-8') + ')'
 
   def genDisplayHint(self, data, classmode=0):
-    return self.indent + 'displayHint = ' + repr(data[0]) + '\n'
+    return self.indent + 'displayHint = ' + repr(data[0].encode('utf-8')).decode('utf-8') + '\n'
    
   def genDefVal(self, data, classmode=0):
     defval = data[0]
@@ -461,17 +461,17 @@ class PySnmpCodeGen(AbstractCodeGen):
     elif defval[0] == defval[-1] and defval[0] == '(': # bits list
       val = defval
     elif defval[0] == defval[-1] and defval[0] == '"': # quoted strimg
-      val = repr(defval[1:-1])
+      val = repr(defval[1:-1].encode('utf-8')).decode('utf-8')
     else: # symbol (oid as defval) or name for enumeration member
       if defval in self._presentedSyms:
         val = defval + '.getName()' 
       else:
-        val = repr(defval)
+        val = repr(defval.encode('utf-8')).decode('utf-8')
     return '.clone(' + val + ')'
 
   def genDescription(self, data, classmode=0):
     text = data[0]
-    return '.setDescription(' + repr(text) + ')'
+    return '.setDescription(' + repr(text.encode('utf-8')).decode('utf-8') + ')'
 
   def genEnumSpec(self, data, classmode=0):
     items = data[0]
@@ -569,7 +569,7 @@ class PySnmpCodeGen(AbstractCodeGen):
 
   def genOrganization(self, data, classmode=0):
     text = data[0]
-    return '.setOrganization(' + repr(text) + ')'
+    return '.setOrganization(' + repr(text.encode('utf-8')).decode('utf-8') + ')'
 
   def genRevisions(self, data, classmode=0):
     times = self.genTime(data[0]) 
@@ -608,7 +608,7 @@ class PySnmpCodeGen(AbstractCodeGen):
 
   def genUnits(self, data, classmode=0):
     text = data[0]
-    return '.setUnits(' + repr(text) + ')'
+    return '.setUnits(' + repr(text.encode('utf-8')).decode('utf-8') + ')'
 
   handlersTable = {
     'agentCapabilitiesClause': genAgentCapabilities,
