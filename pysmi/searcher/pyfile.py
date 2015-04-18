@@ -33,7 +33,7 @@ class PyFileSearcher(AbstractSearcher):
                     try:
                         pyData = open(f, pyMode).read(8)
                     except IOError:
-                        raise error.PySmiError('failure opening compiled file %s: %s' % (f, sys.exc_info()[1]))
+                        raise error.PySmiSearcherError('failure opening compiled file %s: %s' % (f, sys.exc_info()[1]), searcher=self)
                     if pyData[:4] == imp.get_magic():
                         pyData = pyData[4:]
                         pyTime = struct.unpack('<L', pyData[:4])[0]
@@ -46,13 +46,13 @@ class PyFileSearcher(AbstractSearcher):
                     try:
                         pyTime = os.stat(f)[8]
                     except OSError:
-                        raise error.PySmiError('failure opening compiled file %s: %s' % (f, sys.exc_info()[1]))
+                        raise error.PySmiSearcherError('failure opening compiled file %s: %s' % (f, sys.exc_info()[1]), searcher=self)
 
                     debug.logger & debug.flagSearcher and debug.logger('found %s, mtime %s' % (f, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(pyTime))))
                     return pyTime
 
 
-        raise error.PySmiSourceNotFoundError('no compiled file %s found' % mibname)
+        raise error.PySmiCompiledFileNotFoundError('no compiled file %s found' % mibname, searcher=self)
 
 if __name__ == '__main__':
     from pysmi import debug

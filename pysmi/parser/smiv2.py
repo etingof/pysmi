@@ -1116,5 +1116,4 @@ class SmiV2Parser(AbstractParser):
   # Error rule for syntax errors
   def p_error(self, p):
     if p:
-      raise error.PySmiError("Bad grammar near token type=%s, value=%s" % \
-                             (p.type, p.value))
+      raise error.PySmiParserError("Bad grammar near token type %s, value %s" % (p.type, p.value), lineno=p.lineno)

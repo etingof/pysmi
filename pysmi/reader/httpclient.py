@@ -44,7 +44,7 @@ class HttpReader(AbstractReader):
             debug.logger & debug.flagReader and debug.logger('HTTP response %s' % response.status)
 
             if response.status == 304:
-                raise error.PySmiSourceNotModifiedError('HTTP response was %s' % response.status)
+                raise error.PySmiSourceNotModifiedError('HTTP response was %s' % response.status, reader=self)
             if response.status == 200:
                 try:
                     lastModified = time.mktime(time.strptime(response.getheader('Last-Modified'), "%a, %d %b %Y %H:%M:%S %Z"))
@@ -55,9 +55,9 @@ class HttpReader(AbstractReader):
                     debug.logger & debug.flagReader and debug.logger('source MIB %s is new enough (%s), fetching data...' % (response.getheader('Last-Modified'), location))
                     return response.read(self.maxMibSize).decode('utf-8', 'ignore')
                 else:
-                    raise error.PySmiSourceNotModifiedError('source MIB %s is older than needed' % location)
+                    raise error.PySmiSourceNotModifiedError('source MIB %s is older than needed' % location, reader=self)
 
-        raise error.PySmiSourceNotFoundError('source MIB %s not found' % mibname)
+        raise error.PySmiSourceNotFoundError('source MIB %s not found' % mibname, reader=self)
 
 if __name__ == '__main__':
     debug.setLogger(debug.Debug('all'))

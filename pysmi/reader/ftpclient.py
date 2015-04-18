@@ -28,13 +28,13 @@ class FtpReader(AbstractReader):
         try:
             conn.connect(self._host, self._port, self._timeout)
         except ftplib.all_errors:
-            raise error.PySmiSourceNotFoundError('failed to connect to FTP server %s:%s: %s' % (self._host, self._port, sys.exc_info()[1]))
+            raise error.PySmiSourceNotFoundError('failed to connect to FTP server %s:%s: %s' % (self._host, self._port, sys.exc_info()[1]), reader=self)
 
         try:
             conn.login(self._user, self._password)
         except ftplib.all_errors:
             conn.close()
-            raise error.PySmiSourceNotFoundError('failed to log in to FTP server %s:%s as %s/%s: %s' % (self._host, self._port, self._user, self._password, sys.exc_info()[1]))
+            raise error.PySmiSourceNotFoundError('failed to log in to FTP server %s:%s as %s/%s: %s' % (self._host, self._port, self._user, self._password, sys.exc_info()[1]), reader=self)
 
         debug.logger & debug.flagReader and debug.logger('looking for MIB %s that is newer than %s' % (mibname, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(timestamp))))
 
@@ -60,7 +60,7 @@ class FtpReader(AbstractReader):
                     conn.retrlines('RETR %s' % location, lambda x, y=data: y.append(x))
                 else:
                     conn.close()
-                    raise error.PySmiSourceNotModifiedError('source MIB %s is older than needed' % location)
+                    raise error.PySmiSourceNotModifiedError('source MIB %s is older than needed' % location, reader=self)
 
             except ftplib.all_errors:
                 debug.logger & debug.flagReader and debug.logger('failed to fetch MIB %s from %s:%s: %s' % (location, self._host, self._port, sys.exc_info()[1]))
@@ -77,7 +77,7 @@ class FtpReader(AbstractReader):
 
         conn.close()
 
-        raise error.PySmiSourceNotFoundError('source MIB %s not found' % mibname)
+        raise error.PySmiSourceNotFoundError('source MIB %s not found' % mibname, reader=self)
 
 if __name__ == '__main__':
     debug.setLogger(debug.Debug('all'))
