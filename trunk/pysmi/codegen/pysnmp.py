@@ -94,33 +94,6 @@ class PySnmpCodeGen(AbstractCodeGen):
     },
     'RFC-1215': { 'TRAP-TYPE': ('SNMPv2-SMI', 'TRAP-TYPE'),
     },
-
-
-#  ('RFC1155-SMI', 'internet'): ('SNMPv2-SMI', 'internet'),
-#  ('RFC1155-SMI', 'directory'): ('SNMPv2-SMI', 'directory'),
-#  ('RFC1155-SMI', 'mgmt'): ('SNMPv2-SMI', 'mgmt'),
-#  ('RFC1155-SMI', 'experimental'): ('SNMPv2-SMI', 'experimental'),
-#  ('RFC1155-SMI', 'private'): ('SNMPv2-SMI', 'private'),
-#  ('RFC1155-SMI', 'enterprises'): ('SNMPv2-SMI', 'enterprises'),
-#  ('RFC1155-SMI', 'IpAddress'): ('SNMPv2-SMI', 'IpAddress'),
-#  ('RFC1155-SMI', 'Counter'): ('SNMPv2-SMI', 'Counter32'),
-#  ('RFC1155-SMI', 'Gauge'): ('SNMPv2-SMI', 'Gauge32'),
-#  ('RFC1155-SMI', 'TimeTicks'): ('SNMPv2-SMI', 'TimeTicks'),
-#  ('RFC1155-SMI', 'Opaque'): ('SNMPv2-SMI', 'Opaque'),
-#  ('RFC1065-SMI', 'internet'): ('SNMPv2-SMI', 'internet'),
-#  ('RFC1065-SMI', 'directory'): ('SNMPv2-SMI', 'directory'),
-#  ('RFC1065-SMI', 'mgmt'): ('SNMPv2-SMI', 'mgmt'),
-#  ('RFC1065-SMI', 'experimental'): ('SNMPv2-SMI', 'experimental'),
-#  ('RFC1065-SMI', 'private'): ('SNMPv2-SMI', 'private'),
-#  ('RFC1065-SMI', 'enterprises'): ('SNMPv2-SMI', 'enterprises'),
-#  ('RFC1065-SMI', 'IpAddress'): ('SNMPv2-SMI', 'IpAddress'),
-#  ('RFC1065-SMI', 'Counter'): ('SNMPv2-SMI', 'Counter32'),
-#  ('RFC1065-SMI', 'Gauge'): ('SNMPv2-SMI', 'Gauge32'),
-#  ('RFC1065-SMI', 'TimeTicks'): ('SNMPv2-SMI', 'TimeTicks'),
-#  ('RFC1065-SMI', 'Opaque'): ('SNMPv2-SMI', 'Opaque'),
-#  ('RFC1213-MIB', 'mib-2'): ('SNMPv2-SMI', 'mib-2'),
-#  ('RFC1213-MIB', 'DisplayString'): ('SNMPv2-TC', 'DisplayString'),
-    
   }
 
   typeClasses = {
@@ -185,11 +158,6 @@ class PySnmpCodeGen(AbstractCodeGen):
   def prepData(self, pdata, classmode = 0):
     data = []
     for el in pdata:
-#    print 'EL ', el
-#    if isinstance(el, list):
-#      for subel in el:
-#        data.append(self.handlersTable[subel[0]](self.prepData(subel[1:])))
-#    elif not isinstance(el, tuple):
       if not isinstance(el, tuple):
         data.append(el)
       elif len(el) == 1:
@@ -675,13 +643,6 @@ class PySnmpCodeGen(AbstractCodeGen):
             classmode = clausetype == 'typeDeclaration'
             out += self.handlersTable[declr[0]](self, self.prepData(declr[1:], classmode=classmode), classmode=classmode)
         out += self.genExports()
-#  else: ### empty mibs fall here too, but they are not handled right
-#    # it's probably a unittest
-#    importedModules = ()
-#    if ast:
-#      clausetype = ast[0]
-#      classmode = clausetype == 'typeDeclaration'
-#      out += self.handlersTable[ast[0]](self, self.prepData(ast[1:], classmode=classmode), classmode=classmode) 
     debug.logger & debug.flagCodegen and debug.logger('canonical MIB name %s, imported MIB(s) %s, Python code size %s bytes' % (self.moduleName[0], ','.join(importedModules) or '<none>', len(out)))
     return self.moduleName[0], importedModules, out
 
