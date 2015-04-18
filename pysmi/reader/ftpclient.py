@@ -28,15 +28,13 @@ class FtpReader(AbstractReader):
         try:
             conn.connect(self._host, self._port, self._timeout)
         except ftplib.all_errors:
-            debug.logger & debug.flagReader and debug.logger('failed to connect to FTP server %s:%s: %s' % (self._host, self._port, sys.exc_info()[1]))
-            raise error.PySmiSourceNotFound(mibname, timestamp)
+            raise error.PySmiSourceNotFoundError('failed to connect to FTP server %s:%s: %s' % (self._host, self._port, sys.exc_info()[1]))
 
         try:
             conn.login(self._user, self._password)
         except ftplib.all_errors:
-            debug.logger & debug.flagReader and debug.logger('failed to log in to FTP server %s:%s as %s/%s: %s' % (self._host, self._port, self._user, self._password, sys.exc_info()[1]))
             conn.close()
-            raise error.PySmiSourceNotFound(mibname, timestamp)
+            raise error.PySmiSourceNotFoundError('failed to log in to FTP server %s:%s as %s/%s: %s' % (self._host, self._port, self._user, self._password, sys.exc_info()[1]))
 
         debug.logger & debug.flagReader and debug.logger('looking for MIB %s that is newer than %s' % (mibname, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(timestamp))))
 
@@ -61,9 +59,8 @@ class FtpReader(AbstractReader):
                     debug.logger & debug.flagReader and debug.logger('source MIB %s is new enough (%s), fetching data...' % (location, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(lastModified))))
                     conn.retrlines('RETR %s' % location, lambda x, y=data: y.append(x))
                 else:
-                    debug.logger & debug.flagReader and debug.logger('source MIB %s is older than needed' % location)
                     conn.close()
-                    raise error.PySmiSourceNotModified(mibname, timestamp)
+                    raise error.PySmiSourceNotModifiedError('source MIB %s is older than needed' % location)
 
             except ftplib.all_errors:
                 debug.logger & debug.flagReader and debug.logger('failed to fetch MIB %s from %s:%s: %s' % (location, self._host, self._port, sys.exc_info()[1]))
@@ -80,9 +77,7 @@ class FtpReader(AbstractReader):
 
         conn.close()
 
-        debug.logger & debug.flagReader and debug.logger('source MIB %s not found' % mibname)
-
-        raise error.PySmiSourceNotFound(mibname, timestamp)
+        raise error.PySmiSourceNotFoundError('source MIB %s not found' % mibname)
 
 if __name__ == '__main__':
     debug.setLogger(debug.Debug('all'))

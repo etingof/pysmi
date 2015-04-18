@@ -1,6 +1,7 @@
 from sys import version_info
 from time import strptime, strftime
 from pysmi.codegen.base import AbstractCodeGen
+from pysmi import error
 from pysmi import debug
 
 if version_info[0] > 2:
@@ -171,12 +172,12 @@ class PySnmpCodeGen(AbstractCodeGen):
       if s[1:-2]:
         i = int(s[1:-2], 2)
       else:
-        raise ValueError('Attempt to convert empty ninary string to int')
+        raise error.PySmiSemanticError('empty binary string to int conversion')
     elif self.isHex(s):
       if s[1:-2]:
         i = int(s[1:-2], 16)
       else:
-        raise ValueError('Attempt to convert empty ninary string to int')
+        raise error.PySmiSemanticError('empty hex string to int conversion')
     else:
       i = int(s)
     return i
@@ -547,7 +548,7 @@ class PySnmpCodeGen(AbstractCodeGen):
       elif isinstance(el, tuple):
         s = '(' + str(el[1]) + ',)' # XXX Do we need to create a new object el[0]?
       else:
-        raise RuntimeError('Generation failed: unknown datatype for OID')
+        raise error.PySmiSemanticError('unknown datatype for OID')
       outStr += not outStr and s or ' + ' + s 
     return outStr
 
@@ -563,7 +564,7 @@ class PySnmpCodeGen(AbstractCodeGen):
       if lenTimeStr == 11:
         t = '19' + t
       elif lenTimeStr != 13:
-        raise SyntaxError("Invalid date %s" % t)
+        raise error.PySmiSemanticError("Invalid date %s" % t)
       times.append(strftime('%Y-%m-%d %H:%M', strptime(t, '%Y%m%d%H%MZ')))
     return times
 

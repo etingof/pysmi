@@ -30,7 +30,7 @@ class MibCompiler(object):
                 debug.logger & debug.flagCompiler and debug.logger('checking compiled files using %s' % compiled)
                 try:
                     timeStamp = max(timeStamp, compiled.getTimestamp(mibname, rebuild=kwargs.get('rebuild')))
-                except error.PySmiSourceNotFound:
+                except error.PySmiSourceNotFoundError:
                     pass
 
             debug.logger & debug.flagCompiler and debug.logger('done searching compiled versions of %s, %s' % (mibname, timeStamp and 'one or more found' or 'nothing found'))
@@ -54,18 +54,23 @@ class MibCompiler(object):
                         debug.logger & debug.flagCompiler and debug.logger('%s (%s) compiled by %s%s' % (thismib, mibname, self._writer, othermibs and 'checking dependencies' or ' '))
                         processed.update(self.compile(*othermibs, **kwargs))
                     break
-                except error.PySmiSourceNotModified:
+                except error.PySmiSourceNotModifiedError:
                     debug.logger & debug.flagCompiler and debug.logger('no update required for %s' % mibname)
                     break
-                except error.PySmiSourceNotFound:
+                except error.PySmiSourceNotFoundError:
                     debug.logger & debug.flagCompiler and debug.logger('no %s found at %s' % (mibname, source))
                     continue
                 except error.PySmiError:
-                    raise error.PySmiError('%s at MIB %s' % (sys.exc_info()[1], mibname))
+                    exc_class, exc, tb = sys.exc_info()
+                    exc.source = source
+                    exc.mibname = mibname
+                    exc.timestamp = timeStamp
+                    exc.message += ' at MIB %s' % mibname
+                    debug.logger & debug.flagCompiler and debug.logger('error %s from %s' % (exc, source))
+                    raise exc_class, exc, tb
             else:
-                debug.logger & debug.flagCompiler and debug.logger('source MIB %s not found, but compiled version exists' % mibname)
                 if not timeStamp:
-                    raise error.PySmiError('no source MIB %s found' % mibname)
+                    raise error.PySmiSourceNotFoundError('source MIB %s not found' % mibname, mibname=mibname, timestamp=timeStamp)
 
         return processed
 

@@ -14,9 +14,7 @@ class StubSearcher(AbstractSearcher):
             debug.logger & debug.flagSearcher and debug.logger('pretend compiled %s exists and is very new' % mibname)
             return 0x7fffffff  # end of time
 
-        debug.logger & debug.flagSearcher and debug.logger('no compiled file %s found among %s' % (mibname, ', '.join(self._mibnames)))
-
-        raise error.PySmiSourceNotFound(mibname)
+        raise error.PySmiSourceNotFoundError('no compiled file %s found among %s' % (mibname, ', '.join(self._mibnames)))
 
 if __name__ == '__main__':
     from pysmi import debug

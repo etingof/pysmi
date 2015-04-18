@@ -48,8 +48,7 @@ class PyPackageSearcher(AbstractSearcher):
                 return PyFileSearcher(os.path.split(p.__file__)[0]).getTimestamp(mibname)
 
         except ImportError:
-            debug.logger & debug.flagSearcher and debug.logger('%s is not importable, trying as a path' % self._package)
-            raise error.PySmiSourceNotFound(mibname)
+            raise error.PySmiSourceNotFoundError('%s is not importable, trying as a path' % self._package)
 
         for format in imp.PY_COMPILED, imp.PY_SOURCE:
             for pySfx, pyMode in self.suffixes[format]:
@@ -76,9 +75,7 @@ class PyPackageSearcher(AbstractSearcher):
                     debug.logger & debug.flagSearcher and debug.logger('found %s, mtime %s' % (f, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(pyTime))))
                     return pyTime
 
-        debug.logger & debug.flagSearcher and debug.logger('no file %s found' % mibname)
-
-        raise error.PySmiSourceNotFound(mibname)
+        raise error.PySmiSourceNotFoundError('no file %s found' % mibname)
 
 if __name__ == '__main__':
     from pysmi import debug
