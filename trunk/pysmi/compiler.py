@@ -30,7 +30,7 @@ class MibCompiler(object):
                 debug.logger & debug.flagCompiler and debug.logger('checking compiled files using %s' % compiled)
                 try:
                     timeStamp = max(timeStamp, compiled.getTimestamp(mibname, rebuild=kwargs.get('rebuild')))
-                except error.PySmiSourceNotFoundError:
+                except error.PySmiCompiledFileNotFoundError:
                     pass
 
             debug.logger & debug.flagCompiler and debug.logger('done searching compiled versions of %s, %s' % (mibname, timeStamp and 'one or more found' or 'nothing found'))

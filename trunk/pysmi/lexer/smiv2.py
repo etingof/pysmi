@@ -173,16 +173,16 @@ class SmiV2Lexer(AbstractLexer):
   def t_UPPERCASE_IDENTIFIER(self, t):
     r'[A-Z][-a-zA-z0-9]*'
     if t.value in self.forbidden_words:
-      raise error.PySmiError("%s is forbidden" % t.value)
+      raise error.PySmiLexerError("%s is forbidden" % t.value, lineno=t.lineno)
     if t.value[-1] == '-':
-      raise error.PySmiError("Identifier should not end with '-': %s" % t.value)
+      raise error.PySmiLexerError("Identifier should not end with '-': %s" % t.value, lineno=t.lineno)
     t.type = self.reserved.get(t.value, 'UPPERCASE_IDENTIFIER')
     return t
 
   def t_LOWERCASE_IDENTIFIER(self, t):
     r'[a-z][-a-zA-z0-9]*'
     if t.value[-1] == '-':
-      raise error.PySmiError("Identifier should not end with '-': %s" % t.value)  
+      raise error.PySmiLexerError("Identifier should not end with '-': %s" % t.value, lineno=t.lineno)  
     return t  
 
   def t_NUMBER(self, t):
@@ -201,7 +201,7 @@ class SmiV2Lexer(AbstractLexer):
       else:
         t.type = 'NUMBER64'
     else:
-      raise error.PySmiError("Number %s is too big" % t.value)
+      raise error.PySmiLexerError("Number %s is too big" % t.value, lineno=t.lineno)
     return t  
 
   def t_BIN_STRING(self, t):
@@ -210,7 +210,7 @@ class SmiV2Lexer(AbstractLexer):
     while value and value[0] == '0' and len(value) % 8:
         value = value[1:]
     if len(value) % 8:
-      raise error.PySmiError("Number of 0s and 1s have to divide by 8 in binary string %s" % t.value)
+      raise error.PySmiLexerError("Number of 0s and 1s have to divide by 8 in binary string %s" % t.value, lineno=t.lineno)
     return t
 
   def t_HEX_STRING(self, t):
@@ -219,7 +219,7 @@ class SmiV2Lexer(AbstractLexer):
     while value and value[0] == '0' and len(value) % 2:
         value = value[1:]
     if len(value) % 2:      
-      raise error.PySmiError("Number of symbols have to be even in hex string %s" % t.value)
+      raise error.PySmiLexerError("Number of symbols have to be even in hex string %s" % t.value, lineno=t.lineno)
     return t
 
   def t_QUOTED_STRING(self, t):
@@ -227,7 +227,7 @@ class SmiV2Lexer(AbstractLexer):
     return t
 
   def t_error(self, t):
-    raise error.PySmiError("Illegal character '%s', %s characters left unparsed at this stage" % (t.value[0], len(t.value)-1))
+    raise error.PySmiLexerError("Illegal character '%s', %s characters left unparsed at this stage" % (t.value[0], len(t.value)-1), lineno=t.lineno)
     #t.lexer.skip(1)
  
   # Test it output

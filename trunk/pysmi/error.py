@@ -18,13 +18,17 @@ class PySmiError(Exception):
     def __str__(self):
         return self.message
 
-class PySmiLexerError(PySmiError): pass
+class PySmiLexerError(PySmiError):
+    lineno = '?'
+    def __str__(self):
+        return self.message + ', line %s' % self.lineno
 
 class PySmiParserError(PySmiLexerError): pass
 class PySmiSyntaxError(PySmiParserError): pass
 
 class PySmiSearcherError(PySmiError): pass
 class PySmiSourceNotModifiedError(PySmiSearcherError): pass
+class PySmiCompiledFileNotFoundError(PySmiSearcherError): pass
 
 class PySmiReaderError(PySmiError): pass
 class PySmiSourceNotFoundError(PySmiReaderError): pass

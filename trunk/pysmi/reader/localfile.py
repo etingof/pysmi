@@ -25,9 +25,9 @@ class FileReader(AbstractReader):
                 except (OSError, IOError):
                     debug.logger & debug.flagReader and debug.logger('source file %s open failure: %s' % (f, sys.exc_info()[1]))
 
-                raise error.PySmiSourceNotModifiedError('source MIB %s is older than needed' % f)
+                raise error.PySmiSourceNotModifiedError('source MIB %s is older than needed' % f, reader=self)
 
-        raise error.PySmiSourceNotFoundError('source MIB %s not found' % mibname)
+        raise error.PySmiSourceNotFoundError('source MIB %s not found' % mibname, reader=self)
 
 if __name__ == '__main__':
     debug.setLogger(debug.Debug('all'))
