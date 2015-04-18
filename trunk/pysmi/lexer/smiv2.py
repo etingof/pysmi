@@ -162,12 +162,12 @@ class SmiV2Lexer(AbstractLexer):
     t.lexer.lineno += 1
     t.lexer.begin('INITIAL')
 
-  def t_comment_end(self, t):
-    r'--'
-    t.lexer.begin('INITIAL')
+#  def t_comment_end(self, t):
+#    r'--'
+#    t.lexer.begin('INITIAL')
 
   def t_comment_body(self, t):
-    r'[^\n]+'
+    r'[^\r\n]+'
     pass
 
   def t_UPPERCASE_IDENTIFIER(self, t):
@@ -224,13 +224,14 @@ class SmiV2Lexer(AbstractLexer):
 
   def t_QUOTED_STRING(self, t):
     r'\"[^\"]*\"'
+    t.lexer.lineno += len(re.findall(r'\r\n|\n|\r', t.value))
     return t
 
   def t_error(self, t):
     raise error.PySmiLexerError("Illegal character '%s', %s characters left unparsed at this stage" % (t.value[0], len(t.value)-1), lineno=t.lineno)
     #t.lexer.skip(1)
  
-  # Test it output
+  # Test its output
   def test(self, data):
     self.lexer.input(data)
     while True:
@@ -238,15 +239,3 @@ class SmiV2Lexer(AbstractLexer):
       if not tok: break
       print(tok)
 
-
-# Build the lexer and try it out
-#m = SmiV2Lexer()
-#directory = '/Users/tt/Downloads/libsmi-0.5.0/mibs/ietf/'
-#import os
-#files = os.listdir(directory)         
-#for f in files:
-#  if f[-3:] != 'MIB':
-#    break
-#  print('file %s' % f)
-#  m.test(open(directory+f).read())
-#  print('done')
