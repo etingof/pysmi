@@ -51,9 +51,8 @@ class PyFileSearcher(AbstractSearcher):
                     debug.logger & debug.flagSearcher and debug.logger('found %s, mtime %s' % (f, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(pyTime))))
                     return pyTime
 
-        debug.logger & debug.flagSearcher and debug.logger('no compiled file %s found' % mibname)
 
-        raise error.PySmiSourceNotFound(mibname)
+        raise error.PySmiSourceNotFoundError('no compiled file %s found' % mibname)
 
 if __name__ == '__main__':
     from pysmi import debug

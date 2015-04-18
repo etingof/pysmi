@@ -27,7 +27,7 @@ class PyFileWriter(AbstractWriter):
             try:
                 os.makedirs(self._path)
             except OSError:
-                raise error.PySmiError('failure creating destination directory %s: %s' % (self._path, sys.exc_info()[1]))
+                raise error.PySmiWriterError('failure creating destination directory %s: %s' % (self._path, sys.exc_info()[1]), writer=self)
 
         for filename in mibname, alias:
             if not filename:
@@ -42,7 +42,7 @@ class PyFileWriter(AbstractWriter):
                     os.unlink(pyfile)
                 except:
                     pass
-                raise error.PySmiError('failure writing file %s: %s' % (pyfile, sys.exc_info()[1]))
+                raise error.PySmiWriterError('failure writing file %s: %s' % (pyfile, sys.exc_info()[1]), file=pyfile, writer=self)
 
             debug.logger & debug.flagWriter and debug.logger('file %s created' % pyfile)
 
@@ -55,7 +55,7 @@ class PyFileWriter(AbstractWriter):
                     os.unlink(pyfile)
                 except:
                     pass
-                raise error.PySmiError('failure compiling %s: %s' % (pyfile, sys.exc_info()[1]))
+                raise error.PySmiWriterError('failure compiling %s: %s' % (pyfile, sys.exc_info()[1]), file=pyfile, writer=self)
 
             debug.logger & debug.flagWriter and debug.logger('compiled %s' % pyfile)
 
