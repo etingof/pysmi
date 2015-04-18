@@ -207,6 +207,8 @@ class SmiV2Lexer(AbstractLexer):
   def t_BIN_STRING(self, t):
     r'\'[01]*\'[bB]'
     value = t.value[1:-2]
+    while value and value[0] == '0' and len(value) % 8:
+        value = value[1:]
     if len(value) % 8:
       raise error.PySmiError("Number of 0s and 1s have to divide by 8 in binary string %s" % t.value)
     return t
@@ -214,6 +216,8 @@ class SmiV2Lexer(AbstractLexer):
   def t_HEX_STRING(self, t):
     r'\'[0-9a-fA-F]*\'[hH]'
     value = t.value[1:-2]
+    while value and value[0] == '0' and len(value) % 2:
+        value = value[1:]
     if len(value) % 2:      
       raise error.PySmiError("Number of symbols have to be even in hex string %s" % t.value)
     return t
