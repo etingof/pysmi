@@ -1,10 +1,10 @@
-from sys import version_info
+import sys
 from time import strptime, strftime
 from pysmi.codegen.base import AbstractCodeGen
 from pysmi import error
 from pysmi import debug
 
-if version_info[0] > 2:
+if sys.version_info[0] > 2:
     unicode = str
     long = int
 
@@ -565,7 +565,11 @@ class PySnmpCodeGen(AbstractCodeGen):
         t = '19' + t
       elif lenTimeStr != 13:
         raise error.PySmiSemanticError("Invalid date %s" % t)
-      times.append(strftime('%Y-%m-%d %H:%M', strptime(t, '%Y%m%d%H%MZ')))
+      try:
+        times.append(strftime('%Y-%m-%d %H:%M', strptime(t, '%Y%m%d%H%MZ')))
+      except ValueError:
+        raise error.PySmiSemanticError("Invalid date %s: %s" % (t, sys.exc_info()[1]))
+
     return times
 
   def genOrganization(self, data, classmode=0):
