@@ -18,7 +18,7 @@ from pysmi.searcher.pyfile import PyFileSearcher
 from pysmi.searcher.pypackage import PyPackageSearcher
 from pysmi.searcher.stub import StubSearcher
 from pysmi.writer.pyfile import PyFileWriter
-from pysmi.parser.smiv2 import SmiV2Parser
+from pysmi.parser.smihacked import SmiHackedParser
 from pysmi.codegen.pysnmp import PySnmpCodeGen, defaultMibPackages, baseMibs
 from pysmi.compiler import MibCompiler
 from pysmi import debug
@@ -168,7 +168,7 @@ Try various filenames while searching for MIB module: %s
 
 # Initialize compiler infrastructure
 
-mibCompiler = MibCompiler(SmiV2Parser(tempdir=cacheDirectory), 
+mibCompiler = MibCompiler(SmiHackedParser(tempdir=cacheDirectory), 
                           PySnmpCodeGen(),
                           PyFileWriter(dstDirectory))
 
