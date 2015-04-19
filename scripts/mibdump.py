@@ -132,7 +132,7 @@ Software documentation and support at http://pysmi.sf.net
         doFuzzyMatchingFlag = False
 
 if inputMibs:
-    inputMibs = [ os.path.splitext(x)[0] for x in inputMibs ]
+    inputMibs = [ os.path.basename(os.path.splitext(x)[0]) for x in inputMibs ]
 else:
     sys.stderr.write('ERROR: MIB modules names not specified\r\n%s\r\n' % helpMessage)
     sys.exit(-1)
@@ -213,7 +213,7 @@ except error.PySmiError:
 
 else:
     if verboseFlag:
-        sys.stderr.write('%sreated/updated MIBs: %s\r\n' % (dryrunFlag and 'Would be c' or 'C', ', '.join(['%s%s' % (x,x != processed[x].alias and '(%s)' % processed[x].alias or '') for x in sorted(processed) if processed[x] == 'compiled'])))
+        sys.stderr.write('%sreated/updated MIBs: %s\r\n' % (dryrunFlag and 'Would be c' or 'C', ', '.join(['%s%s' % (x,x != processed[x].alias and ' (%s)' % processed[x].alias or '') for x in sorted(processed) if processed[x] == 'compiled'])))
         sys.stderr.write('Up to date MIBs: %s\r\n' % ', '.join(['%s' % x for x in sorted(processed) if processed[x] == 'untouched']))
         sys.stderr.write('Missing source MIBs: %s\r\n' % ', '.join(['%s' % x for x in sorted(processed) if processed[x] == 'missing']))
         sys.stderr.write('Ignored MIBs: %s\r\n' % ', '.join(['%s' % x for x in sorted(processed) if processed[x] == 'unprocessed']))
