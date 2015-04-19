@@ -178,7 +178,7 @@ class PySnmpCodeGen(AbstractCodeGen):
     outStr = ''
     # convertion to SNMPv2
     toDel = []
-    for module in imports.keys():
+    for module in list(imports):
       if module in self.convertImportv2:
         for symbol in imports[module]:
           if symbol in self.convertImportv2[module]:
@@ -206,7 +206,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         outStr += '( %s, ) = mibBuilder.importSymbols("%s")\n' % \
           ( ', '.join([self.transOpers(s) for s in symbols]),
             '", "'.join((module,) + symbols) )
-    return outStr, tuple(sorted(imports.keys()))
+    return outStr, tuple(sorted(imports))
 
   def genExports(self, ):
     exports = list(self._exports)
@@ -691,7 +691,7 @@ class PySnmpCodeGen(AbstractCodeGen):
             classmode = clausetype == 'typeDeclaration'
             self.handlersTable[declr[0]](self, self.prepData(declr[1:], classmode), classmode)
         if self._postponedSyms:
-          raise error.PySmiSemanticError('Unknown parent OIDs for symbols: %s' % ', '.join(self._postponedSyms.keys())) 
+          raise error.PySmiSemanticError('Unknown parent OIDs for symbols: %s' % ', '.join(self._postponedSyms)) 
         for sym in self._symsOrder:
           if sym not in self._out:
             raise error.PySmiCodegenError('No generated code for symbol %s' % sym)
