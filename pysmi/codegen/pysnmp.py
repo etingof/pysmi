@@ -55,7 +55,8 @@ class PySnmpCodeGen(AbstractCodeGen):
     'ASN1': ('Integer', 'OctetString', 'ObjectIdentifier'),
     'ASN1-ENUMERATION': ('NamedValues',),
     'ASN1-REFINEMENT': ('ConstraintsUnion', 'ConstraintsIntersection', 'SingleValueConstraint', 'ValueRangeConstraint', 'ValueSizeConstraint'),
-    'SNMPv2-SMI': ('Bits', # XXX
+    'SNMPv2-SMI': ('iso',
+                   'Bits', # XXX
                    'Integer32', # libsmi bug ??? 
                    'TimeTicks', # bug in some IETF MIB
                    'Counter32', # bug in some IETF MIB (e.g. DSA-MIB)
@@ -684,7 +685,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         self._postponedSyms.clear()
 #        self._unknownDefvalType.clear()
         self._out.clear()
-        out, importedModules = self.genImports(imports)
+        out, importedModules = self.genImports(imports and imports or {})
         for declr in declarations and declarations or []:
           if declr:
             clausetype = declr[0]
