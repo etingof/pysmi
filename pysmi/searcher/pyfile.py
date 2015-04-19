@@ -27,7 +27,7 @@ class PyFileSearcher(AbstractSearcher):
         for format in imp.PY_COMPILED, imp.PY_SOURCE:
             for pySfx, pyMode in self.suffixes[format]:
                 f = pyfile + pySfx
-                if not os.path.exists(f):
+                if not os.path.exists(f) or not os.path.isfile(f):
                     continue
                 if format == imp.PY_COMPILED:
                     try:

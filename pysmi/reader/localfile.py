@@ -28,7 +28,7 @@ class FileReader(AbstractReader):
             for mibfile in self.getMibVariants(mibname):
                 f = os.path.join(path, mibfile)
                 debug.logger & debug.flagReader and debug.logger('trying MIB %s' % f)
-                if os.path.exists(f):
+                if os.path.exists(f) and os.path.isfile(f):
                     try:
                         lastModified = os.stat(f)[8]
                         if lastModified > timestamp:
