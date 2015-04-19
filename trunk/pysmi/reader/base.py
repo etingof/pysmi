@@ -3,10 +3,11 @@ import os
 class AbstractReader(object):
     maxMibSize = 10000000   # MIBs can't be that large
     fuzzyMatching = True      # try different file names while searching for MIB
-    exts = ('',
+    exts = ['',
             os.path.extsep + 'txt',
             os.path.extsep + 'mib',
-            os.path.extsep + 'my')
+            os.path.extsep + 'my']
+    exts.extend([ x.upper() for x in exts if x ])
 
     def setOptions(self, **kwargs):
         self.fuzzyMatching = kwargs.get('fuzzyMatching', self.fuzzyMatching)
