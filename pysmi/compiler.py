@@ -67,7 +67,10 @@ class MibCompiler(object):
                     exc.timestamp = timeStamp
                     exc.message += ' at MIB %s' % mibname
                     debug.logger & debug.flagCompiler and debug.logger('error %s from %s' % (exc, source))
-                    raise exc_class, exc, tb
+                    if hasattr(exc, 'with_traceback'):
+                        raise exc.with_traceback(tb)
+                    else:
+                        raise exc
             else:
                 if not timeStamp:
                     raise error.PySmiSourceNotFoundError('source MIB %s not found' % mibname, mibname=mibname, timestamp=timeStamp)

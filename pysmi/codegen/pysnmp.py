@@ -7,6 +7,9 @@ from pysmi import debug
 if sys.version_info[0] > 2:
     unicode = str
     long = int
+    def dorepr(s): return s
+else:
+    def dorepr(s): return repr(s.encode('utf-8')).decode('utf-8')
 
 # default pysnmp MIB packages
 defaultMibPackages = ('pysnmp.smi.mibs', 'pysnmp_mibs')
@@ -412,10 +415,10 @@ class PySnmpCodeGen(AbstractCodeGen):
 
   def genContactInfo(self, data, classmode=0):
     text = data[0]
-    return '.setContactInfo(' + repr(text.encode('utf-8')).decode('utf-8') + ')'
+    return '.setContactInfo(' + dorepr(text) + ')'
 
   def genDisplayHint(self, data, classmode=0):
-    return self.indent + 'displayHint = ' + repr(data[0].encode('utf-8')).decode('utf-8') + '\n'
+    return self.indent + 'displayHint = ' + dorepr(data[0]) + '\n'
    
   def genDefVal(self, data, classmode=0):
     defval = data[0]
@@ -430,17 +433,17 @@ class PySnmpCodeGen(AbstractCodeGen):
     elif defval[0] == defval[-1] and defval[0] == '(': # bits list
       val = defval
     elif defval[0] == defval[-1] and defval[0] == '"': # quoted strimg
-      val = repr(defval[1:-1].encode('utf-8')).decode('utf-8')
+      val = dorepr(defval[1:-1])
     else: # symbol (oid as defval) or name for enumeration member
       if defval in self._presentedSyms:
         val = defval + '.getName()' 
       else:
-        val = repr(defval.encode('utf-8')).decode('utf-8')
+        val = dorepr(defval)
     return '.clone(' + val + ')'
 
   def genDescription(self, data, classmode=0):
     text = data[0]
-    return '.setDescription(' + repr(text.encode('utf-8')).decode('utf-8') + ')'
+    return '.setDescription(' + dorepr(text) + ')'
 
   def genEnumSpec(self, data, classmode=0):
     items = data[0]
@@ -542,7 +545,7 @@ class PySnmpCodeGen(AbstractCodeGen):
 
   def genOrganization(self, data, classmode=0):
     text = data[0]
-    return '.setOrganization(' + repr(text.encode('utf-8')).decode('utf-8') + ')'
+    return '.setOrganization(' + dorepr(text) + ')'
 
   def genRevisions(self, data, classmode=0):
     times = self.genTime(data[0]) 
@@ -581,7 +584,7 @@ class PySnmpCodeGen(AbstractCodeGen):
 
   def genUnits(self, data, classmode=0):
     text = data[0]
-    return '.setUnits(' + repr(text.encode('utf-8')).decode('utf-8') + ')'
+    return '.setUnits(' + dorepr(text) + ')'
 
   handlersTable = {
     'agentCapabilitiesClause': genAgentCapabilities,
