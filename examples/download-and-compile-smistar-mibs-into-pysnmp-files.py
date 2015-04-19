@@ -46,6 +46,6 @@ mibCompiler.addSources(*[ FtpReader(*x) for x in ftpSources ])
 mibCompiler.addSearchers(StubSearcher(*baseMibs))
 
 # run non-recursive MIB compilation
-processed = mibCompiler.compile(*inputMibs, noDeps=True)
+results = mibCompiler.compile(*inputMibs, noDeps=True)
 
-print('Created MIBs: %s' % ', '.join(processed))
+print('Results: %s' % ', '.join(['%s:%s' % (x, results[x]) for x in results]))

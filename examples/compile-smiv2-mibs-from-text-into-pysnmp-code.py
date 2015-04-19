@@ -40,4 +40,6 @@ mibCompiler.addSources(
 mibCompiler.addSearchers(StubSearcher(*baseMibs))
 
 # run non-recursive MIB compilation
-mibCompiler.compile(*inputMibs, noDeps=True)
+results = mibCompiler.compile(*inputMibs, noDeps=True)
+
+print('Results: %s' % ', '.join(['%s:%s' % (x, results[x]) for x in results]))
