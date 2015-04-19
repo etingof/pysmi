@@ -58,7 +58,7 @@ class MibCompiler(object):
                 debug.logger & debug.flagCompiler and debug.logger('trying source %s' % source)
                 try:
                     thismib, othermibs, data = self._codegen.genCode(
-                        self._parser.parse(
+                        self._parser.__class__().parse(
                             source.getData(timeStamp, mibname)
                         ),
                         genTexts=kwargs.get('genTexts')
