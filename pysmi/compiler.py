@@ -4,9 +4,10 @@ from pysmi import debug
 
 class MibStatus(str):
     def setOptions(self, **kwargs):
+        n = self.__class__(self)
         for k in kwargs:
-            setattr(self, k, kwargs[k])
-        return self
+            setattr(n, k, kwargs[k])
+        return n
 
 statusCompiled = MibStatus('compiled')
 statusUntouched = MibStatus('untouched')
