@@ -2,6 +2,17 @@ import sys
 from pysmi import error
 from pysmi import debug
 
+class MibStatus(str):
+    def setOptions(self, **kwargs):
+        for k in kwargs:
+            setattr(self, k, kwargs[k])
+        return self
+
+statusCompiled = MibStatus('compiled')
+statusUntouched = MibStatus('untouched')
+statusFailed = MibStatus('failed')
+statusUnprocessed = MibStatus('unprocessed')
+statusMissing = MibStatus('missing')
 
 class MibCompiler(object):
     def __init__(self, parser, codegen, writer):
@@ -22,17 +33,23 @@ class MibCompiler(object):
         return self
 
     def compile(self, *mibnames, **kwargs):
-        processed = set()
-        unprocessed = set()
+        processed = {}
+        related = set()
         for mibname in mibnames:
             debug.logger & debug.flagCompiler and debug.logger('checking %s for an update' % mibname)
             timeStamp = 0
-            for compiled in self._compiled:
-                debug.logger & debug.flagCompiler and debug.logger('checking compiled files using %s' % compiled)
-                try:
-                    timeStamp = max(timeStamp, compiled.getTimestamp(mibname, rebuild=kwargs.get('rebuild')))
-                except error.PySmiCompiledFileNotFoundError:
-                    pass
+            try:
+                for compiled in self._compiled:
+                    debug.logger & debug.flagCompiler and debug.logger('checking compiled files using %s' % compiled)
+                    try:
+                        timeStamp = max(timeStamp, compiled.getTimestamp(mibname, rebuild=kwargs.get('rebuild')))
+                    except error.PySmiCompiledFileNotFoundError:
+                        pass
+
+            except error.PySmiCompiledFileTakesPrecedenceError:
+                debug.logger & debug.flagCompiler and debug.logger('always use compiled file for %s' % mibname)
+                processed[mibname] = statusUntouched
+                continue
 
             debug.logger & debug.flagCompiler and debug.logger('done searching compiled versions of %s, %s' % (mibname, timeStamp and 'one or more found' or 'nothing found'))
 
@@ -50,16 +67,22 @@ class MibCompiler(object):
                         alias=mibname != thismib and mibname or '',
                         dryRun=kwargs.get('dryRun')
                     )
-                    processed.add(thismib)
+                    processed[thismib] = statusCompiled.setOptions(alias=mibname)
+                    processed[mibname] = statusCompiled.setOptions(alias=thismib)
                     debug.logger & debug.flagCompiler and debug.logger('%s (%s) compiled by %s%s' % (thismib, mibname, self._writer, othermibs and 'checking dependencies' or ' '))
-                    if not kwargs.get('noDeps'):
-                        unprocessed.update(othermibs)
+                    if kwargs.get('noDeps'):
+                        for x in othermibs:
+                            processed[x] = statusUnprocessed
+                    else:
+                        related.update(othermibs)
                     break
                 except error.PySmiSourceNotModifiedError:
                     debug.logger & debug.flagCompiler and debug.logger('no update required for %s' % mibname)
+                    processed[mibname] = statusUntouched
                     break
                 except error.PySmiSourceNotFoundError:
                     debug.logger & debug.flagCompiler and debug.logger('no %s found at %s' % (mibname, source))
+                    processed[mibname] = statusMissing
                     continue
                 except error.PySmiError:
                     exc_class, exc, tb = sys.exc_info()
@@ -68,17 +91,22 @@ class MibCompiler(object):
                     exc.timestamp = timeStamp
                     exc.message += ' at MIB %s' % mibname
                     debug.logger & debug.flagCompiler and debug.logger('error %s from %s' % (exc, source))
+                    processed[mibname] = statusFailed.setOptions(exception=exc)
+                    if kwargs.get('ignoreErrors'):
+                        break
                     if hasattr(exc, 'with_traceback'):
                         raise exc.with_traceback(tb)
                     else:
                         raise exc
             else:
+                if kwargs.get('ignoreErrors'):
+                    continue
                 if not timeStamp:
                     raise error.PySmiSourceNotFoundError('source MIB %s not found' % mibname, mibname=mibname, timestamp=timeStamp)
 
-        if unprocessed:
-            debug.logger & debug.flagCompiler and debug.logger('compiling related MIBs: %s' % ', '.join(unprocessed))
-            processed.update(self.compile(*unprocessed, **kwargs))
+        if related:
+            debug.logger & debug.flagCompiler and debug.logger('compiling related MIBs: %s' % ', '.join(related))
+            processed.update(self.compile(*related, **kwargs))
 
         return processed
 

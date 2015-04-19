@@ -42,6 +42,7 @@ nodepsFlag = False
 rebuildFlag = False
 dryrunFlag = False
 genMibTextsFlag = False
+ignoreErrorsFlag = False
 
 helpMessage = """\
 Usage: %s [--help]
@@ -56,6 +57,7 @@ Usage: %s [--help]
       [--destination-directory=<directory>]
       [--cache-directory=<directory>]
       [--no-dependencies]
+      [--ignore-errors]
       [--rebuild]
       [--dry-run]
       [--generate-mib-texts]
@@ -74,7 +76,7 @@ try:
         ['help', 'version', 'quiet', 'debug=',
          'mib-source=', 'mib-searcher=', 'mib-stub=', 
          'destination-format=', 'destination-directory=', 'cache-directory=',
-         'no-dependencies', 'rebuild', 'dry-run',
+         'no-dependencies', 'ignore-errors', 'rebuild', 'dry-run',
          'generate-mib-texts', 'disable-fuzzy-source' ]
     )
 except Exception:
@@ -118,6 +120,8 @@ Software documentation and support at http://pysmi.sf.net
         cacheDirectory = opt[1]
     if opt[0] == '--no-dependencies':
         nodepsFlag = True
+    if opt[0] == '--ignore-errors':
+        ignoreErrorsFlag = True
     if opt[0] == '--rebuild':
         rebuildFlag = True
     if opt[0] == '--dry-run':
@@ -153,18 +157,20 @@ Parser grammar cache directory: %s
 Also compile all relevant MIBs: %s
 Rebuild MIBs regardless of age: %s
 Do not create/update MIBs: %s
+Ignore compilation errors: %s
 Generate texts in MIBs: %s
 Try various filenames while searching for MIB module: %s
-""" % (', '.join(mibSources),
-       ', '.join(mibSearchers), 
+""" % (', '.join(sorted(mibSources)),
+       ', '.join(mibSearchers),
        dstDirectory,
-       ', '.join(mibStubs), 
-       ', '.join(inputMibs), 
+       ', '.join(sorted(mibStubs)),
+       ', '.join(sorted(inputMibs)),
        dstFormat,
-       cacheDirectory or 'no',
+       cacheDirectory or 'not used',
        nodepsFlag and 'no' or 'yes',
        rebuildFlag and 'yes' or 'no',
        dryrunFlag and 'yes' or 'no',
+       ignoreErrorsFlag and 'yes' or 'no',
        genMibTextsFlag and 'yes' or 'no',
        doFuzzyMatchingFlag and 'yes' or 'no'))
 
@@ -198,10 +204,15 @@ try:
                                     noDeps=nodepsFlag,
                                     rebuild=rebuildFlag,
                                     dryRun=dryrunFlag,
-                                    genTexts=genMibTextsFlag)
+                                    genTexts=genMibTextsFlag,
+                                    ignoreErrors=ignoreErrorsFlag)
 
     if verboseFlag:
-        sys.stderr.write('%sreated/dependent MIBs: %s\r\n' % (dryrunFlag and 'Would be c' or 'C', ', '.join(processed)))
+        sys.stderr.write('%sreated/updated MIBs: %s\r\n' % (dryrunFlag and 'Would be c' or 'C', ', '.join(['%s' % x for x in sorted(processed) if processed[x] == 'compiled'])))
+        sys.stderr.write('Up to date MIBs: %s\r\n' % ', '.join(['%s' % x for x in sorted(processed) if processed[x] == 'untouched']))
+        sys.stderr.write('Missing source MIBs: %s\r\n' % ', '.join(['%s' % x for x in sorted(processed) if processed[x] == 'missing']))
+        sys.stderr.write('Ignored MIBs: %s\r\n' % ', '.join(['%s' % x for x in sorted(processed) if processed[x] == 'unprocessed']))
+        sys.stderr.write('Failed MIBs: %s\r\n' % ', '.join(['%s (%s)' % (x,processed[x].exception) for x in sorted(processed) if processed[x] == 'failed']))
 
 except error.PySmiError:
     sys.stderr.write('ERROR: %s\r\n' % sys.exc_info()[1])

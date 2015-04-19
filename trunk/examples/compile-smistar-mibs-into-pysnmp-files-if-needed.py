@@ -50,6 +50,6 @@ mibCompiler.addSearchers(*[ PyPackageSearcher(x) for x in defaultMibPackages ])
 mibCompiler.addSearchers(StubSearcher(*baseMibs))
 
 # run [possibly recursive] MIB compilation
-processed = mibCompiler.compile(*inputMibs)  #, rebuild=True, genTexts=True)
+results = mibCompiler.compile(*inputMibs)  #, rebuild=True, genTexts=True)
 
-print('Created/updated MIBs: %s' % ', '.join(processed))
+print('Results: %s' % ', '.join(['%s:%s' % (x, results[x]) for x in results]))
