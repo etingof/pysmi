@@ -8,6 +8,7 @@ from pysmi import error
 from pysmi import debug
 
 class SmiV2Parser(AbstractParser):
+  defaultLexer = SmiV2Lexer
   def __init__(self, startSym='mibFile', tempdir=''):
     if tempdir:
         tempdir = os.path.join(tempdir, startSym)
@@ -17,7 +18,7 @@ class SmiV2Parser(AbstractParser):
           if sys.exc_info()[1].errno != 17:
             raise error.PySmiError('Failed to create cache directory %s: %s' % (tempdir, sys.exc_info()[1]))
 
-    self.lexer = SmiV2Lexer(tempdir=tempdir)
+    self.lexer = self.defaultLexer(tempdir=tempdir)
 
     # tokens are required for parser
     self.tokens = self.lexer.tokens

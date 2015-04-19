@@ -2,12 +2,11 @@ import inspect
 import os
 import sys
 import ply.yacc as yacc
-from pysmi.lexer.smiv1 import SmiV1Lexer 
-from pysmi.parser.smiv2 import SmiV2Parser
+from pysmi.parser.smiv1 import SmiV1Parser
 from pysmi import error
 from pysmi import debug
 
-class SmiHackedParser(SmiV2Parser):
+class SmiV1CompatParser(SmiV1Parser):
 
   #
   # Some changes in grammar to handle common mistakes in MIBs 
