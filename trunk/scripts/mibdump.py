@@ -150,6 +150,7 @@ MIBs excluded from compilation: %s
 MIBs to compile: %s
 Destination format: %s
 Parser grammar cache directory: %s
+Also compile all relevant MIBs: %s
 Rebuild MIBs regardless of age: %s
 Do not create/update MIBs: %s
 Generate texts in MIBs: %s
@@ -161,6 +162,7 @@ Try various filenames while searching for MIB module: %s
        ', '.join(inputMibs), 
        dstFormat,
        cacheDirectory or 'no',
+       nodepsFlag and 'no' or 'yes',
        rebuildFlag and 'yes' or 'no',
        dryrunFlag and 'yes' or 'no',
        genMibTextsFlag and 'yes' or 'no',
