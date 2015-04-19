@@ -7,7 +7,7 @@ from pysmi import debug
 if sys.version_info[0] > 2:
     unicode = str
     long = int
-    def dorepr(s): return s
+    def dorepr(s): return repr(s)
 else:
     def dorepr(s): return repr(s.encode('utf-8')).decode('utf-8')
 
