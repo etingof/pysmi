@@ -23,6 +23,7 @@ class MibCompiler(object):
 
     def compile(self, *mibnames, **kwargs):
         processed = set()
+        unprocessed = set()
         for mibname in mibnames:
             debug.logger & debug.flagCompiler and debug.logger('checking %s for an update' % mibname)
             timeStamp = 0
@@ -50,9 +51,9 @@ class MibCompiler(object):
                         dryRun=kwargs.get('dryRun')
                     )
                     processed.add(thismib)
+                    debug.logger & debug.flagCompiler and debug.logger('%s (%s) compiled by %s%s' % (thismib, mibname, self._writer, othermibs and 'checking dependencies' or ' '))
                     if not kwargs.get('noDeps'):
-                        debug.logger & debug.flagCompiler and debug.logger('%s (%s) compiled by %s%s' % (thismib, mibname, self._writer, othermibs and 'checking dependencies' or ' '))
-                        processed.update(self.compile(*othermibs, **kwargs))
+                        unprocessed.update(othermibs)
                     break
                 except error.PySmiSourceNotModifiedError:
                     debug.logger & debug.flagCompiler and debug.logger('no update required for %s' % mibname)
@@ -74,6 +75,10 @@ class MibCompiler(object):
             else:
                 if not timeStamp:
                     raise error.PySmiSourceNotFoundError('source MIB %s not found' % mibname, mibname=mibname, timestamp=timeStamp)
+
+        if unprocessed:
+            debug.logger & debug.flagCompiler and debug.logger('compiling related MIBs: %s' % ', '.join(unprocessed))
+            processed.update(self.compile(*unprocessed, **kwargs))
 
         return processed
 
