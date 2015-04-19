@@ -1,9 +1,8 @@
 * add more tests on edge cases
 * generate reverse OID -> MIB index
-* handle wrongly ordered MIB symbols
 * handle SMIv1 MAX clause in range constraint
+* support MAX clause mapping it into type-specific value
 * handle SMIv1 MIB Table INDEX clause
-* handle MIB symbol reference prior to its definition
 * report MIB line number on parse errors
 * possibly add additional AST processing phase to resolve imported symbols
   in a more consistent way
@@ -11,9 +10,6 @@
 * symlink generated MIB files to canonical MIB module name to make it available
   for importing even if original filename is wrong
 * are uppercase-identifiers valid in enumeration?
-* codegen does repr() on unicode strings, it should either not doing that or
-  encode such strings into utf-8 first
 * make codegen surviving IMPORT-less MIBs
 * support SMIv1 and common broken SMI constructs in form of SMI parser
   that inherits from base SMIv2 parser
-* support MAX clause mapping it into type-specific value
