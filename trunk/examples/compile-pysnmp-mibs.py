@@ -1,3 +1,10 @@
+#
+# Get specific ASN.1 MIBs from configured local directories,
+# compile them into pysnmp form and save Python modules as
+# plain-text files in a local directory.
+#
+# Assume source MIBs are SMIv2-compliant and syntaxically valid.
+# 
 from pysmi.reader.localfile import FileReader
 from pysmi.searcher.pyfile import PyFileSearcher
 from pysmi.searcher.pypackage import PyPackageSearcher
@@ -10,7 +17,7 @@ from pysmi import debug
 
 #debug.setLogger(debug.Debug('all'))
 
-inputMibs = [ 'IF-MIB' ]
+inputMibs = [ 'IF-MIB', 'IP-MIB' ]
 srcDirectories = [ '/usr/share/snmp/mibs' ]
 dstDirectory = '.pysnmp-mibs'
 
@@ -32,6 +39,6 @@ mibCompiler.addSearchers(*[ PyPackageSearcher(x) for x in defaultMibPackages ])
 mibCompiler.addSearchers(StubSearcher(*baseMibs))
 
 # run [possibly recursive] MIB compilation
-processed = mibCompiler.compile(*inputMibs, genTexts=False)
+processed = mibCompiler.compile(*inputMibs)
 
 print('Created/updated MIBs: %s' % ', '.join(processed))
