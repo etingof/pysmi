@@ -70,7 +70,7 @@ class MibCompiler(object):
                     )
                     processed[thismib] = statusCompiled.setOptions(alias=mibname)
                     processed[mibname] = statusCompiled.setOptions(alias=thismib)
-                    debug.logger & debug.flagCompiler and debug.logger('%s (%s) compiled by %s%s' % (thismib, mibname, self._writer, othermibs and 'checking dependencies' or ' '))
+                    debug.logger & debug.flagCompiler and debug.logger('%s (%s) compiled by %s immediate dependencies: %s' % (thismib, mibname, self._writer, ', '.join(othermibs) or '<none>'))
                     if kwargs.get('noDeps'):
                         for x in othermibs:
                             processed[x] = statusUnprocessed
