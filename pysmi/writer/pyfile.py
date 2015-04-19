@@ -66,6 +66,4 @@ if __name__ == '__main__':
 
     f = PyFileWriter('/tmp/x')
 
-    f.getTimestamp('X')
-
     f.putData('X', 'print(123)')
