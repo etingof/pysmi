@@ -6,7 +6,6 @@
 * report MIB line number on parse errors
 * possibly add additional AST processing phase to resolve imported symbols
   in a more consistent way
-* add comments (when, where, who) into generated code
 * symlink generated MIB files to canonical MIB module name to make it available
   for importing even if original filename is wrong
 * are uppercase-identifiers valid in enumeration?
