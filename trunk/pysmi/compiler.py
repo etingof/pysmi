@@ -1,4 +1,8 @@
 import sys
+import os
+import time
+from pysmi import __name__ as packageName
+from pysmi import __version__ as packageVersion
 from pysmi import error
 from pysmi import debug
 
@@ -56,12 +60,18 @@ class MibCompiler(object):
 
             for source in self._sources:
                 debug.logger & debug.flagCompiler and debug.logger('trying source %s' % source)
+                comments = [
+                    'Produced by %s-%s from %s at %s' % (packageName, packageVersion, mibname, time.asctime()),
+                    'On host %s platform %s version %s by user %s' % (os.uname()[1], os.uname()[0], os.uname()[2], os.getlogin()),
+                    'Using Python version %s' % sys.version.split('\n')[0]
+                ]
                 try:
                     thismib, othermibs, data = self._codegen.genCode(
                         self._parser.__class__().parse(
                             source.getData(timeStamp, mibname)
                         ),
-                        genTexts=kwargs.get('genTexts')
+                        genTexts=kwargs.get('genTexts'),
+                        comments=comments
                     )
                     self._writer.putData(
                         thismib, data,

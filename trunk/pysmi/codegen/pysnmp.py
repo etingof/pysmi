@@ -669,10 +669,10 @@ class PySnmpCodeGen(AbstractCodeGen):
     #'a': lambda x: genXXX(x, 'CONSTRAINT')
   }
 
-  def genCode(self, ast, genTexts=False):
-    out =  ''
+  def genCode(self, ast, **kwargs):
+    out = ''
     importedModules = ()
-    self.genRules['text'] = genTexts
+    self.genRules['text'] = kwargs.get('genTexts', False)
     if ast and ast[0] == 'mibFile' and ast[1]: # mibfile is not empty
       modules = ast[1]
       for moduleid in range(len(modules)):
@@ -698,6 +698,9 @@ class PySnmpCodeGen(AbstractCodeGen):
             raise error.PySmiCodegenError('No generated code for symbol %s' % sym)
           out += self._out[sym] 
         out += self.genExports()
+    if 'comments' in kwargs:
+      out = ''.join(['# %s\n' % x for x in kwargs['comments']]) + '#\n' + out
+      out = '#\n# PySNMP MIB module %s (http://pysnmp.sf.net)\n' % self.moduleName[0] + out
     debug.logger & debug.flagCodegen and debug.logger('canonical MIB name %s, imported MIB(s) %s, Python code size %s bytes' % (self.moduleName[0], ','.join(importedModules) or '<none>', len(out)))
     return self.moduleName[0], importedModules, out
 
