@@ -78,7 +78,7 @@ END
     def testObjectTypeMaxAccess(self):
         self.assertEqual(
             self.ctx['testObjectType'].getMaxAccess(),
-            'accessible-for-notify',
+            'accessiblefornotify',
             'bad MAX-ACCESS'
         )
 

@@ -74,7 +74,7 @@ END
     def testSmiV1Class(self):
         self.assertEqual(
             self.ctx['testSmiV1'].__class__.__name__,
-            'SmiV1',
+            'NotificationGroup',
             'bad SYNTAX class'
         )
 
