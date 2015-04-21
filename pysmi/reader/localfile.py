@@ -6,10 +6,13 @@ from pysmi import debug
 from pysmi import error
 
 class FileReader(AbstractReader):
+    useIndexFile = True       # optional .index file mapping MIB to file name
+    indexFile = '.index'
     def __init__(self, path, recursive=True, ignoreErrors=True):
         self._path = os.path.normpath(path)
         self._recursive = recursive
         self._ignoreErrors = ignoreErrors
+        self._indexLoaded = False
 
     def __str__(self): return '%s{"%s"}' % (self.__class__.__name__, self._path)
 
@@ -30,11 +33,38 @@ class FileReader(AbstractReader):
                 dirs.extend(self.getSubdirs(d, recursive))
         return dirs
 
+    def loadIndex(self, indexFile):
+        mibIndex = {}
+        if os.path.exists(indexFile):
+            try:
+                mibIndex = dict(
+                    [x.split()[:2] for x in open(indexFile).readlines()]
+                )
+                debug.logger & debug.flagReader and debug.logger('built MIB index map from %s file, %s entries' % (indexFile, len(mibIndex)))
+            except IOError:
+                pass
+
+        return mibIndex
+
+    def getMibVariants(self, mibname):
+        if self.useIndexFile:
+            if not self._indexLoaded:
+                self._mibIndex = self.loadIndex(
+                    os.path.join(self._path, self.indexFile)
+                )
+                self._indexLoaded = True
+
+            if mibname in self._mibIndex:
+                debug.logger & debug.flagReader and debug.logger('found %s in MIB index: %s' % (mibname, self._mibIndex[mibname]))
+                return [ self._mibIndex[mibname] ]
+
+        return super(FileReader, self).getMibVariants(mibname)
+
     def getData(self, timestamp, mibname):
         debug.logger & debug.flagReader and debug.logger('%slooking for MIB %s that is newer than %s' % (self._recursive and 'recursively ' or '', mibname, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(timestamp))))
         for path in self.getSubdirs(self._path, self._recursive,
                                     self._ignoreErrors):
-            for mibfile in self.getMibVariants(mibname, path=path):
+            for mibfile in self.getMibVariants(mibname):
                 f = os.path.join(path, mibfile)
                 debug.logger & debug.flagReader and debug.logger('trying MIB %s' % f)
                 if os.path.exists(f) and os.path.isfile(f):
