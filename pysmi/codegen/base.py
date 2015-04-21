@@ -1,4 +1,8 @@
 
 class AbstractCodeGen(object):
-    def genCode(self):
+    def genCode(self, ast, **kwargs):
         raise NotImplementedError()
+    
+    def genIndex(self, mibsMap, **kwargs):
+        raise NotImplementedError()
+

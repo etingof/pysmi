@@ -705,10 +705,10 @@ class PySnmpCodeGen(AbstractCodeGen):
       debug.logger & debug.flagCodegen and debug.logger('canonical MIB name %s (%s), imported MIB(s) %s, Python code size %s bytes' % (self.moduleName[0], moduleOid, ','.join(importedModules) or '<none>', len(out)))
     return self.moduleName[0], moduleIdentityOid, importedModules, out
 
-  def genIndex(self, mibs, **kwargs):
+  def genIndex(self, mibsMap, **kwargs):
       out = '\nfrom pysnmp.proto.rfc1902 import ObjectName\n\noidToMibMap = {\n'
       count = 0
-      for name, oid in mibs:
+      for name, oid in mibsMap:
           out += 'ObjectName("%s"): "%s",\n' % (oid, name)
           count += 1
       out += '}\n'
