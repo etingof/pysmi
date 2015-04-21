@@ -20,6 +20,7 @@ statusUnprocessed = MibStatus('unprocessed')
 statusMissing = MibStatus('missing')
 
 class MibCompiler(object):
+    indexFile = 'index'
     def __init__(self, parser, codegen, writer):
         self._parser = parser
         self._codegen = codegen
@@ -66,7 +67,7 @@ class MibCompiler(object):
                     'Using Python version %s' % sys.version.split('\n')[0]
                 ]
                 try:
-                    thismib, othermibs, data = self._codegen.genCode(
+                    thismib, mibOid, othermibs, data = self._codegen.genCode(
                         self._parser.__class__().parse(
                             source.getData(timeStamp, mibname)
                         ),
@@ -78,8 +79,12 @@ class MibCompiler(object):
                         alias=mibname != thismib and mibname or '',
                         dryRun=kwargs.get('dryRun')
                     )
-                    processed[thismib] = statusCompiled.setOptions(alias=mibname)
-                    processed[mibname] = statusCompiled.setOptions(alias=thismib)
+                    processed[thismib] = statusCompiled.setOptions(
+                        alias=mibname, oid=mibOid
+                    )
+                    processed[mibname] = statusCompiled.setOptions(
+                        alias=thismib
+                    )
                     debug.logger & debug.flagCompiler and debug.logger('%s (%s) compiled by %s immediate dependencies: %s' % (thismib, mibname, self._writer, ', '.join(othermibs) or '<none>'))
                     if kwargs.get('noDeps'):
                         for x in othermibs:
@@ -120,6 +125,32 @@ class MibCompiler(object):
             processed.update(self.compile(*related, **kwargs))
 
         return processed
+
+    def buildIndex(self, processedMibs, **kwargs):
+        comments = [
+            'Produced by %s-%s at %s' % (packageName, packageVersion, time.asctime()),
+            'On host %s platform %s version %s by user %s' % (os.uname()[1], os.uname()[0], os.uname()[2], os.getlogin()),
+            'Using Python version %s' % sys.version.split('\n')[0]
+        ]
+        try:
+            self._writer.putData(
+                self.indexFile,
+                self._codegen.genIndex(
+                    dict([(x, x.oid) for x in processedMibs if hasattr(x, 'oid')]),
+                    comments=comments
+                ),
+                dryRun=kwargs.get('dryRun')
+            )
+        except error.PySmiError:
+            exc_class, exc, tb = sys.exc_info()
+            exc.message += ' at MIB index %s' % self.indexFile
+            debug.logger & debug.flagCompiler and debug.logger('error %s when building %s' % (exc, self.indexFile))
+            if kwargs.get('ignoreErrors'):
+                return
+            if hasattr(exc, 'with_traceback'):
+                raise exc.with_traceback(tb)
+            else:
+                raise exc
 
 if __name__ == '__main__':
     from pysmi.reader.localfile import FileReader
