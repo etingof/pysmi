@@ -2,12 +2,13 @@ import inspect
 import os
 import sys
 import ply.yacc as yacc
+from pysmi.lexer.smiv1compat import SmiV1CompatLexer
 from pysmi.parser.smiv1 import SmiV1Parser
 from pysmi import error
 from pysmi import debug
 
 class SmiV1CompatParser(SmiV1Parser):
-
+  defaultLexer = SmiV1CompatLexer
   #
   # Some changes in grammar to handle common mistakes in MIBs 
   #

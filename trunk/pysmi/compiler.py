@@ -67,7 +67,7 @@ class MibCompiler(object):
                     'Using Python version %s' % sys.version.split('\n')[0]
                 ]
                 try:
-                    thismib, mibOid, othermibs, data = self._codegen.genCode(
+                    thismib, othermibs, data = self._codegen.genCode(
                         self._parser.__class__().parse(
                             source.getData(timeStamp, mibname)
                         ),
@@ -80,7 +80,7 @@ class MibCompiler(object):
                         dryRun=kwargs.get('dryRun')
                     )
                     processed[thismib] = statusCompiled.setOptions(
-                        alias=mibname, oid=mibOid
+                        alias=mibname, #oid=mibOid
                     )
                     processed[mibname] = statusCompiled.setOptions(
                         alias=thismib
