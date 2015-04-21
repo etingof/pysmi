@@ -34,7 +34,7 @@ class FileReader(AbstractReader):
         debug.logger & debug.flagReader and debug.logger('%slooking for MIB %s that is newer than %s' % (self._recursive and 'recursively ' or '', mibname, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(timestamp))))
         for path in self.getSubdirs(self._path, self._recursive,
                                     self._ignoreErrors):
-            for mibfile in self.getMibVariants(mibname):
+            for mibfile in self.getMibVariants(mibname, path=path):
                 f = os.path.join(path, mibfile)
                 debug.logger & debug.flagReader and debug.logger('trying MIB %s' % f)
                 if os.path.exists(f) and os.path.isfile(f):
