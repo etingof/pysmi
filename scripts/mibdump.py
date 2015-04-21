@@ -43,6 +43,7 @@ rebuildFlag = False
 dryrunFlag = False
 genMibTextsFlag = False
 ignoreErrorsFlag = False
+buildIndexFlag = False
 
 helpMessage = """\
 Usage: %s [--help]
@@ -58,6 +59,7 @@ Usage: %s [--help]
       [--cache-directory=<directory>]
       [--no-dependencies]
       [--ignore-errors]
+      [--build-index]
       [--rebuild]
       [--dry-run]
       [--generate-mib-texts]
@@ -76,7 +78,8 @@ try:
         ['help', 'version', 'quiet', 'debug=',
          'mib-source=', 'mib-searcher=', 'mib-stub=', 
          'destination-format=', 'destination-directory=', 'cache-directory=',
-         'no-dependencies', 'ignore-errors', 'rebuild', 'dry-run',
+         'no-dependencies', 'ignore-errors', 'build-index', 
+         'rebuild', 'dry-run',
          'generate-mib-texts', 'disable-fuzzy-source' ]
     )
 except Exception:
@@ -122,6 +125,8 @@ Software documentation and support at http://pysmi.sf.net
         nodepsFlag = True
     if opt[0] == '--ignore-errors':
         ignoreErrorsFlag = True
+    if opt[0] == '--build-index':
+        buildIndexFlag = True
     if opt[0] == '--rebuild':
         rebuildFlag = True
     if opt[0] == '--dry-run':
@@ -158,6 +163,7 @@ Also compile all relevant MIBs: %s
 Rebuild MIBs regardless of age: %s
 Do not create/update MIBs: %s
 Ignore compilation errors: %s
+Generate OID->MIB index: %s
 Generate texts in MIBs: %s
 Try various filenames while searching for MIB module: %s
 """ % (', '.join(sorted(mibSources)),
@@ -171,6 +177,7 @@ Try various filenames while searching for MIB module: %s
        rebuildFlag and 'yes' or 'no',
        dryrunFlag and 'yes' or 'no',
        ignoreErrorsFlag and 'yes' or 'no',
+       buildIndexFlag and 'yes' or 'no',
        genMibTextsFlag and 'yes' or 'no',
        doFuzzyMatchingFlag and 'yes' or 'no'))
 
@@ -206,6 +213,13 @@ try:
                                     dryRun=dryrunFlag,
                                     genTexts=genMibTextsFlag,
                                     ignoreErrors=ignoreErrorsFlag)
+
+    if buildIndexFlag:
+        mibCompiler.buildIndex(
+            processed,
+            dryRun=dryrunFlag,
+            ignoreErrors=ignoreErrorsFlag
+        )
 
 except error.PySmiError:
     sys.stderr.write('ERROR: %s\r\n' % sys.exc_info()[1])

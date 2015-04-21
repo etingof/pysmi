@@ -40,7 +40,7 @@ class FileReader(AbstractReader):
                 mibIndex = dict(
                     [x.split()[:2] for x in open(indexFile).readlines()]
                 )
-                debug.logger & debug.flagReader and debug.logger('built MIB index map from %s file, %s entries' % (indexFile, len(mibIndex)))
+                debug.logger & debug.flagReader and debug.logger('loaded MIB index map from %s file, %s entries' % (indexFile, len(mibIndex)))
             except IOError:
                 pass
 

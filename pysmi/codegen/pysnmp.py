@@ -672,6 +672,7 @@ class PySnmpCodeGen(AbstractCodeGen):
   def genCode(self, ast, **kwargs):
     out = ''
     importedModules = ()
+    moduleIdentityOid = None # XXX need to get this from AST
     self.genRules['text'] = kwargs.get('genTexts', False)
     if ast and ast[0] == 'mibFile' and ast[1]: # mibfile is not empty
       modules = ast[1]
@@ -698,9 +699,21 @@ class PySnmpCodeGen(AbstractCodeGen):
             raise error.PySmiCodegenError('No generated code for symbol %s' % sym)
           out += self._out[sym] 
         out += self.genExports()
-    if 'comments' in kwargs:
-      out = ''.join(['# %s\n' % x for x in kwargs['comments']]) + '#\n' + out
-      out = '#\n# PySNMP MIB module %s (http://pysnmp.sf.net)\n' % self.moduleName[0] + out
-    debug.logger & debug.flagCodegen and debug.logger('canonical MIB name %s, imported MIB(s) %s, Python code size %s bytes' % (self.moduleName[0], ','.join(importedModules) or '<none>', len(out)))
-    return self.moduleName[0], importedModules, out
+      if 'comments' in kwargs:
+        out = ''.join(['# %s\n' % x for x in kwargs['comments']]) + '#\n' + out
+        out = '#\n# PySNMP MIB module %s (http://pysnmp.sf.net)\n' % self.moduleName[0] + out
+      debug.logger & debug.flagCodegen and debug.logger('canonical MIB name %s (%s), imported MIB(s) %s, Python code size %s bytes' % (self.moduleName[0], moduleOid, ','.join(importedModules) or '<none>', len(out)))
+    return self.moduleName[0], moduleIdentityOid, importedModules, out
 
+  def genIndex(self, mibs, **kwargs):
+      out = '\nfrom pysnmp.proto.rfc1902 import ObjectName\n\noidToMibMap = {\n'
+      count = 0
+      for name, oid in mibs:
+          out += 'ObjectName("%s"): "%s",\n' % (oid, name)
+          count += 1
+      out += '}\n'
+      if 'comments' in kwargs:
+        out = ''.join(['# %s\n' % x for x in kwargs['comments']]) + '#\n' + out
+        out = '#\n# PySNMP MIB indices (http://pysnmp.sf.net)\n' + out
+      debug.logger & debug.flagCodegen and debug.logger('OID->MIB index built, %s entries, %s bytes' % (count, len(out)))
+      return out
