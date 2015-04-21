@@ -107,6 +107,7 @@ class PySnmpCodeGen(AbstractCodeGen):
     'INTEGER': 'Integer32', # XXX
     'INTEGER32': 'Integer32',
     'IPADDRESS': 'IpAddress',
+    'NETWORKADDRESS': 'IpAddress',
     'OBJECT IDENTIFIER': 'ObjectIdentifier',
     'OCTET STRING': 'OctetString',
     'OPAQUE': 'Opaque',
@@ -116,9 +117,12 @@ class PySnmpCodeGen(AbstractCodeGen):
     'Gauge': 'Gauge32',
     'NetworkAddress': 'IpAddress',
   }
+ 
+  smiv1IdxTypes = [ 'INTEGER', 'OCTET STRING', 'IPADDRESS', 'NETWORKADDRESS' ]
 
   ifTextStr = 'if mibBuilder.loadTexts: '
   indent = ' '*4
+  fakeidx = 1000 # starting index for fake symbols
 
   def __init__(self):
     self._rows = set()
@@ -359,6 +363,7 @@ class PySnmpCodeGen(AbstractCodeGen):
     label = self.genLabel(name)
     name = self.transOpers(name)
     oidStr, parentOid = oid
+    indexStr, fakeStrlist, fakeSyms = index and index or ('', '', [])
     subtype = syntax[0] == 'Bits' and 'Bits()' + syntax[1] or \
                                       syntax[1] # Bits hack #1
     classtype = self.typeClasses.get(syntax[0], syntax[0])
@@ -368,7 +373,7 @@ class PySnmpCodeGen(AbstractCodeGen):
              (defval and defval or '') + ')' + label
     outStr += (units and units) or ''
     outStr += (maxaccess and maxaccess) or ''
-    outStr += (index and index) or ''
+    outStr += (indexStr and indexStr) or ''
     outStr += '\n'
     if augmention:
       augmention = self.transOpers(augmention)
@@ -378,6 +383,10 @@ class PySnmpCodeGen(AbstractCodeGen):
     if self.genRules['text'] and description:
       outStr += self.ifTextStr + name + description + '\n'
     self.regSym(name, outStr, parentOid)
+    if fakeSyms: # fake symbols for INDEX to support SMIv1
+      for i in range(len(fakeSyms)):
+        fakeOutStr = fakeStrlist[i] % oidStr
+        self.regSym(fakeSyms[i], fakeOutStr, name)
     return outStr
 
   def genTrapType(self, data, classmode=0):
@@ -506,10 +515,26 @@ class PySnmpCodeGen(AbstractCodeGen):
     return outStr
 
   def genIndex(self, data, classmode=0):
+    def genFakeSyms(fakeidx, idxType):
+      fakeSymName = 'pysmiFakeCol%s' % fakeidx
+      objType = self.typeClasses.get(idxType, idxType)
+      return (fakeSymName + ' = MibTableColumn(%s + (' + str(fakeidx) + \
+             ', ), ' + objType + '())\n', # stub for parentOid
+             fakeSymName)
+   
     indexes = data[0]
-    indexes = ['(' + str(ind[0]) + ', "' + self.moduleName[0] + '", "' + ind[1] + '")' \
-               for ind in indexes ]
-    return '.setIndexNames(' + ', '.join(indexes)+ ')'
+    idxStrlist, fakeSyms, fakeStrlist = [], [], [] 
+    for idx in indexes:
+      idxName = idx[1]
+      if idxName in self.smiv1IdxTypes: # SMIv1 support
+        idxType = idxName
+        fakeSymStr, idxName = genFakeSyms(self.fakeidx, idxType)
+        fakeStrlist.append(fakeSymStr)
+        fakeSyms.append(idxName)
+        self.fakeidx += 1
+      idxStrlist.append('(' + str(idx[0]) + ', "' + self.moduleName[0] + \
+                        '", "' + idxName + '")')
+    return '.setIndexNames(' + ', '.join(idxStrlist)+ ')', fakeStrlist, fakeSyms
 
   def genIntegerSubType(self, data, classmode=0):
     singleRange = len(data[0]) == 1 or False
@@ -703,7 +728,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         out = ''.join(['# %s\n' % x for x in kwargs['comments']]) + '#\n' + out
         out = '#\n# PySNMP MIB module %s (http://pysnmp.sf.net)\n' % self.moduleName[0] + out
       debug.logger & debug.flagCodegen and debug.logger('canonical MIB name %s (%s), imported MIB(s) %s, Python code size %s bytes' % (self.moduleName[0], moduleOid, ','.join(importedModules) or '<none>', len(out)))
-    return self.moduleName[0], moduleIdentityOid, importedModules, out
+    return self.moduleName[0], importedModules, out
 
   def genIndex(self, mibsMap, **kwargs):
       out = '\nfrom pysnmp.proto.rfc1902 import ObjectName\n\noidToMibMap = {\n'

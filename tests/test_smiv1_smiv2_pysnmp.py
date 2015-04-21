@@ -7,7 +7,7 @@ if sys.version_info[0:2] < (2, 7) or \
         import unittest
 else:
     import unittest
-from pysmi.parser.smiv2 import SmiV2Parser
+from pysmi.parser.smiv1compat import SmiV1CompatParser
 from pysmi.codegen.pysnmp import PySnmpCodeGen
 from pysnmp.smi.builder import MibBuilder
 
@@ -41,7 +41,7 @@ END
  """
 
     def setUp(self):
-        self.thisMib, self.otherMibs, pycode = PySnmpCodeGen().genCode(SmiV2Parser().parse(self.__class__.__doc__), genTexts=True)
+        self.thisMib, self.otherMibs, pycode = PySnmpCodeGen().genCode(SmiV1CompatParser().parse(self.__class__.__doc__), genTexts=True)
         codeobj = compile(pycode, 'test', 'exec')
 
         mibBuilder = MibBuilder()
