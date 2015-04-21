@@ -2,10 +2,6 @@
 * generate reverse OID -> MIB index
 * handle SMIv1 MAX clause in range constraint
 * support MAX clause mapping it into type-specific value
-* handle SMIv1 MIB Table INDEX clause
 * possibly add additional AST processing phase to resolve imported symbols
   in a more consistent way
-* are uppercase-identifiers valid in enumeration?
-* make codegen surviving IMPORT-less MIBs
-* support SMIv1 and common broken SMI constructs in form of SMI parser
-  that inherits from base SMIv2 parser
+* support more common broken SMI constructs 
