@@ -67,7 +67,7 @@ class MibCompiler(object):
                     'Using Python version %s' % sys.version.split('\n')[0]
                 ]
                 try:
-                    thismib, othermibs, data = self._codegen.genCode(
+                    mibInfo, data = self._codegen.genCode(
                         self._parser.__class__().parse(
                             source.getData(timeStamp, mibname)
                         ),
@@ -75,22 +75,22 @@ class MibCompiler(object):
                         comments=comments
                     )
                     self._writer.putData(
-                        thismib, data,
-                        alias=mibname != thismib and mibname or '',
+                        mibInfo.thisMib, data,
+                        alias=mibname != mibInfo.thisMib and mibname or '',
                         dryRun=kwargs.get('dryRun')
                     )
-                    processed[thismib] = statusCompiled.setOptions(
-                        alias=mibname, #oid=mibOid
+                    processed[mibInfo.thisMib] = statusCompiled.setOptions(
+                        alias=mibname, oid=mibInfo.oid
                     )
                     processed[mibname] = statusCompiled.setOptions(
-                        alias=thismib
+                        alias=mibInfo.thisMib
                     )
-                    debug.logger & debug.flagCompiler and debug.logger('%s (%s) compiled by %s immediate dependencies: %s' % (thismib, mibname, self._writer, ', '.join(othermibs) or '<none>'))
+                    debug.logger & debug.flagCompiler and debug.logger('%s (%s) compiled by %s immediate dependencies: %s' % (mibInfo.thisMib, mibname, self._writer, ', '.join(mibInfo.otherMibs) or '<none>'))
                     if kwargs.get('noDeps'):
-                        for x in othermibs:
+                        for x in mibInfo.otherMibs:
                             processed[x] = statusUnprocessed
                     else:
-                        related.update(othermibs)
+                        related.update(mibInfo.otherMibs)
                     break
                 except error.PySmiSourceNotModifiedError:
                     debug.logger & debug.flagCompiler and debug.logger('no update required for %s' % mibname)

@@ -13,6 +13,8 @@ import test_valuedeclaration_smiv2_pysnmp
 
 testModules = [ x[1] for x in globals().items() if x[0][:5] == 'test_' ]
 
+import sys
+
 if sys.version_info[0:2] < (2, 7) or \
    sys.version_info[0:2] in ( (3, 0), (3, 1) ):
     try:
