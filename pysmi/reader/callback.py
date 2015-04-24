@@ -1,5 +1,6 @@
 import time
 from pysmi.reader.base import AbstractReader
+from pysmi import error
 from pysmi import debug
 
 class CallbackReader(AbstractReader):
@@ -12,7 +13,10 @@ class CallbackReader(AbstractReader):
 
     def getData(self, timestamp, mibname):
         debug.logger & debug.flagReader and debug.logger('calling user callback %s for MIB %s that is newer than %s' % (self._cbFun, mibname, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(timestamp))))
-        return self._cbFun(timestamp, mibname, self._cbCtx)
+        res = self._cbFun(timestamp, mibname, self._cbCtx)
+        if res:
+            return res
+        raise error.PySmiSourceNotFoundError(mibnanme=mibname, reader=self)
 
 if __name__ == '__main__':
     debug.setLogger(debug.Debug('all'))
