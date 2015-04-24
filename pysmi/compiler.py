@@ -1,6 +1,10 @@
 import sys
 import os
 import time
+try:
+    from pwd import getpwuid
+except ImportError:
+    getpwuid = lambda x: ['<unknown>']
 from pysmi import __name__ as packageName
 from pysmi import __version__ as packageVersion
 from pysmi import error
@@ -63,7 +67,7 @@ class MibCompiler(object):
                 debug.logger & debug.flagCompiler and debug.logger('trying source %s' % source)
                 comments = [
                     'Produced by %s-%s from %s at %s' % (packageName, packageVersion, mibname, time.asctime()),
-                    'On host %s platform %s version %s by user %s' % (os.uname()[1], os.uname()[0], os.uname()[2], os.getlogin()),
+                    'On host %s platform %s version %s by user %s' % (os.uname()[1], os.uname()[0], os.uname()[2], getpwuid(os.getuid())[0]),
                     'Using Python version %s' % sys.version.split('\n')[0]
                 ]
                 try:
@@ -129,7 +133,7 @@ class MibCompiler(object):
     def buildIndex(self, processedMibs, **kwargs):
         comments = [
             'Produced by %s-%s at %s' % (packageName, packageVersion, time.asctime()),
-            'On host %s platform %s version %s by user %s' % (os.uname()[1], os.uname()[0], os.uname()[2], os.getlogin()),
+            'On host %s platform %s version %s by user %s' % (os.uname()[1], os.uname()[0], os.uname()[2], getpwuid(os.getuid())[0]),
             'Using Python version %s' % sys.version.split('\n')[0]
         ]
         try:
