@@ -7,3 +7,5 @@
 * support more common broken SMI constructs 
 * separate possibly concatenated source MIB modules into dedicated files on 
   code generation
+* DEFVAL and AUGMENTS should not depend on the order of symbols in MIB
+* make a collection of fixed MIBs (e.g. Huawei has lots of bad/broken MIBs)
