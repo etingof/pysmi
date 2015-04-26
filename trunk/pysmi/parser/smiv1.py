@@ -78,3 +78,19 @@ class SmiV1Parser(SmiV2Parser):
     n = len(p)
     indextype = n == 3 and p[1] + ' ' + p[2] or p[1]
     p[0] = indextype
+
+  # NETWORKADDRESS added for SEQUENCE syntax
+  def p_sequenceApplicationSyntax(self, p):
+    """sequenceApplicationSyntax : IPADDRESS anySubType
+                                 | NETWORKADDRESS anySubType
+                                 | COUNTER32 anySubType
+                                 | GAUGE32 anySubType
+                                 | UNSIGNED32 anySubType
+                                 | TIMETICKS anySubType
+                                 | OPAQUE
+                                 | COUNTER64 anySubType"""
+    n = len(p)
+    if n == 2:
+      p[0] = p[1]
+    elif n == 3:
+      p[0] = p[1] # XXX not supporting subtypes here
