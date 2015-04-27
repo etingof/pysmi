@@ -41,20 +41,21 @@ class PyFileWriter(AbstractWriter):
 
         if alias:
             pyalias = os.path.join(self._path, alias) + self.suffixes[imp.PY_SOURCE][0][0]
+            comment = """#
+# This is a stub pysnmp (http://pysnmp.sf.net) MIB file for %s
+# Real contents of %s resides in %s
+# The sole purpose of this stub file is to keep track of 
+# %s's modification time 
+# compared to MIB source file (%s)
+#""" % (mibname, mibname, pyfile, pyfile, alias)
             try:
-                os.unlink(pyalias)
-                os.link(pyfile, pyalias)
-            except (AttributeError, OSError):  # not all platforms support it
-                try:
-                    f = open(pyalias, 'wb')
-                    f.write(data.encode('utf-8'))
-                    f.close()
-                except (IOError, UnicodeEncodeError):
-                    raise error.PySmiWriterError('failure writing file %s: %s' % (pyalias, sys.exc_info()[1]), file=pyalias, alias=true, writer=self)
-                else:
-                    debug.logger & debug.flagWriter and debug.logger('a copy of file %s created as %s' % (pyfile, pyalias))
+                f = open(pyalias, 'wb')
+                f.write(comment.encode('utf-8'))
+                f.close()
+            except (IOError, UnicodeEncodeError):
+                raise error.PySmiWriterError('failure writing file %s: %s' % (pyalias, sys.exc_info()[1]), file=pyalias, alias=true, writer=self)
             else:
-                debug.logger & debug.flagWriter and debug.logger('file %s linked to %s' % (pyalias, pyfile))
+                debug.logger & debug.flagWriter and debug.logger('a stub for file %s created as %s' % (pyfile, pyalias))
         
         for filename in mibname, alias:
             if not filename:
