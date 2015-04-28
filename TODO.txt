@@ -9,3 +9,5 @@
   code generation
 * DEFVAL and AUGMENTS should not depend on the order of symbols in MIB
 * make a collection of fixed MIBs (e.g. Huawei has lots of bad/broken MIBs)
+* some MIBs use hex as DEFVAL for types other than OCTET STRING (additional AST processing phase will help)
+* check imports and try to add necessary ones if missed (like OBJECT-TYPE, MODULE-IDENTITY, etc)
