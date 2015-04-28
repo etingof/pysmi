@@ -13,10 +13,11 @@ class SmiV1CompatParser(SmiV1Parser):
   # Some changes in grammar to handle common mistakes in MIBs 
   #
 
+  # common typos handled 
   def p_sequenceItems(self, p):
     """sequenceItems : sequenceItems ',' sequenceItem
                      | sequenceItem
-                     | sequenceItems ','""" # common typo
+                     | sequenceItems ','""" 
     # libsmi: TODO: might this list be emtpy?
     n = len(p)
     if n == 4:
@@ -26,23 +27,30 @@ class SmiV1CompatParser(SmiV1Parser):
     elif n == 3: # typo case
       p[0] = p[1]
 
+  # common typos handled (mix of commas and spaces)
   def p_enumItems(self, p):
     """enumItems : enumItems ',' enumItem
                  | enumItem
-                 | enumItems ','""" # common typo
+                 | enumItems enumItem
+                 | enumItems ','"""
     n = len(p)
     if n == 4:
       p[0] = p[1] + [p[3]]
     elif n == 2:
       p[0] = [p[1]]
     elif n == 3: # typo case
-      p[0] = p[1]
+      if p[2] == ',':
+        p[0] = p[1]
+      else:
+        p[0] = p[1] + [p[2]]
 
+  # common mistake - using UPPERCASE_IDENTIFIER
   def p_enumItem(self, p):
     """enumItem : LOWERCASE_IDENTIFIER '(' enumNumber ')'
-                | UPPERCASE_IDENTIFIER '(' enumNumber ')'""" # common mistake 
+                | UPPERCASE_IDENTIFIER '(' enumNumber ')'"""
     p[0] = (p[1], p[3])
 
+  # common mistake - LOWERCASE_IDENTIFIER in symbol's name
   def p_notificationTypeClause(self, p):
     """notificationTypeClause : fuzzy_lowercase_identifier NOTIFICATION_TYPE NotificationObjectsPart STATUS Status DESCRIPTION Text ReferPart COLON_COLON_EQUAL '{' NotificationName '}'""" # some MIBs have uppercase and/or lowercase id
     p[0] = ('notificationTypeClause', p[1], # id
