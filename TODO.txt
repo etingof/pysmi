@@ -10,4 +10,6 @@
 * DEFVAL and AUGMENTS should not depend on the order of symbols in MIB
 * make a collection of fixed MIBs (e.g. Huawei has lots of bad/broken MIBs)
 * some MIBs use hex as DEFVAL for types other than OCTET STRING (additional AST processing phase will help)
+* handle the case when the symbol and the enumaration value (which can be in DEFVAL) have the same name - llc2 in NETLINK-SPECIFIC-MIB (additional AST processing phase will help)
 * check imports and try to add necessary ones if missed (like OBJECT-TYPE, MODULE-IDENTITY, etc)
+* generate TextualConvention first or add additional AST processing phase
