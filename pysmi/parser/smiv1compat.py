@@ -13,7 +13,20 @@ class SmiV1CompatParser(SmiV1Parser):
   # Some changes in grammar to handle common mistakes in MIBs 
   #
 
-  # common typos handled 
+  # comma at the end of import list
+  def p_importIdentifiers(self, p):
+    """importIdentifiers : importIdentifiers ',' importIdentifier
+                         | importIdentifier
+                         | importIdentifiers ','"""
+    n = len(p)
+    if n == 4:
+      p[0] = p[1] + [p[3]]
+    elif n == 2:
+      p[0] = [p[1]]
+    elif n == 3: # excessive comma case 
+      p[0] = p[1]
+
+  # comma at the end of sequence list
   def p_sequenceItems(self, p):
     """sequenceItems : sequenceItems ',' sequenceItem
                      | sequenceItem
@@ -24,7 +37,7 @@ class SmiV1CompatParser(SmiV1Parser):
       p[0] = p[1] + [p[3]]
     elif n == 2:
       p[0] = [p[1]]
-    elif n == 3: # typo case
+    elif n == 3: # excessive comma case 
       p[0] = p[1]
 
   # common typos handled (mix of commas and spaces)
