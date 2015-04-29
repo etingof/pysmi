@@ -79,10 +79,17 @@ class MibCompiler(object):
                         comments=comments
                     )
                     self._writer.putData(
-                        mibInfo.thisMib, data,
-                        alias=mibname != mibInfo.thisMib and mibname or '',
-                        dryRun=kwargs.get('dryRun')
+                        mibInfo.thisMib, data, dryRun=kwargs.get('dryRun')
                     )
+                    if mibname != mibInfo.thisMib:
+                        comment = """#
+# This is a stub pysnmp (http://pysnmp.sf.net) MIB file for %s
+# The sole purpose of this stub file is to keep track of
+# %s's modification time compared to MIB source file
+#""" % (mibInfo.thisMib, mibname)
+                        self._writer.putData(
+                            mibname, comment, dryRun=kwargs.get('dryRun')
+                        )
                     processed[mibInfo.thisMib] = statusCompiled.setOptions(
                         alias=mibname, oid=mibInfo.oid
                     )
