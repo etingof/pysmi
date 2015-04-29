@@ -19,7 +19,7 @@ class PyFileWriter(AbstractWriter):
 
     def __str__(self): return '%s{"%s"}' % (self.__class__.__name__, self._path)
 
-    def putData(self, mibname, data, alias='', dryRun=False):
+    def putData(self, mibname, data, dryRun=False):
         if dryRun:
             debug.logger & debug.flagWriter and debug.logger('dry run mode')
             return
@@ -38,40 +38,19 @@ class PyFileWriter(AbstractWriter):
             raise error.PySmiWriterError('failure writing file %s: %s' % (pyfile, sys.exc_info()[1]), file=pyfile, writer=self)
 
         debug.logger & debug.flagWriter and debug.logger('created file %s' % pyfile)
-
-        if alias:
-            pyalias = os.path.join(self._path, alias) + self.suffixes[imp.PY_SOURCE][0][0]
-            comment = """#
-# This is a stub pysnmp (http://pysnmp.sf.net) MIB file for %s
-# Real contents of %s resides in %s
-# The sole purpose of this stub file is to keep track of 
-# %s's modification time 
-# compared to MIB source file (%s)
-#""" % (mibname, mibname, pyfile, pyfile, alias)
-            try:
-                f = open(pyalias, 'wb')
-                f.write(comment.encode('utf-8'))
-                f.close()
-            except (IOError, UnicodeEncodeError):
-                raise error.PySmiWriterError('failure writing file %s: %s' % (pyalias, sys.exc_info()[1]), file=pyalias, alias=true, writer=self)
-            else:
-                debug.logger & debug.flagWriter and debug.logger('a stub for file %s created as %s' % (pyfile, pyalias))
         
-        for filename in mibname, alias:
-            if not filename:
-                continue
+        try:
+            py_compile.compile(pyfile, doraise=True)
+        except (SyntaxError, py_compile.PyCompileError):
+            pass  # XXX
+        except:
             try:
-                py_compile.compile(pyfile, doraise=True)
-            except (SyntaxError, py_compile.PyCompileError):
-                pass  # XXX
+                os.unlink(pyfile)
             except:
-                try:
-                    os.unlink(pyfile)
-                except:
-                    pass
-                raise error.PySmiWriterError('failure compiling %s: %s' % (filename, sys.exc_info()[1]), file=filename, writer=self)
+                pass
+            raise error.PySmiWriterError('failure compiling %s: %s' % (filename, sys.exc_info()[1]), file=filename, writer=self)
 
-            debug.logger & debug.flagWriter and debug.logger('compiled %s' % filename)
+        debug.logger & debug.flagWriter and debug.logger('compiled %s' % filename)
 
 if __name__ == '__main__':
     from pysmi import debug

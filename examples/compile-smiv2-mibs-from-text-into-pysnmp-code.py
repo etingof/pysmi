@@ -28,7 +28,7 @@ mibCompiler = MibCompiler(
     SmiV2Parser(),
     PySnmpCodeGen(), 
     # out own callback function stores results in its own way
-    CallbackWriter(lambda m,d,a,c: sys.stdout.write(d))
+    CallbackWriter(lambda m,d,c: sys.stdout.write(d))
 )
 
 # our own callback function serves as a MIB source here
