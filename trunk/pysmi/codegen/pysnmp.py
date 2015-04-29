@@ -569,6 +569,7 @@ class PySnmpCodeGen(AbstractCodeGen):
     subtype = syntax[0] == 'Bits' and 'Bits()' + syntax[1] or \
                                       syntax[1] # Bits hack #1
     classtype = self.typeClasses.get(syntax[0], syntax[0])
+    classtype = self.transOpers(classtype)
     classtype = syntax[0] == 'Bits' and 'MibScalar' or classtype # Bits hack #2
     classtype = name in self._cols and 'MibTableColumn' or classtype
     outStr = name + ' = ' + classtype  + '(' + oidStr  + ', ' + subtype + \
@@ -720,6 +721,7 @@ class PySnmpCodeGen(AbstractCodeGen):
     def genFakeSyms(fakeidx, idxType):
       fakeSymName = 'pysmiFakeCol%s' % fakeidx
       objType = self.typeClasses.get(idxType, idxType)
+      objType = self.transOpers(objType)
       return (fakeSymName + ' = MibTableColumn(%s + (' + str(fakeidx) + \
              ', ), ' + objType + '())\n', # stub for parentOid
              fakeSymName)
@@ -832,6 +834,7 @@ class PySnmpCodeGen(AbstractCodeGen):
   def genSimpleSyntax(self, data, classmode=0):
     objType = data[0]
     objType = self.typeClasses.get(objType, objType)
+    objType = self.transOpers(objType)
     subtype = len(data) == 2 and data[1] or ''
     if classmode:
       subtype = '%s' in subtype and subtype % objType or subtype # XXX hack?
