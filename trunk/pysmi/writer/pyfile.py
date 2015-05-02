@@ -19,7 +19,7 @@ class PyFileWriter(AbstractWriter):
 
     def __str__(self): return '%s{"%s"}' % (self.__class__.__name__, self._path)
 
-    def putData(self, mibname, data, dryRun=False):
+    def putData(self, mibname, data, comments=[], dryRun=False):
         if dryRun:
             debug.logger & debug.flagWriter and debug.logger('dry run mode')
             return
@@ -28,6 +28,9 @@ class PyFileWriter(AbstractWriter):
                 os.makedirs(self._path)
             except OSError:
                 raise error.PySmiWriterError('failure creating destination directory %s: %s' % (self._path, sys.exc_info()[1]), writer=self)
+
+        if comments:
+            data = '#\n' + ''.join(['# %s\n' % x for x in comments]) + '#\n' + data
 
         pyfile = os.path.join(self._path, mibname) + self.suffixes[imp.PY_SOURCE][0][0]
         try:
