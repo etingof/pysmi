@@ -25,7 +25,7 @@ from pysmi import debug
 
 inputMibs = [ 'IF-MIB', 'IP-MIB' ]
 httpSources = [ 
-    ('www.opensource.apple.com', 80, '/source/net_snmp/net_snmp-7/net-snmp/mibs/<mib>?txt')
+    ('mibs.snmplabs.com', 80, '/asn1/<mib>')
 ]
 ftpSources = [
     ('ftp.cisco.com', '/pub/mibs/v1/<mib>')
