@@ -149,7 +149,8 @@ if not mibStubs:
     mibStubs = baseMibs
 
 if not mibSources:
-    mibSources.append('file:///usr/share/snmp/mibs')
+    mibSources = [ 'file:///usr/share/snmp/mibs',
+                   'http://mibs.snmplabs.com/asn1/<mib>' ]
 
 if verboseFlag:
     sys.stderr.write("""Source MIB repositories: %s

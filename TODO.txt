@@ -13,3 +13,4 @@
 * handle the case when the symbol and the enumaration value (which can be in DEFVAL) have the same name - llc2 in NETLINK-SPECIFIC-MIB (additional AST processing phase will help)
 * check imports and try to add necessary ones if missed (like OBJECT-TYPE, MODULE-IDENTITY, etc)
 * generate TextualConvention first or add additional AST processing phase
+* implement a cache of available files at abstract reader path
