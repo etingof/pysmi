@@ -22,12 +22,3 @@ class CallbackWriter(AbstractWriter):
             raise error.PySmiWriterError('user callback %s failure writing %s: %s' % (self._cbFun, mibname, sys.exc_info()[1]), writer=self)
 
         debug.logger & debug.flagWriter and debug.logger('user callback for %s succeeded' % mibname)
-
-if __name__ == '__main__':
-    from pysmi import debug
-
-    debug.setLogger(debug.Debug('all'))
-
-    f = CallbackWriter(lambda m,d,a,c: sys.stdout.write(d))
-
-    f.putData('X', 'print(123)\n')

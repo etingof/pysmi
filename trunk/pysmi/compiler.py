@@ -162,30 +162,3 @@ class MibCompiler(object):
                 raise exc.with_traceback(tb)
             else:
                 raise exc
-
-if __name__ == '__main__':
-    from pysmi.reader.localfile import FileReader
-    from pysmi.searcher.pyfile import PyFileSearcher
-    from pysmi.searcher.pypackage import PyPackageSearcher
-    from pysmi.searcher.stub import StubSearcher
-    from pysmi.writer.pyfile import PyFileWriter
-    from pysmi.parser.smiv2 import SmiV2Parser
-    from pysmi import debug
-
-    debug.setLogger(debug.Debug('all'))
-
-    s = MibCompiler(SmiV2Parser(), PyFileWriter('/tmp/x'))
-
-    s.addSources(FileReader('/usr/share/snmp/mibs'))
-
-    s.addSearchers(
-        StubSearcher('SNMPv2-SMI',
-                     'SNMPv2-TC',
-                     'SNMPv2-CONF',
-                     'SNMPv2-MIB'),
-        PyPackageSearcher('pysnmp.smi.mibs'),
-        PyPackageSearcher('pysnmp_mibs'),
-        PyFileSearcher('/tmp/x')
-    )
-
-    s.compile('IF-MIB')

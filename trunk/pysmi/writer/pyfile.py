@@ -51,12 +51,3 @@ class PyFileWriter(AbstractWriter):
             raise error.PySmiWriterError('failure compiling %s: %s' % (filename, sys.exc_info()[1]), file=filename, writer=self)
 
         debug.logger & debug.flagWriter and debug.logger('compiled %s' % filename)
-
-if __name__ == '__main__':
-    from pysmi import debug
-
-    debug.setLogger(debug.Debug('all'))
-
-    f = PyFileWriter('/tmp/x')
-
-    f.putData('X', 'print(123)')

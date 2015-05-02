@@ -58,9 +58,3 @@ class HttpReader(AbstractReader):
                     raise error.PySmiSourceNotModifiedError('source MIB %s is older than needed' % location, reader=self)
 
         raise error.PySmiSourceNotFoundError('source MIB %s not found' % mibname, reader=self)
-
-if __name__ == '__main__':
-    debug.setLogger(debug.Debug('all'))
-    h = HttpReader('www.opensource.apple.com', 80, '/source/net_snmp/net_snmp-7/net-snmp/mibs/<mib>?txt')
-    print(h.getData(10000,  'SNMPv2-SMI'))
-    print(h.getData(10000,  'SNMPv2-MIB'))

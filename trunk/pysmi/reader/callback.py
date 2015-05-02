@@ -17,14 +17,3 @@ class CallbackReader(AbstractReader):
         if res:
             return res
         raise error.PySmiSourceNotFoundError(mibnanme=mibname, reader=self)
-
-if __name__ == '__main__':
-    debug.setLogger(debug.Debug('all'))
-
-    def usercbfun(timestamp, mibname, cbCtx):
-        return 'MIB %s text' % mibname
-
-    f = CallbackReader(usercbfun)
-
-    print(f.getData(10000,  'SNMPv2-SMI'))
-    print(f.getData(10000,  'SNMPv2-SMI2'))
