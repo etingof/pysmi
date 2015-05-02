@@ -81,10 +81,3 @@ class FileReader(AbstractReader):
                     raise error.PySmiSourceNotModifiedError('source MIB %s is older than needed' % f, reader=self)
 
         raise error.PySmiSourceNotFoundError('source MIB %s not found' % mibname, reader=self)
-
-if __name__ == '__main__':
-    debug.setLogger(debug.Debug('all'))
-
-    f = FileReader('/usr/share/snmp/mibs')
-    print(f.getData(10000,  'SNMPv2-SMI'))
-    print(f.getData(10000,  'SNMPv2-SMI2'))

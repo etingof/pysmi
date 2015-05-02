@@ -78,10 +78,3 @@ class FtpReader(AbstractReader):
         conn.close()
 
         raise error.PySmiSourceNotFoundError('source MIB %s not found' % mibname, reader=self)
-
-if __name__ == '__main__':
-    debug.setLogger(debug.Debug('all'))
-
-    h = FtpReader('ftp.cisco.com', '/pub/mibs/v1/<mib>')
-    print(h.getData(10000,  'RFC1213-MIB'))
-    print(h.getData(10000,  'SNMPv2-MIB'))

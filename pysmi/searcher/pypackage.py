@@ -76,15 +76,3 @@ class PyPackageSearcher(AbstractSearcher):
                     return pyTime
 
         raise error.PySmiCompiledFileNotFoundError('no file %s found' % mibname, searcher=self)
-
-if __name__ == '__main__':
-    from pysmi import debug
-
-    debug.setLogger(debug.Debug('all'))
-
-    f = PyPackageSearcher('pysnmp.smi.mibs')
-    f.getTimestamp('SNMPv2-SMI')
-
-    f = PyPackageSearcher('pysnmp_mibs')
-    f.getTimestamp('SNMP-REPEATER-MIB')
-

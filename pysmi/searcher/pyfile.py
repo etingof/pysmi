@@ -53,12 +53,3 @@ class PyFileSearcher(AbstractSearcher):
 
 
         raise error.PySmiCompiledFileNotFoundError('no compiled file %s found' % mibname, searcher=self)
-
-if __name__ == '__main__':
-    from pysmi import debug
-
-    debug.setLogger(debug.Debug('all'))
-
-    f = PyFileSearcher('/tmp/x')
-
-    f.getTimestamp('X')

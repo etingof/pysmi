@@ -15,13 +15,3 @@ class StubSearcher(AbstractSearcher):
             raise error.PySmiCompiledFileTakesPrecedenceError('compiled file %s is among %s' % (mibname, ', '.join(self._mibnames)), searcher=self)
 
         raise error.PySmiCompiledFileNotFoundError('no compiled file %s found among %s' % (mibname, ', '.join(self._mibnames)), searcher=self)
-
-if __name__ == '__main__':
-    from pysmi import debug
-
-    debug.setLogger(debug.Debug('all'))
-
-    f = StubSearcher('X')
-
-    print(f.getTimestamp('X'))
-    print(f.getTimestamp('Y'))
