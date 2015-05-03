@@ -17,6 +17,7 @@ from pysmi.reader.ftpclient import FtpReader
 from pysmi.searcher.pyfile import PyFileSearcher
 from pysmi.searcher.pypackage import PyPackageSearcher
 from pysmi.searcher.stub import StubSearcher
+from pysmi.borrower.pyfile import PyFileBorrower
 from pysmi.writer.pyfile import PyFileWriter
 from pysmi.parser.smiv1compat import SmiV1CompatParser
 from pysmi.codegen.pysnmp import PySnmpCodeGen, defaultMibPackages, baseMibs
@@ -30,6 +31,7 @@ mibSources = []
 doFuzzyMatchingFlag = True
 mibSearchers = []
 mibStubs = []
+mibBorrowers = []
 dstFormat = 'pysnmp'
 dstDirectory = os.path.join(os.path.expanduser("~"), '.pysnmp', 'mibs')
 dstDirectory = os.path.expanduser("~")
@@ -54,6 +56,7 @@ Usage: %s [--help]
       [--disable-fuzzy-source]
       [--mib-searcher=<path|package>]
       [--mib-stub=<mibname>]
+      [--mib-borrower=<path>]
       [--destination-format=<format>]
       [--destination-directory=<directory>]
       [--cache-directory=<directory>]
@@ -76,7 +79,7 @@ Where:
 try:
     opts, inputMibs = getopt.getopt(sys.argv[1:], 'hv',
         ['help', 'version', 'quiet', 'debug=',
-         'mib-source=', 'mib-searcher=', 'mib-stub=', 
+         'mib-source=', 'mib-searcher=', 'mib-stub=', 'mib-borrower=',
          'destination-format=', 'destination-directory=', 'cache-directory=',
          'no-dependencies', 'ignore-errors', 'build-index', 
          'rebuild', 'dry-run',
@@ -115,6 +118,8 @@ Software documentation and support at http://pysmi.sf.net
         mibSearchers.append(opt[1])
     if opt[0] == '--mib-stub':
         mibStubs.append(opt[1])
+    if opt[0] == '--mib-borrower':
+        mibBorrowers.append(opt[1])
     if opt[0] == '--destination-format':
         dstFormat = opt[1]
     if opt[0] == '--destination-directory':
@@ -152,8 +157,13 @@ if not mibSources:
     mibSources = [ 'file:///usr/share/snmp/mibs',
                    'http://mibs.snmplabs.com/asn1/<mib>' ]
 
+if not mibBorrowers:
+    mibBorrowers = [ ('http://mibs.snmplabs.com/pysnmp/notexts/<mib>', False),
+                     ('http://mibs.snmplabs.com/pysnmp/fulltexts/<mib>', True) ]
+
 if verboseFlag:
     sys.stderr.write("""Source MIB repositories: %s
+Borrow missing/failed MIBs from: %s
 Existing/compiled MIB locations: %s
 Compiled MIBs destination directory: %s
 MIBs excluded from compilation: %s
@@ -168,6 +178,7 @@ Generate OID->MIB index: %s
 Generate texts in MIBs: %s
 Try various filenames while searching for MIB module: %s
 """ % (', '.join(sorted(mibSources)),
+       ', '.join(sorted([x[0] for x in mibBorrowers])),
        ', '.join(mibSearchers),
        dstDirectory,
        ', '.join(sorted(mibStubs)),
@@ -208,6 +219,18 @@ try:
 
     mibCompiler.addSearchers(StubSearcher(*mibStubs))
 
+    for mibBorrower, genTexts in mibBorrowers:
+        mibBorrower = urlparse.urlparse(mibBorrower)
+        if not mibBorrower.scheme or mibBorrower.scheme == 'file':
+            mibCompiler.addBorrowers(PyFileBorrower(FileReader(mibBorrower.path).setOptions(originalMatching=False, lowcaseMatching=False)).setOptions(genTexts=genTexts))
+        elif mibBorrower.scheme in ('http', 'https'):
+            mibCompiler.addBorrowers(PyFileBorrower(HttpReader(mibBorrower.hostname, mibBorrower.port or 80, mibBorrower.path, ssl=mibBorrower.scheme == 'https').setOptions(originalMatching=False, lowcaseMatching=False)).setOptions(genTexts=genTexts))
+        elif mibBorrower.scheme in ('ftp', 'sftp'):
+            mibCompiler.addBorrowers(PyFileBorrower(FtpReader(mibBorrower.hostname, mibBorrower.path, ssl=mibBorrower.scheme == 'sftp', port=mibBorrower.port or 21, user=mibBorrower.username or 'anonymous', password=mibBorrower.password or 'anonymous@').setOptions(originalMatching=False, lowcaseMatching=False)).setOptions(genTexts=genTexts))
+        else:
+            sys.stderr.write('ERROR: unsupported URL scheme %s\r\n%s\r\n' % (opt[1], helpMessage))
+            sys.exit(-1)
+
     processed = mibCompiler.compile(*inputMibs,
                                     noDeps=nodepsFlag,
                                     rebuild=rebuildFlag,
@@ -229,6 +252,7 @@ except error.PySmiError:
 else:
     if verboseFlag:
         sys.stderr.write('%sreated/updated MIBs: %s\r\n' % (dryrunFlag and 'Would be c' or 'C', ', '.join(['%s%s' % (x,x != processed[x].alias and ' (%s)' % processed[x].alias or '') for x in sorted(processed) if processed[x] == 'compiled'])))
+        sys.stderr.write('Pre-compiled MIBs %sborrowed: %s\r\n' % (dryrunFlag and 'would be ' or '', ', '.join(['%s%s' % (x,x != processed[x].alias and ' (%s)' % processed[x].alias or '') for x in sorted(processed) if processed[x] == 'borrowed'])))
         sys.stderr.write('Up to date MIBs: %s\r\n' % ', '.join(['%s' % x for x in sorted(processed) if processed[x] == 'untouched']))
         sys.stderr.write('Missing source MIBs: %s\r\n' % ', '.join(['%s' % x for x in sorted(processed) if processed[x] == 'missing']))
         sys.stderr.write('Ignored MIBs: %s\r\n' % ', '.join(['%s' % x for x in sorted(processed) if processed[x] == 'unprocessed']))

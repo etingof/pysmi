@@ -12,6 +12,7 @@ flagGrammar  = 0x0010
 flagCodegen  = 0x0020
 flagWriter   = 0x0040
 flagCompiler = 0x0080
+flagBorrower = 0x0100
 flagAll      = 0xffff
 
 flagMap = {
@@ -23,6 +24,7 @@ flagMap = {
     'codegen': flagCodegen,
     'writer': flagWriter,
     'compiler': flagCompiler,
+    'borrower': flagBorrower,
     'all': flagAll
 }
 

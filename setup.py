@@ -79,6 +79,7 @@ params.update( {
                   'pysmi.lexer',
                   'pysmi.parser',
                   'pysmi.codegen',
+                  'pysmi.borrower',
                   'pysmi.writer' ],
     'scripts': [ os.path.join('scripts','mibdump.py') ]
 } )

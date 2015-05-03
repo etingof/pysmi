@@ -1,6 +1,7 @@
 import sys
 from time import strptime, strftime
-from pysmi.codegen.base import AbstractCodeGen, MibInfo
+from pysmi.mibinfo import MibInfo
+from pysmi.codegen.base import AbstractCodeGen
 from pysmi import error
 from pysmi import debug
 
@@ -932,7 +933,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         out = ''.join(['# %s\n' % x for x in kwargs['comments']]) + '#\n' + out
         out = '#\n# PySNMP MIB module %s (http://pysnmp.sf.net)\n' % self.moduleName[0] + out
       debug.logger & debug.flagCodegen and debug.logger('canonical MIB name %s (%s), imported MIB(s) %s, Python code size %s bytes' % (self.moduleName[0], moduleOid, ','.join(importedModules) or '<none>', len(out)))
-    return MibInfo(oid=None, thisMib=self.moduleName[0],
+    return MibInfo(oid=None, alias=self.moduleName[0],
                    otherMibs=importedModules), out
 
   def genIndex(self, mibsMap, **kwargs):
