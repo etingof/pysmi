@@ -806,13 +806,16 @@ class PySnmpCodeGen(AbstractCodeGen):
       lenTimeStr = len(t)
       if lenTimeStr == 11:
         t = '19' + t
-      elif lenTimeStr != 13:
-        raise error.PySmiSemanticError("Invalid date %s" % t)
+      # XXX raise in strict mode
+      #elif lenTimeStr != 13:
+      #  raise error.PySmiSemanticError("Invalid date %s" % t)
       try:
         times.append(strftime('%Y-%m-%d %H:%M', strptime(t, '%Y%m%d%H%MZ')))
       except ValueError:
-        raise error.PySmiSemanticError("Invalid date %s: %s" % (t, sys.exc_info()[1]))
-
+        # XXX raise in strict mode
+        #raise error.PySmiSemanticError("Invalid date %s: %s" % (t, sys.exc_info()[1]))
+        t = '197001010000Z' # dummy date for dates with typos
+        times.append(strftime('%Y-%m-%d %H:%M', strptime(t, '%Y%m%d%H%MZ')))
     return times
 
   def genOrganization(self, data, classmode=0):
