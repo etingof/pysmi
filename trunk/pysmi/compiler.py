@@ -120,6 +120,12 @@ class MibCompiler(object):
                     debug.logger & debug.flagCompiler and debug.logger('no %s found at %s' % (mibname, source))
                     processed[mibname] = statusMissing
                     continue
+                except error.PySmiLexerError:
+                    if kwargs.get('ignoreErrors'):
+                        debug.logger & debug.flagCompiler and debug.logger('ignoring lexer/parser error for %s from %s: %s' % (mibname, source, sys.exc_info()[1]))
+                        processed[mibname] = statusFailed
+                        continue
+                    raise
                 except error.PySmiError:
                     exc_class, exc, tb = sys.exc_info()
                     exc.source = source
