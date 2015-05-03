@@ -22,6 +22,7 @@ statusUntouched = MibStatus('untouched')
 statusFailed = MibStatus('failed')
 statusUnprocessed = MibStatus('unprocessed')
 statusMissing = MibStatus('missing')
+statusBorrowed = MibStatus('borrowed')
 
 class MibCompiler(object):
     indexFile = 'index'
@@ -30,16 +31,22 @@ class MibCompiler(object):
         self._codegen = codegen
         self._writer = writer
         self._sources = []
-        self._compiled = []
+        self._searchers = []
+        self._borrowers = []
 
     def addSources(self, *sources):
         self._sources.extend(sources)
         debug.logger & debug.flagCompiler and debug.logger('current MIB source(s): %s' % ', '.join([str(x) for x in self._sources]))
         return self
 
-    def addSearchers(self, *compiled):
-        self._compiled.extend(compiled)
-        debug.logger & debug.flagCompiler and debug.logger('current compiled MIBs location(s): %s' % ', '.join([str(x) for x in self._compiled]))
+    def addSearchers(self, *searchers):
+        self._searchers.extend(searchers)
+        debug.logger & debug.flagCompiler and debug.logger('current compiled MIBs location(s): %s' % ', '.join([str(x) for x in self._searchers]))
+        return self
+
+    def addBorrowers(self, *borrowers):
+        self._borrowers.extend(borrowers)
+        debug.logger & debug.flagCompiler and debug.logger('current MIB borrower(s): %s' % ', '.join([str(x) for x in self._borrowers]))
         return self
 
     def compile(self, *mibnames, **kwargs):
@@ -49,10 +56,10 @@ class MibCompiler(object):
             debug.logger & debug.flagCompiler and debug.logger('checking %s for an update' % mibname)
             timeStamp = 0
             try:
-                for compiled in self._compiled:
-                    debug.logger & debug.flagCompiler and debug.logger('checking compiled files using %s' % compiled)
+                for searcher in self._searchers:
+                    debug.logger & debug.flagCompiler and debug.logger('checking compiled files using %s' % searcher)
                     try:
-                        timeStamp = max(timeStamp, compiled.getTimestamp(mibname, rebuild=kwargs.get('rebuild')))
+                        timeStamp = max(timeStamp, searcher.getTimestamp(mibname, rebuild=kwargs.get('rebuild')))
                     except error.PySmiCompiledFileNotFoundError:
                         pass
 
@@ -71,34 +78,34 @@ class MibCompiler(object):
                     'Using Python version %s' % sys.version.split('\n')[0]
                 ]
                 try:
-                    mibInfo, data = self._codegen.genCode(
-                        self._parser.__class__().parse(
-                            source.getData(timeStamp, mibname)
-                        ),
+                    fileInfo, fileData = source.getData(timeStamp, mibname)
+                    mibInfo, mibData = self._codegen.genCode(
+                        self._parser.__class__().parse(fileData), # XXX
                         comments=comments,
                         genTexts=kwargs.get('genTexts'),
                     )
                     self._writer.putData(
-                        mibInfo.thisMib, data, dryRun=kwargs.get('dryRun')
+                        mibInfo.alias, mibData, dryRun=kwargs.get('dryRun')
                     )
-                    if mibname != mibInfo.thisMib:
+                    processed[mibInfo.alias] = statusCompiled.setOptions(
+                        alias=mibname, mibfile=fileInfo.mibfile, oid=mibInfo.oid
+                    )
+                    if fileInfo.alias != mibInfo.alias:
                         comments = [
-'This is a stub pysnmp (http://pysnmp.sf.net) MIB file for %s' % mibInfo.thisMib,
+'This is a stub pysnmp (http://pysnmp.sf.net) MIB file for %s' % mibInfo.alias,
 'The sole purpose of this stub file is to keep track of',
-'%s\'s modification time compared to MIB source file' % mibname
+'%s\'s modification time compared to MIB source' % fileInfo.alias,
+'file %s' % fileInfo.mibfile
                         ]
                         self._writer.putData(
-                            mibname, '',
+                            fileInfo.alias, '',
                             comments=comments,
                             dryRun=kwargs.get('dryRun')
                         )
-                    processed[mibInfo.thisMib] = statusCompiled.setOptions(
-                        alias=mibname, oid=mibInfo.oid
-                    )
-                    processed[mibname] = statusCompiled.setOptions(
-                        alias=mibInfo.thisMib
-                    )
-                    debug.logger & debug.flagCompiler and debug.logger('%s (%s) compiled by %s immediate dependencies: %s' % (mibInfo.thisMib, mibname, self._writer, ', '.join(mibInfo.otherMibs) or '<none>'))
+                        processed[fileInfo.alias] = statusCompiled.setOptions(
+                            alias=mibInfo.alias, mibfile=fileInfo.mibfile
+                        )
+                    debug.logger & debug.flagCompiler and debug.logger('%s (%s/%s) read from %s and compiled by %s immediate dependencies: %s' % (mibInfo.alias, mibname, fileInfo.alias, fileInfo.mibfile, self._writer, ', '.join(mibInfo.otherMibs) or '<none>'))
                     if kwargs.get('noDeps'):
                         for x in mibInfo.otherMibs:
                             processed[x] = statusUnprocessed
@@ -128,14 +135,44 @@ class MibCompiler(object):
                     else:
                         raise exc
             else:
-                if kwargs.get('ignoreErrors'):
-                    continue
-                if not timeStamp:
-                    raise error.PySmiSourceNotFoundError('source MIB %s not found' % mibname, mibname=mibname, timestamp=timeStamp)
+                for borrower in self._borrowers:
+                    debug.logger & debug.flagCompiler and debug.logger('trying to borrow %s from %s' % (mibname, source))
+                    try:
+                        fileInfo, fileData = borrower.getData(
+                            timeStamp,
+                            mibname,
+                            genTexts=kwargs.get('genTexts')
+                        )
+                        self._writer.putData(
+                            fileInfo.alias,
+                            fileData,
+                            dryRun=kwargs.get('dryRun')
+                        )
+                        processed[mibname] = statusBorrowed.setOptions(alias=fileInfo.alias)
+                        processed[fileInfo.alias] = statusBorrowed.setOptions(alias=mibname)
+                        debug.logger & debug.flagCompiler and debug.logger('%s (%s) borrowed by %s' % (mibname, fileInfo.alias, self._writer))
+                        break
+                    except error.PySmiSourceNotModifiedError:
+                        debug.logger & debug.flagCompiler and debug.logger('no borrowing required for %s' % mibname)
+                        processed[mibname] = statusUntouched
+                        break
+                    except error.PySmiSourceNotFoundError:
+                        debug.logger & debug.flagCompiler and debug.logger('no %s found at %s' % (mibname, borrower))
+                        continue
+                    except error.PySmiError:
+                        exc_class, exc, tb = sys.exc_info()
+                        exc.message += ' at MIB %s' % mibname
+                        debug.logger & debug.flagCompiler and debug.logger('error %s from %s' % (exc, borrower))
+                        continue
+                else:
+                    if kwargs.get('ignoreErrors'):
+                        continue
+                    if not timeStamp:
+                        raise error.PySmiSourceNotFoundError('source MIB %s not found' % mibname, mibname=mibname, timestamp=timeStamp)
 
         if related:
             debug.logger & debug.flagCompiler and debug.logger('compiling related MIBs: %s' % ', '.join(related))
-            processed.update(self.compile(*related, **kwargs))
+            processed.update(self.compile(*related, **kwargs), **processed.copy())
 
         return processed
 

@@ -5,6 +5,7 @@ try:
 except ImportError:
     import http.client as httplib
 from pysmi.reader.base import AbstractReader
+from pysmi.mibinfo import MibInfo
 from pysmi import error
 from pysmi import debug
 
@@ -31,7 +32,7 @@ class HttpReader(AbstractReader):
 
         debug.logger & debug.flagReader and debug.logger('looking for MIB %s that is newer than %s' % (mibname, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(timestamp))))
 
-        for mibfile in self.getMibVariants(mibname):
+        for mibalias, mibfile in self.getMibVariants(mibname):
             location = self._locationTemplate.replace('<mib>', mibfile)
             debug.logger & debug.flagReader and debug.logger('trying to fetch MIB from %s://%s:%s%s' % (self._schema, self._host, self._port, location))
             try:
@@ -53,7 +54,7 @@ class HttpReader(AbstractReader):
                     lastModified = 0
                 if lastModified > timestamp:
                     debug.logger & debug.flagReader and debug.logger('source MIB %s is new enough (%s), fetching data...' % (response.getheader('Last-Modified'), location))
-                    return response.read(self.maxMibSize).decode('utf-8', 'ignore')
+                    return MibInfo(mibfile=location, mibname=mibname, alias=mibalias), response.read(self.maxMibSize).decode('utf-8', 'ignore')
                 else:
                     raise error.PySmiSourceNotModifiedError('source MIB %s is older than needed' % location, reader=self)
 

@@ -1,5 +1,6 @@
 import time
 from pysmi.reader.base import AbstractReader
+from pysmi.mibinfo import MibInfo
 from pysmi import error
 from pysmi import debug
 
@@ -15,5 +16,5 @@ class CallbackReader(AbstractReader):
         debug.logger & debug.flagReader and debug.logger('calling user callback %s for MIB %s that is newer than %s' % (self._cbFun, mibname, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(timestamp))))
         res = self._cbFun(timestamp, mibname, self._cbCtx)
         if res:
-            return res
+            return MibInfo(mibfile=self._cbFun, mibname=mibname, alias=mibname), res
         raise error.PySmiSourceNotFoundError(mibnanme=mibname, reader=self)

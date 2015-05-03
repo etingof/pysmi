@@ -2,6 +2,7 @@ import os
 import sys
 import time
 from pysmi.reader.base import AbstractReader
+from pysmi.mibinfo import MibInfo
 from pysmi import debug
 from pysmi import error
 
@@ -64,7 +65,7 @@ class FileReader(AbstractReader):
         debug.logger & debug.flagReader and debug.logger('%slooking for MIB %s that is newer than %s' % (self._recursive and 'recursively ' or '', mibname, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(timestamp))))
         for path in self.getSubdirs(self._path, self._recursive,
                                     self._ignoreErrors):
-            for mibfile in self.getMibVariants(mibname):
+            for mibalias, mibfile in self.getMibVariants(mibname):
                 f = os.path.join(path, mibfile)
                 debug.logger & debug.flagReader and debug.logger('trying MIB %s' % f)
                 if os.path.exists(f) and os.path.isfile(f):
@@ -72,7 +73,7 @@ class FileReader(AbstractReader):
                         lastModified = os.stat(f)[8]
                         if lastModified > timestamp:
                             debug.logger & debug.flagReader and debug.logger('source MIB %s is new enough (%s), fetching data...' % (f, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(lastModified))))
-                            return open(f, mode='rb').read(self.maxMibSize).decode('utf-8', 'ignore')
+                            return MibInfo(mibfile=f, mibname=mibname, alias=mibalias), open(f, mode='rb').read(self.maxMibSize).decode('utf-8', 'ignore')
                     except (OSError, IOError):
                         debug.logger & debug.flagReader and debug.logger('source file %s open failure: %s' % (f, sys.exc_info()[1]))
                         if not self._ignoreErrors:

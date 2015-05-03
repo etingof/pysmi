@@ -51,6 +51,6 @@ class PyFileWriter(AbstractWriter):
                 os.unlink(pyfile)
             except:
                 pass
-            raise error.PySmiWriterError('failure compiling %s: %s' % (filename, sys.exc_info()[1]), file=filename, writer=self)
+            raise error.PySmiWriterError('failure writing %s: %s' % (mibname, sys.exc_info()[1]), file=mibname, writer=self)
 
-        debug.logger & debug.flagWriter and debug.logger('compiled %s' % filename)
+        debug.logger & debug.flagWriter and debug.logger('%s stored' % mibname)
