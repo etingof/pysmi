@@ -57,7 +57,7 @@ class FileReader(AbstractReader):
 
             if mibname in self._mibIndex:
                 debug.logger & debug.flagReader and debug.logger('found %s in MIB index: %s' % (mibname, self._mibIndex[mibname]))
-                return [ self._mibIndex[mibname] ]
+                return [ ( mibname, self._mibIndex[mibname] ) ]
 
         return super(FileReader, self).getMibVariants(mibname)
 
