@@ -50,8 +50,8 @@ class HttpReader(AbstractReader):
                 try:
                     lastModified = time.mktime(time.strptime(response.getheader('Last-Modified'), "%a, %d %b %Y %H:%M:%S %Z"))
                 except:
-                    debug.logger & debug.flagReader and debug.logger('malformed HTTP headers')
-                    lastModified = 0
+                    debug.logger & debug.flagReader and debug.logger('malformed HTTP headers: %s' % sys.exc_info()[1])
+                    lastModified = timestamp+1
                 if lastModified > timestamp:
                     debug.logger & debug.flagReader and debug.logger('source MIB %s is new enough (%s), fetching data...' % (response.getheader('Last-Modified'), location))
                     return MibInfo(mibfile=location, mibname=mibname, alias=mibalias), response.read(self.maxMibSize).decode('utf-8', 'ignore')
