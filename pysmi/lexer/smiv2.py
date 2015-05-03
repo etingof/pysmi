@@ -209,8 +209,9 @@ class SmiV2Lexer(AbstractLexer):
     value = t.value[1:-2]
     while value and value[0] == '0' and len(value) % 8:
         value = value[1:]
-    if len(value) % 8:
-      raise error.PySmiLexerError("Number of 0s and 1s have to divide by 8 in binary string %s" % t.value, lineno=t.lineno)
+# XXX raise in strict mode
+#    if len(value) % 8:
+#      raise error.PySmiLexerError("Number of 0s and 1s have to divide by 8 in binary string %s" % t.value, lineno=t.lineno)
     return t
 
   def t_HEX_STRING(self, t):
@@ -218,8 +219,9 @@ class SmiV2Lexer(AbstractLexer):
     value = t.value[1:-2]
     while value and value[0] == '0' and len(value) % 2:
         value = value[1:]
-    if len(value) % 2:      
-      raise error.PySmiLexerError("Number of symbols have to be even in hex string %s" % t.value, lineno=t.lineno)
+# XXX raise in strict mode
+#    if len(value) % 2:      
+#      raise error.PySmiLexerError("Number of symbols have to be even in hex string %s" % t.value, lineno=t.lineno)
     return t
 
   def t_QUOTED_STRING(self, t):
