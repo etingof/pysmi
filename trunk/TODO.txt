@@ -14,3 +14,6 @@
 * check imports and try to add necessary ones if missed (like OBJECT-TYPE, MODULE-IDENTITY, etc)
 * generate TextualConvention first or add additional AST processing phase
 * implement a cache of available files at abstract reader path
+* make mibdump verifying <mib> placeholder
+* make mibdump/compiler recognizing --borrow-mibs
+* introduce grammar relaxation infrastructure
