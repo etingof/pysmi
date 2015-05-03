@@ -53,7 +53,7 @@ class HttpReader(AbstractReader):
                     debug.logger & debug.flagReader and debug.logger('malformed HTTP headers: %s' % sys.exc_info()[1])
                     lastModified = timestamp+1
                 if lastModified > timestamp:
-                    debug.logger & debug.flagReader and debug.logger('source MIB %s is new enough (%s), fetching data...' % (response.getheader('Last-Modified'), location))
+                    debug.logger & debug.flagReader and debug.logger('source MIB %s is new enough (%s), fetching data...' % (location, response.getheader('Last-Modified')))
                     return MibInfo(mibfile=location, mibname=mibname, alias=mibalias), response.read(self.maxMibSize).decode('utf-8', 'ignore')
                 else:
                     raise error.PySmiSourceNotModifiedError('source MIB %s is older than needed' % location, reader=self)
