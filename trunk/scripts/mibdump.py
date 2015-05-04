@@ -158,8 +158,8 @@ if not mibSources:
                    'http://mibs.snmplabs.com/asn1/<mib>' ]
 
 if not mibBorrowers:
-    mibBorrowers = [ ('http://mibs.snmplabs.com/pysnmp/notexts/<mib>', False),
-                     ('http://mibs.snmplabs.com/pysnmp/fulltexts/<mib>', True) ]
+    mibBorrowers = [ 'http://mibs.snmplabs.com/pysnmp/notexts/<mib>',
+                     'http://mibs.snmplabs.com/pysnmp/fulltexts/<mib>' ]
 
 if verboseFlag:
     sys.stderr.write("""Source MIB repositories: %s
@@ -178,7 +178,7 @@ Generate OID->MIB index: %s
 Generate texts in MIBs: %s
 Try various filenames while searching for MIB module: %s
 """ % (', '.join(sorted(mibSources)),
-       ', '.join(sorted([x[0] for x in mibBorrowers])),
+       ', '.join(sorted(mibBorrowers)),
        ', '.join(mibSearchers),
        dstDirectory,
        ', '.join(sorted(mibStubs)),
@@ -219,14 +219,14 @@ try:
 
     mibCompiler.addSearchers(StubSearcher(*mibStubs))
 
-    for mibBorrower, genTexts in mibBorrowers:
+    for mibBorrower in mibBorrowers:
         mibBorrower = urlparse.urlparse(mibBorrower)
         if not mibBorrower.scheme or mibBorrower.scheme == 'file':
-            mibCompiler.addBorrowers(PyFileBorrower(FileReader(mibBorrower.path).setOptions(originalMatching=False, lowcaseMatching=False)).setOptions(genTexts=genTexts))
+            mibCompiler.addBorrowers(PyFileBorrower(FileReader(mibBorrower.path).setOptions(originalMatching=False, lowcaseMatching=False)).setOptions(genTexts=genMibTextsFlag))
         elif mibBorrower.scheme in ('http', 'https'):
-            mibCompiler.addBorrowers(PyFileBorrower(HttpReader(mibBorrower.hostname, mibBorrower.port or 80, mibBorrower.path, ssl=mibBorrower.scheme == 'https').setOptions(originalMatching=False, lowcaseMatching=False)).setOptions(genTexts=genTexts))
+            mibCompiler.addBorrowers(PyFileBorrower(HttpReader(mibBorrower.hostname, mibBorrower.port or 80, mibBorrower.path, ssl=mibBorrower.scheme == 'https').setOptions(originalMatching=False, lowcaseMatching=False)).setOptions(genTexts=genMibTextsFlag))
         elif mibBorrower.scheme in ('ftp', 'sftp'):
-            mibCompiler.addBorrowers(PyFileBorrower(FtpReader(mibBorrower.hostname, mibBorrower.path, ssl=mibBorrower.scheme == 'sftp', port=mibBorrower.port or 21, user=mibBorrower.username or 'anonymous', password=mibBorrower.password or 'anonymous@').setOptions(originalMatching=False, lowcaseMatching=False)).setOptions(genTexts=genTexts))
+            mibCompiler.addBorrowers(PyFileBorrower(FtpReader(mibBorrower.hostname, mibBorrower.path, ssl=mibBorrower.scheme == 'sftp', port=mibBorrower.port or 21, user=mibBorrower.username or 'anonymous', password=mibBorrower.password or 'anonymous@').setOptions(originalMatching=False, lowcaseMatching=False)).setOptions(genTexts=genMibTextsFlag))
         else:
             sys.stderr.write('ERROR: unsupported URL scheme %s\r\n%s\r\n' % (opt[1], helpMessage))
             sys.exit(-1)
