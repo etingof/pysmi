@@ -16,6 +16,8 @@ class FtpReader(AbstractReader):
         self._port = port
         self._user = user
         self._password = password
+        if '<mib>' not in locationTemplate:
+            raise error.PySmiError('<mib> placeholder not specified in location at %s' % self)
 
     def __str__(self):
         return '%s{"ftp://%s%s"}' % (self.__class__.__name__, self._host, self._locationTemplate)

@@ -16,11 +16,14 @@ class HttpReader(AbstractReader):
         self._port = port
         self._locationTemplate = locationTemplate
         self._timeout = timeout
+        if '<mib>' not in locationTemplate:
+            raise error.PySmiError('<mib> placeholder not specified in location at %s' % self)
 
     def __str__(self):
         return '%s{"http://%s:%s%s"}' % (self.__class__.__name__, self._host, self._port, self._locationTemplate)
 
     def getData(self, timestamp, mibname):
+
         headers = {
             'If-Modified-Since': time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(timestamp)),
             'Accept': 'text/plain'
