@@ -15,4 +15,3 @@
 * generate TextualConvention first or add additional AST processing phase
 * implement a cache of available files at abstract reader path
 * introduce grammar relaxation infrastructure
-* make python code compilation conditional
