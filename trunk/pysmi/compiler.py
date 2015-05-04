@@ -70,6 +70,8 @@ class MibCompiler(object):
 
             debug.logger & debug.flagCompiler and debug.logger('done searching compiled versions of %s, %s' % (mibname, timeStamp and 'one or more found' or 'nothing found'))
 
+            pendingError = None
+
             for source in self._sources:
                 debug.logger & debug.flagCompiler and debug.logger('trying source %s' % source)
                 comments = [
@@ -130,6 +132,7 @@ class MibCompiler(object):
                     processed[mibname] = statusFailed.setOptions(exception=exc)
                     if self._borrowers:
                         debug.logger & debug.flagCompiler and debug.logger('will try borrowing failed MIB %s' % mibname)
+                        pendingError = exc
                         continue
                     if kwargs.get('ignoreErrors'):
                         break
@@ -139,7 +142,7 @@ class MibCompiler(object):
                         raise exc
             else:
                 for borrower in self._borrowers:
-                    debug.logger & debug.flagCompiler and debug.logger('trying to borrow %s from %s' % (mibname, source))
+                    debug.logger & debug.flagCompiler and debug.logger('trying to borrow %s from %s' % (mibname, borrower))
                     try:
                         fileInfo, fileData = borrower.getData(
                             timeStamp,
@@ -168,10 +171,18 @@ class MibCompiler(object):
                         debug.logger & debug.flagCompiler and debug.logger('error %s from %s' % (exc, borrower))
                         continue
                 else:
+                    debug.logger & debug.flagCompiler and debug.logger('no more borrowers to try')
                     if kwargs.get('ignoreErrors'):
                         continue
+
+                    if pendingError:
+                        if hasattr(pendingError, 'with_traceback'):
+                            raise pendingError.with_traceback(tb)
+                        else:
+                            raise pendingError
+                            
                     if not timeStamp:
-                        raise error.PySmiSourceNotFoundError('source MIB %s not found' % mibname, mibname=mibname, timestamp=timeStamp)
+                        raise error.PySmiSourceNotFoundError('source MIB %s not found%s' % (mibname, mibname in processed and hasattr(processed[mibname], 'message') and ': (%s)' % processed[mibname].message or ''), mibname=mibname, timestamp=timeStamp)
 
         if related:
             debug.logger & debug.flagCompiler and debug.logger('compiling related MIBs: %s' % ', '.join(related))
