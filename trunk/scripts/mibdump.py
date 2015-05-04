@@ -44,6 +44,8 @@ nodepsFlag = False
 rebuildFlag = False
 dryrunFlag = False
 genMibTextsFlag = False
+pyCompileFlag = True
+pyOptimizationLevel = 0
 ignoreErrorsFlag = False
 buildIndexFlag = False
 
@@ -61,6 +63,8 @@ Usage: %s [--help]
       [--destination-directory=<directory>]
       [--cache-directory=<directory>]
       [--no-dependencies]
+      [--no-python-compile]
+      [--python-optimization-level]
       [--ignore-errors]
       [--build-index]
       [--rebuild]
@@ -81,8 +85,8 @@ try:
         ['help', 'version', 'quiet', 'debug=',
          'mib-source=', 'mib-searcher=', 'mib-stub=', 'mib-borrower=',
          'destination-format=', 'destination-directory=', 'cache-directory=',
-         'no-dependencies', 'ignore-errors', 'build-index', 
-         'rebuild', 'dry-run',
+         'no-dependencies', 'no-python-compile', 'python-optimization-level=',
+         'ignore-errors', 'build-index', 'rebuild', 'dry-run',
          'generate-mib-texts', 'disable-fuzzy-source' ]
     )
 except Exception:
@@ -128,6 +132,14 @@ Software documentation and support at http://pysmi.sf.net
         cacheDirectory = opt[1]
     if opt[0] == '--no-dependencies':
         nodepsFlag = True
+    if opt[0] == '--no-python-compile':
+        pyCompileFlag = False
+    if opt[0] == '--python-optimization-level':
+        try:
+            pyOptimizationLevel = int(opt[1])
+        except:
+            sys.stderr.write('ERROR: known Python optimization levels: -1, 0, 1, 2\r\n%s\r\n' % helpMessage)
+            sys.exit(-1)
     if opt[0] == '--ignore-errors':
         ignoreErrorsFlag = True
     if opt[0] == '--build-index':
@@ -173,6 +185,7 @@ Parser grammar cache directory: %s
 Also compile all relevant MIBs: %s
 Rebuild MIBs regardless of age: %s
 Do not create/update MIBs: %s
+Byte-compile Python modules: %s (optimization level %s)
 Ignore compilation errors: %s
 Generate OID->MIB index: %s
 Generate texts in MIBs: %s
@@ -188,6 +201,8 @@ Try various filenames while searching for MIB module: %s
        nodepsFlag and 'no' or 'yes',
        rebuildFlag and 'yes' or 'no',
        dryrunFlag and 'yes' or 'no',
+       pyCompileFlag and 'yes' or 'no',
+       pyOptimizationLevel,
        ignoreErrorsFlag and 'yes' or 'no',
        buildIndexFlag and 'yes' or 'no',
        genMibTextsFlag and 'yes' or 'no',
@@ -195,9 +210,13 @@ Try various filenames while searching for MIB module: %s
 
 # Initialize compiler infrastructure
 
-mibCompiler = MibCompiler(SmiV1CompatParser(tempdir=cacheDirectory), 
-                          PySnmpCodeGen(),
-                          PyFileWriter(dstDirectory))
+mibCompiler = MibCompiler(
+    SmiV1CompatParser(tempdir=cacheDirectory), 
+    PySnmpCodeGen(),
+    PyFileWriter(dstDirectory).setOptions(
+        pyCompile=pyCompileFlag, pyOptimizationLevel=pyOptimizationLevel
+    )
+)
 
 try:
     for mibSource in mibSources:

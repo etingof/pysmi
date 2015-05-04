@@ -8,6 +8,8 @@ from pysmi import debug
 from pysmi import error
 
 class PyFileWriter(AbstractWriter):
+    pyCompile = True
+    pyOptimizationLevel = -1
     suffixes = {}
     for sfx, mode, typ in imp.get_suffixes():
         if typ not in suffixes:
@@ -41,16 +43,20 @@ class PyFileWriter(AbstractWriter):
             raise error.PySmiWriterError('failure writing file %s: %s' % (pyfile, sys.exc_info()[1]), file=pyfile, writer=self)
 
         debug.logger & debug.flagWriter and debug.logger('created file %s' % pyfile)
-        
-        try:
-            py_compile.compile(pyfile, doraise=True)
-        except (SyntaxError, py_compile.PyCompileError):
-            pass  # XXX
-        except:
+
+        if self.pyCompile:
             try:
-                os.unlink(pyfile)
+                if sys.version_info[0] > 2:
+                    py_compile.compile(pyfile, doraise=True, optimize=self.pyOptimizationLevel)
+                else:
+                    py_compile.compile(pyfile, doraise=True)
+            except (SyntaxError, py_compile.PyCompileError):
+                pass  # XXX
             except:
-                pass
-            raise error.PySmiWriterError('failure writing %s: %s' % (mibname, sys.exc_info()[1]), file=mibname, writer=self)
+                try:
+                    os.unlink(pyfile)
+                except:
+                    pass
+                raise error.PySmiWriterError('failure writing %s: %s' % (mibname, sys.exc_info()[1]), file=mibname, writer=self)
 
         debug.logger & debug.flagWriter and debug.logger('%s stored' % mibname)
