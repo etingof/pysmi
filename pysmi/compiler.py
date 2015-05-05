@@ -81,20 +81,33 @@ class MibCompiler(object):
                 ]
                 try:
                     fileInfo, fileData = source.getData(timeStamp, mibname)
-                    mibInfo, mibData = self._codegen.genCode(
-                        self._parser.__class__().parse(fileData), # XXX
-                        comments=comments,
-                        genTexts=kwargs.get('genTexts'),
-                    )
-                    self._writer.putData(
-                        mibInfo.alias, mibData, dryRun=kwargs.get('dryRun')
-                    )
-                    processed[mibInfo.alias] = statusCompiled.setOptions(
-                        alias=mibname, mibfile=fileInfo.mibfile, oid=mibInfo.oid
-                    )
-                    if fileInfo.alias != mibInfo.alias:
+                    canonicalMibs = []
+                    for mibInfo, mibData in self._codegen.genCode(
+                            self._parser.__class__().parse(fileData), # XXX
+                            comments=comments,
+                            genTexts=kwargs.get('genTexts'),
+                        ):
+                        # Source file may contain multiple MIBs
+                        self._writer.putData(
+                            mibInfo.alias, mibData, dryRun=kwargs.get('dryRun')
+                        )
+                        processed[mibInfo.alias] = statusCompiled.setOptions(
+                            alias=mibname, mibfile=fileInfo.mibfile, oid=mibInfo.oid
+                        )
+                        debug.logger & debug.flagCompiler and debug.logger('%s (%s) read from %s and compiled by %s immediate dependencies: %s' % (mibInfo.alias, mibname, fileInfo.mibfile, self._writer, ', '.join(mibInfo.otherMibs) or '<none>'))
+                        if kwargs.get('noDeps'):
+                            for x in mibInfo.otherMibs:
+                                processed[x] = statusUnprocessed
+                        else:
+                            related.update(mibInfo.otherMibs)
+
+                        canonicalMibs.append(mibInfo.alias)
+
+                    # May also need a stub file
+                    if fileInfo.alias not in canonicalMibs:
                         comments = [
-'This is a stub pysnmp (http://pysnmp.sf.net) MIB file for %s' % mibInfo.alias,
+'This is a stub pysnmp (http://pysnmp.sf.net) MIB file',
+'for canonical MIB(s) %s' % ', '.join(canonicalMibs),
 'The sole purpose of this stub file is to keep track of',
 '%s\'s modification time compared to MIB source' % fileInfo.alias,
 'file %s' % fileInfo.mibfile
@@ -104,15 +117,10 @@ class MibCompiler(object):
                             comments=comments,
                             dryRun=kwargs.get('dryRun')
                         )
+                        debug.logger & debug.flagCompiler and debug.logger('created stub %s for %s' % (fileInfo.alias, ', '.join(canonicalMibs)))
                         processed[fileInfo.alias] = statusCompiled.setOptions(
                             alias=mibInfo.alias, mibfile=fileInfo.mibfile
                         )
-                    debug.logger & debug.flagCompiler and debug.logger('%s (%s/%s) read from %s and compiled by %s immediate dependencies: %s' % (mibInfo.alias, mibname, fileInfo.alias, fileInfo.mibfile, self._writer, ', '.join(mibInfo.otherMibs) or '<none>'))
-                    if kwargs.get('noDeps'):
-                        for x in mibInfo.otherMibs:
-                            processed[x] = statusUnprocessed
-                    else:
-                        related.update(mibInfo.otherMibs)
                     break
                 except error.PySmiSourceNotModifiedError:
                     debug.logger & debug.flagCompiler and debug.logger('no update required for %s' % mibname)
