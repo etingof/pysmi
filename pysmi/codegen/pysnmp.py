@@ -786,12 +786,12 @@ class PySnmpCodeGen(AbstractCodeGen):
       if isinstance(el, (str, unicode)):
         parent = self.transOpers(el)
         s = parent + '.getName()'
-      elif isinstance(el, int):
+      elif isinstance(el, (int, long)):
         s = '(' + str(el) + ',)'
       elif isinstance(el, tuple):
         s = '(' + str(el[1]) + ',)' # XXX Do we need to create a new object el[0]?
       else:
-        raise error.PySmiSemanticError('unknown datatype for OID')
+        raise error.PySmiSemanticError('unknown datatype for OID: %s' % el)
       outStr += not outStr and s or ' + ' + s 
     return outStr, parent
 

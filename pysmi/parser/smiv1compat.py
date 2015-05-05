@@ -74,3 +74,32 @@ class SmiV1CompatParser(SmiV1Parser):
                                     #  p[8], # ReferPart
                                       p[11]) # NoficationName aka objectIdentifier
 
+  # common mistake - curly brackets around enterprise symbol
+  def p_trapTypeClause(self, p):
+    """trapTypeClause : fuzzy_lowercase_identifier TRAP_TYPE EnterprisePart VarPart DescrPart ReferPart COLON_COLON_EQUAL NUMBER"""
+    # libsmi: TODO: range of number?
+    p[0] = ('trapTypeClause', p[1], # fuzzy_lowercase_identifier
+                            #  p[2], # TRAP_TYPE
+                              p[3], # EnterprisePart (objectIdentifier)
+                              p[4], # VarPart
+                              p[5], # description
+                            #  p[6], # reference
+                              p[8]) # NUMBER
+
+  def p_EnterprisePart(self, p):
+    """EnterprisePart : ENTERPRISE objectIdentifier
+                      | ENTERPRISE '{' objectIdentifier '}'"""
+    n = len(p)
+    if n == 3:
+      p[0] = p[2]
+    elif n == 5: # common mistake case
+      p[0] = p[3]
+
+  # common mistake - no Cells
+  def p_CreationPart(self, p):
+    """CreationPart : CREATION_REQUIRES '{' Cells '}'
+                    | CREATION_REQUIRES '{' '}'
+                    | empty"""
+    n = len(p)
+    if n == 5:
+      p[0] = (p[1], p[3])
