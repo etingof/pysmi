@@ -14,6 +14,6 @@
 * implement a cache of available files at abstract reader path
 * introduce grammar relaxation infrastructure
 * create a command-line tool for splitting MIBs stored in a single file
-* create a MIB querying tool: get MIB module's OIDs, search MIB objects 
-  by regexp
-* implement xml/html codegeneration backend
+* create a MIB querying tool: get MIB module's OIDs, enterprise IDs,
+  canonical name(s); search MIB objects by regexp
+* implement xml/html/json/yaml codegeneration backend
