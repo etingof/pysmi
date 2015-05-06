@@ -23,11 +23,12 @@ class PyFileSearcher(AbstractSearcher):
         if rebuild:
             debug.logger & debug.flagSearcher and debug.logger('pretend %s is very old' % mibname)
             return 0  # beginning of time
-        pyfile = os.path.join(self._path, mibname.upper())
+        pyfile = os.path.join(self._path, mibname)
         for format in imp.PY_COMPILED, imp.PY_SOURCE:
             for pySfx, pyMode in self.suffixes[format]:
                 f = pyfile + pySfx
                 if not os.path.exists(f) or not os.path.isfile(f):
+                    debug.logger & debug.flagSearcher and debug.logger('%s not present or not a file' % f)
                     continue
                 if format == imp.PY_COMPILED:
                     try:
@@ -50,6 +51,5 @@ class PyFileSearcher(AbstractSearcher):
 
                     debug.logger & debug.flagSearcher and debug.logger('found %s, mtime %s' % (f, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(pyTime))))
                     return pyTime
-
 
         raise error.PySmiCompiledFileNotFoundError('no compiled file %s found' % mibname, searcher=self)
