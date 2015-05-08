@@ -8,7 +8,8 @@
 
 class PySmiError(Exception):
     def __init__(self, *args, **kwargs):
-        self.message = args and args[0] or ''
+        super(PySmiError, self).__init__(*args)
+        self.msg = args and args[0] or ''
         for k in kwargs:
             setattr(self, k, kwargs[k])
 
@@ -16,12 +17,12 @@ class PySmiError(Exception):
         return '%s(%s)' % (self.__class__.__name__, ', '.join(['%s=%r' % (k, getattr(self, k)) for k in dir(self) if k[0] != '_' and k != 'args']))
 
     def __str__(self):
-        return self.message
+        return self.msg
 
 class PySmiLexerError(PySmiError):
     lineno = '?'
     def __str__(self):
-        return self.message + ', line %s' % self.lineno
+        return self.msg + ', line %s' % self.lineno
 
 class PySmiParserError(PySmiLexerError): pass
 class PySmiSyntaxError(PySmiParserError): pass
