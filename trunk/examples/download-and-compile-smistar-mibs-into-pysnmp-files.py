@@ -16,7 +16,8 @@ from pysmi.reader.httpclient import HttpReader
 from pysmi.reader.ftpclient import FtpReader
 from pysmi.searcher.stub import StubSearcher
 from pysmi.writer.pyfile import PyFileWriter
-from pysmi.parser.smiv1compat import SmiV1CompatParser
+from pysmi.parser.smi import parserFactory
+from pysmi.parser.dialect import smiV1Relaxed
 from pysmi.codegen.pysnmp import PySnmpCodeGen, baseMibs
 from pysmi.compiler import MibCompiler
 from pysmi import debug
@@ -35,7 +36,7 @@ dstDirectory = '.pysnmp-mibs'
 # Initialize compiler infrastructure
 
 mibCompiler = MibCompiler(
-    SmiV1CompatParser(), PySnmpCodeGen(), PyFileWriter(dstDirectory)
+    parserFactory(**smiV1Relaxed)(), PySnmpCodeGen(), PyFileWriter(dstDirectory)
 )
 
 # search for source MIBs at Web and FTP sites

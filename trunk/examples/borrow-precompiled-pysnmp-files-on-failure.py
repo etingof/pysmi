@@ -9,7 +9,8 @@ from pysmi.searcher.pyfile import PyFileSearcher
 from pysmi.searcher.stub import StubSearcher
 from pysmi.borrower.pyfile import PyFileBorrower
 from pysmi.writer.pyfile import PyFileWriter
-from pysmi.parser.smiv1compat import SmiV1CompatParser
+from pysmi.parser.smi import parserFactory
+from pysmi.parser.dialect import smiV1Relaxed
 from pysmi.codegen.pysnmp import PySnmpCodeGen, baseMibs
 from pysmi.compiler import MibCompiler
 from pysmi import debug
@@ -28,7 +29,7 @@ dstDirectory = '.pysnmp-mibs'
 # Initialize compiler infrastructure
 
 mibCompiler = MibCompiler(
-    SmiV1CompatParser(), PySnmpCodeGen(), PyFileWriter(dstDirectory)
+    parserFactory(**smiV1Relaxed)(), PySnmpCodeGen(), PyFileWriter(dstDirectory)
 )
 
 # search for source MIBs at Web sites
@@ -44,6 +45,6 @@ mibCompiler.addSearchers(PyFileSearcher(dstDirectory))
 mibCompiler.addBorrowers(*[ PyFileBorrower(HttpReader(*x)).setOptions(genTexts=False) for x in httpBorrowers ])
 
 # run non-recursive MIB compilation
-results = mibCompiler.compile(*inputMibs, noDeps=True)
+results = mibCompiler.compile(*inputMibs)
 
 print('Results: %s' % ', '.join(['%s:%s' % (x, results[x]) for x in results]))

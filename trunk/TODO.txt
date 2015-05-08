@@ -15,5 +15,7 @@
 * introduce grammar relaxation infrastructure
 * create a command-line tool for splitting MIBs stored in a single file
 * create a MIB querying tool: get MIB module's OIDs, enterprise IDs,
-  canonical name(s); search MIB objects by regexp
+  canonical name(s); search MIB objects by regexp; build source .index
 * implement xml/html/json/yaml codegeneration backend
+* figure out how to reuse a single Ply lexer/parser instrance rather than
+  recreating new ones on each invocation
