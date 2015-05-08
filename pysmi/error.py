@@ -8,7 +8,7 @@
 
 class PySmiError(Exception):
     def __init__(self, *args, **kwargs):
-        super(PySmiError, self).__init__(*args)
+        Exception.__init__(self, *args)
         self.msg = args and args[0] or ''
         for k in kwargs:
             setattr(self, k, kwargs[k])

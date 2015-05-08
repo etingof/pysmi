@@ -29,7 +29,7 @@ class HttpReader(AbstractReader):
             'If-Modified-Since': time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(timestamp)),
             'Accept': 'text/plain'
         }
-        if sys.version_info[:2] < (2, 5):
+        if sys.version_info[:2] < (2, 6):
             conn = httplib.HTTPConnection(self._host, self._port)
         else:
             conn = httplib.HTTPConnection(self._host, self._port, timeout=self._timeout)
