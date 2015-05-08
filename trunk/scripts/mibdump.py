@@ -232,9 +232,9 @@ try:
         if not mibSource.scheme or mibSource.scheme == 'file':
             mibCompiler.addSources(FileReader(mibSource.path).setOptions(fuzzyMatching=doFuzzyMatchingFlag))
         elif mibSource.scheme in ('http', 'https'):
-            mibCompiler.addSources(HttpReader(mibSource.hostname, mibSource.port or 80, mibSource.path, ssl=mibSource.scheme == 'https').setOptions(fuzzyMatching=doFuzzyMatchingFlag))
+            mibCompiler.addSources(HttpReader(mibSource.hostname or mibSource.netloc, mibSource.port or 80, mibSource.path, ssl=mibSource.scheme == 'https').setOptions(fuzzyMatching=doFuzzyMatchingFlag))
         elif mibSource.scheme in ('ftp', 'sftp'):
-            mibCompiler.addSources(FtpReader(mibSource.hostname, mibSource.path, ssl=mibSource.scheme == 'sftp', port=mibSource.port or 21, user=mibSource.username or 'anonymous', password=mibSource.password or 'anonymous@').setOptions(fuzzyMatching=doFuzzyMatchingFlag))
+            mibCompiler.addSources(FtpReader(mibSource.hostname or mibSource.netloc, mibSource.path, ssl=mibSource.scheme == 'sftp', port=mibSource.port or 21, user=mibSource.username or 'anonymous', password=mibSource.password or 'anonymous@').setOptions(fuzzyMatching=doFuzzyMatchingFlag))
         else:
             sys.stderr.write('ERROR: unsupported URL scheme %s\r\n%s\r\n' % (opt[1], helpMessage))
             sys.exit(-1)
@@ -258,9 +258,9 @@ try:
         if not mibBorrower.scheme or mibBorrower.scheme == 'file':
             mibCompiler.addBorrowers(PyFileBorrower(FileReader(mibBorrower.path).setOptions(originalMatching=False, lowcaseMatching=False)).setOptions(genTexts=genMibTextsFlag))
         elif mibBorrower.scheme in ('http', 'https'):
-            mibCompiler.addBorrowers(PyFileBorrower(HttpReader(mibBorrower.hostname, mibBorrower.port or 80, mibBorrower.path, ssl=mibBorrower.scheme == 'https').setOptions(originalMatching=False, lowcaseMatching=False)).setOptions(genTexts=genMibTextsFlag))
+            mibCompiler.addBorrowers(PyFileBorrower(HttpReader(mibBorrower.hostname or mibBorrower.netloc, mibBorrower.port or 80, mibBorrower.path, ssl=mibBorrower.scheme == 'https').setOptions(originalMatching=False, lowcaseMatching=False)).setOptions(genTexts=genMibTextsFlag))
         elif mibBorrower.scheme in ('ftp', 'sftp'):
-            mibCompiler.addBorrowers(PyFileBorrower(FtpReader(mibBorrower.hostname, mibBorrower.path, ssl=mibBorrower.scheme == 'sftp', port=mibBorrower.port or 21, user=mibBorrower.username or 'anonymous', password=mibBorrower.password or 'anonymous@').setOptions(originalMatching=False, lowcaseMatching=False)).setOptions(genTexts=genMibTextsFlag))
+            mibCompiler.addBorrowers(PyFileBorrower(FtpReader(mibBorrower.hostname or mibBorrower.netloc, mibBorrower.path, ssl=mibBorrower.scheme == 'sftp', port=mibBorrower.port or 21, user=mibBorrower.username or 'anonymous', password=mibBorrower.password or 'anonymous@').setOptions(originalMatching=False, lowcaseMatching=False)).setOptions(genTexts=genMibTextsFlag))
         else:
             sys.stderr.write('ERROR: unsupported URL scheme %s\r\n%s\r\n' % (opt[1], helpMessage))
             sys.exit(-1)
