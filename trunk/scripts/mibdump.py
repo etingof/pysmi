@@ -222,6 +222,13 @@ mibCompiler = MibCompiler(
 try:
     for mibSource in mibSources:
         mibSource = urlparse.urlparse(mibSource)
+        if sys.version_info[0:2] < (2, 5):
+            class ParseResult(tuple): pass
+            mibSource = ParseResult(mibSource)
+            for k,v in zip(('scheme', 'netloc', 'path', 'params',
+                            'query', 'fragment', 'username', 'password',
+                            'hostname', 'port'), mibSource + ('','','',None)):
+                setattr(mibSource, k, v)
         if not mibSource.scheme or mibSource.scheme == 'file':
             mibCompiler.addSources(FileReader(mibSource.path).setOptions(fuzzyMatching=doFuzzyMatchingFlag))
         elif mibSource.scheme in ('http', 'https'):
@@ -241,6 +248,13 @@ try:
 
     for mibBorrower in mibBorrowers:
         mibBorrower = urlparse.urlparse(mibBorrower)
+        if sys.version_info[0:2] < (2, 5):
+            class ParseResult(tuple): pass
+            mibBorrower = ParseResult(mibBorrower)
+            for k,v in zip(('scheme', 'netloc', 'path', 'params',
+                            'query', 'fragment', 'username', 'password',
+                            'hostname', 'port'), mibSource + ('','','',None)):
+                setattr(mibBorrower, k, v)
         if not mibBorrower.scheme or mibBorrower.scheme == 'file':
             mibCompiler.addBorrowers(PyFileBorrower(FileReader(mibBorrower.path).setOptions(originalMatching=False, lowcaseMatching=False)).setOptions(genTexts=genMibTextsFlag))
         elif mibBorrower.scheme in ('http', 'https'):
