@@ -3,6 +3,7 @@ import sys
 import time
 from pysmi.reader.base import AbstractReader
 from pysmi.mibinfo import MibInfo
+from pysmi.compat import decode
 from pysmi import debug
 from pysmi import error
 
@@ -29,7 +30,7 @@ class FileReader(AbstractReader):
             else:
                 raise error.PySmiError('directory %s access error: %s' % (path, sys.exc_info()[1]))
         for d in subdirs:
-            d = os.path.join(path, d)
+            d = os.path.join(decode(path), decode(d))
             if os.path.isdir(d):
                 dirs.extend(self.getSubdirs(d, recursive))
         return dirs
@@ -66,14 +67,14 @@ class FileReader(AbstractReader):
         for path in self.getSubdirs(self._path, self._recursive,
                                     self._ignoreErrors):
             for mibalias, mibfile in self.getMibVariants(mibname):
-                f = os.path.join(path, mibfile)
+                f = os.path.join(decode(path), decode(mibfile))
                 debug.logger & debug.flagReader and debug.logger('trying MIB %s' % f)
                 if os.path.exists(f) and os.path.isfile(f):
                     try:
                         lastModified = os.stat(f)[8]
                         if lastModified > timestamp:
                             debug.logger & debug.flagReader and debug.logger('source MIB %s is new enough (%s), fetching data...' % (f, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(lastModified))))
-                            return MibInfo(mibfile=f, mibname=mibname, alias=mibalias), open(f, mode='rb').read(self.maxMibSize).decode('utf-8', 'ignore')
+                            return MibInfo(mibfile=f, mibname=mibname, alias=mibalias), decode(open(f, mode='rb').read(self.maxMibSize))
                     except (OSError, IOError):
                         debug.logger & debug.flagReader and debug.logger('source file %s open failure: %s' % (f, sys.exc_info()[1]))
                         if not self._ignoreErrors:

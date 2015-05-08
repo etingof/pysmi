@@ -5,6 +5,7 @@ import imp
 import struct
 from pysmi.searcher.base import AbstractSearcher
 from pysmi.searcher.pyfile import PyFileSearcher
+from pysmi.compat import decode
 from pysmi import debug
 from pysmi import error
 
@@ -37,6 +38,7 @@ class PyPackageSearcher(AbstractSearcher):
         if rebuild:
             debug.logger & debug.flagSearcher and debug.logger('pretend %s is very old' % mibname)
             return 0  # beginning of time
+        mibname = decode(mibname)
         try:
             p = __import__(self._package, globals(), locals(), ['__init__'])
             if hasattr(p, '__loader__') and hasattr(p.__loader__, '_files'):

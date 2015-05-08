@@ -3,6 +3,7 @@ import time
 import ftplib
 from pysmi.reader.base import AbstractReader
 from pysmi.mibinfo import MibInfo
+from pysmi.compat import decode
 from pysmi import error
 from pysmi import debug
 
@@ -39,6 +40,8 @@ class FtpReader(AbstractReader):
             conn.close()
             raise error.PySmiSourceNotFoundError('failed to log in to FTP server %s:%s as %s/%s: %s' % (self._host, self._port, self._user, self._password, sys.exc_info()[1]), reader=self)
 
+        mibname = decode(mibname)
+
         debug.logger & debug.flagReader and debug.logger('looking for MIB %s that is newer than %s' % (mibname, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(timestamp))))
 
         for mibalias, mibfile in self.getMibVariants(mibname):
@@ -69,9 +72,7 @@ class FtpReader(AbstractReader):
                 debug.logger & debug.flagReader and debug.logger('failed to fetch MIB %s from %s:%s: %s' % (location, self._host, self._port, sys.exc_info()[1]))
                 continue
 
-            data = '\n'.join(data)
-
-            data = data.decode('utf-8', 'ignore')
+            data = decode('\n'.join(data))
 
             debug.logger & debug.flagReader and debug.logger('fetched %s bytes in %s' % (len(data), location))
 
