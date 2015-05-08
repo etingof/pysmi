@@ -135,7 +135,7 @@ class MibCompiler(object):
                     exc.source = source
                     exc.mibname = mibname
                     exc.timestamp = timeStamp
-                    exc.message += ' at MIB %s' % mibname
+                    exc.msg += ' at MIB %s' % mibname
                     debug.logger & debug.flagCompiler and debug.logger('%serror %s from %s' % (kwargs.get('ignoreErrors') and 'ignoring ' or 'failing on ', exc, source))
                     processed[mibname] = statusFailed.setOptions(exception=exc)
                     if self._borrowers:
@@ -175,7 +175,7 @@ class MibCompiler(object):
                         continue
                     except error.PySmiError:
                         exc_class, exc, tb = sys.exc_info()
-                        exc.message += ' at MIB %s' % mibname
+                        exc.msg += ' at MIB %s' % mibname
                         debug.logger & debug.flagCompiler and debug.logger('error %s from %s' % (exc, borrower))
                         continue
                 else:
@@ -190,7 +190,7 @@ class MibCompiler(object):
                             raise pendingError
                             
                     if not timeStamp:
-                        raise error.PySmiSourceNotFoundError('source MIB %s not found%s' % (mibname, mibname in processed and hasattr(processed[mibname], 'message') and ': (%s)' % processed[mibname].message or ''), mibname=mibname, timestamp=timeStamp)
+                        raise error.PySmiSourceNotFoundError('source MIB %s not found%s' % (mibname, mibname in processed and hasattr(processed[mibname], 'msg') and ': (%s)' % processed[mibname].msg or ''), mibname=mibname, timestamp=timeStamp)
 
         if related:
             debug.logger & debug.flagCompiler and debug.logger('compiling related MIBs: %s' % ', '.join(related))
@@ -215,7 +215,7 @@ class MibCompiler(object):
             )
         except error.PySmiError:
             exc_class, exc, tb = sys.exc_info()
-            exc.message += ' at MIB index %s' % self.indexFile
+            exc.msg += ' at MIB index %s' % self.indexFile
             debug.logger & debug.flagCompiler and debug.logger('error %s when building %s' % (exc, self.indexFile))
             if kwargs.get('ignoreErrors'):
                 return
