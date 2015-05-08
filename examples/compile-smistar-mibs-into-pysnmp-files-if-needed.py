@@ -21,7 +21,8 @@ from pysmi.searcher.pyfile import PyFileSearcher
 from pysmi.searcher.pypackage import PyPackageSearcher
 from pysmi.searcher.stub import StubSearcher
 from pysmi.writer.pyfile import PyFileWriter
-from pysmi.parser.smiv1compat import SmiV1CompatParser
+from pysmi.parser.smi import parserFactory
+from pysmi.parser.dialect import smiV1Relaxed
 from pysmi.codegen.pysnmp import PySnmpCodeGen, defaultMibPackages, baseMibs
 from pysmi.compiler import MibCompiler
 from pysmi import debug
@@ -34,7 +35,7 @@ dstDirectory = '.pysnmp-mibs'
 
 # Initialize compiler infrastructure
 
-mibCompiler = MibCompiler(SmiV1CompatParser(),
+mibCompiler = MibCompiler(parserFactory(**smiV1Relaxed)(),
                           PySnmpCodeGen(),
                           PyFileWriter(dstDirectory))
 

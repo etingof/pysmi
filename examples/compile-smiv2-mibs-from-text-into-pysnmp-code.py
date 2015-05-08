@@ -12,7 +12,7 @@ import sys
 from pysmi.reader.callback import CallbackReader
 from pysmi.searcher.stub import StubSearcher
 from pysmi.writer.callback import CallbackWriter
-from pysmi.parser.smiv2 import SmiV2Parser
+from pysmi.parser.smi import parserFactory
 from pysmi.codegen.pysnmp import PySnmpCodeGen, baseMibs
 from pysmi.compiler import MibCompiler
 from pysmi import debug
@@ -25,7 +25,7 @@ srcDir = '/usr/share/snmp/mibs/'  # we will read MIBs from here
 # Initialize compiler infrastructure
 
 mibCompiler = MibCompiler(
-    SmiV2Parser(),
+    parserFactory()(),
     PySnmpCodeGen(), 
     # out own callback function stores results in its own way
     CallbackWriter(lambda m,d,c: sys.stdout.write(d))

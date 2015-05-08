@@ -19,7 +19,8 @@ from pysmi.searcher.pypackage import PyPackageSearcher
 from pysmi.searcher.stub import StubSearcher
 from pysmi.borrower.pyfile import PyFileBorrower
 from pysmi.writer.pyfile import PyFileWriter
-from pysmi.parser.smiv1compat import SmiV1CompatParser
+from pysmi.parser.smi import parserFactory
+from pysmi.parser.dialect import smiV1Relaxed
 from pysmi.codegen.pysnmp import PySnmpCodeGen, defaultMibPackages, baseMibs
 from pysmi.compiler import MibCompiler
 from pysmi import debug
@@ -211,7 +212,7 @@ Try various filenames while searching for MIB module: %s
 # Initialize compiler infrastructure
 
 mibCompiler = MibCompiler(
-    SmiV1CompatParser(tempdir=cacheDirectory), 
+    parserFactory(**smiV1Relaxed)(tempdir=cacheDirectory), 
     PySnmpCodeGen(),
     PyFileWriter(dstDirectory).setOptions(
         pyCompile=pyCompileFlag, pyOptimizationLevel=pyOptimizationLevel
@@ -251,11 +252,11 @@ try:
             sys.exit(-1)
 
     processed = mibCompiler.compile(*inputMibs,
-                                    noDeps=nodepsFlag,
-                                    rebuild=rebuildFlag,
-                                    dryRun=dryrunFlag,
-                                    genTexts=genMibTextsFlag,
-                                    ignoreErrors=ignoreErrorsFlag)
+                                    **dict(noDeps=nodepsFlag,
+                                           rebuild=rebuildFlag,
+                                           dryRun=dryrunFlag,
+                                           genTexts=genMibTextsFlag,
+                                           ignoreErrors=ignoreErrorsFlag))
 
     if buildIndexFlag:
         mibCompiler.buildIndex(
