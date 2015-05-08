@@ -6,6 +6,7 @@ except ImportError:
     import http.client as httplib
 from pysmi.reader.base import AbstractReader
 from pysmi.mibinfo import MibInfo
+from pysmi.compat import decode
 from pysmi import error
 from pysmi import debug
 
@@ -14,7 +15,7 @@ class HttpReader(AbstractReader):
         self._schema = ssl and 'https' or 'http'
         self._host = host
         self._port = port
-        self._locationTemplate = locationTemplate
+        self._locationTemplate = decode(locationTemplate)
         self._timeout = timeout
         if '<mib>' not in locationTemplate:
             raise error.PySmiError('<mib> placeholder not specified in location at %s' % self)
@@ -32,6 +33,8 @@ class HttpReader(AbstractReader):
             conn = httplib.HTTPConnection(self._host, self._port)
         else:
             conn = httplib.HTTPConnection(self._host, self._port, timeout=self._timeout)
+
+        mibname = decode(mibname)
 
         debug.logger & debug.flagReader and debug.logger('looking for MIB %s that is newer than %s' % (mibname, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(timestamp))))
 
@@ -57,7 +60,7 @@ class HttpReader(AbstractReader):
                     lastModified = timestamp+1
                 if lastModified > timestamp:
                     debug.logger & debug.flagReader and debug.logger('source MIB %s is new enough (%s), fetching data...' % (location, response.getheader('Last-Modified')))
-                    return MibInfo(mibfile=location, mibname=mibname, alias=mibalias), response.read(self.maxMibSize).decode('utf-8', 'ignore')
+                    return MibInfo(mibfile=location, mibname=mibname, alias=mibalias), decode(response.read(self.maxMibSize))
                 else:
                     raise error.PySmiSourceNotModifiedError('source MIB %s is older than needed' % location, reader=self)
 
