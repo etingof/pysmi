@@ -2,13 +2,13 @@ import inspect
 import os
 import sys
 import ply.yacc as yacc
-from pysmi.lexer.smi import SmiV2Lexer, SmiV1Lexer, SmiV1CompatLexer
+from pysmi.lexer.smi import lexerFactory
 from pysmi.parser.base import AbstractParser
 from pysmi import error
 from pysmi import debug
 
 class SmiV2Parser(AbstractParser):
-  defaultLexer = SmiV2Lexer
+  defaultLexer = lexerFactory()
   def __init__(self, startSym='mibFile', tempdir=''):
     if tempdir:
         tempdir = os.path.join(tempdir, startSym)
@@ -1128,7 +1128,7 @@ class SmiV2Parser(AbstractParser):
 # SMIv1 grammar
 #
 
-class SupportNetworkAddress:
+class SupportSmiV1Keywords:
   # NETWORKADDRESS added
   @staticmethod
   def p_importedKeyword(self, p): 
@@ -1332,11 +1332,11 @@ class NoCells:
       p[0] = (p[1], p[3])
 
 relaxedGrammar = {
-    'supportNetworkAddress': [
-        SupportNetworkAddress.p_importedKeyword,
-        SupportNetworkAddress.p_typeSMIandSPPI,
-        SupportNetworkAddress.p_ApplicationSyntax,
-        SupportNetworkAddress.p_sequenceApplicationSyntax
+    'supportSmiV1Keywords': [
+        SupportSmiV1Keywords.p_importedKeyword,
+        SupportSmiV1Keywords.p_typeSMIandSPPI,
+        SupportSmiV1Keywords.p_ApplicationSyntax,
+        SupportSmiV1Keywords.p_sequenceApplicationSyntax
     ],
     'supportIndex': [
         SupportIndex.p_Index,
@@ -1354,21 +1354,8 @@ relaxedGrammar = {
     'noCells': [ NoCells.p_CreationPart ]
 }
 
-requiredLexers = {
-    'supportNetworkAddress': SmiV1Lexer,
-    'supportIndex': SmiV1Lexer,
-    'commaAtTheEndOfImport': SmiV1CompatLexer,
-    'commaAtTheEndOfSequence': SmiV1CompatLexer,
-    'mixOfCommasAndSpaces': SmiV1CompatLexer,
-    'uppercaseIdentifier': SmiV1CompatLexer,
-    'lowcaseIdentifier': SmiV1CompatLexer,
-    'curlyBracesAroundEnterpriseInTrap': SmiV1CompatLexer,
-    'noCells': SmiV1CompatLexer
-}
-
 def parserFactory(**grammarOptions):
     classAttr = {}
-    requiredLexer = SmiV2Lexer
     for option in grammarOptions:
         if grammarOptions[option]:
             if option not in relaxedGrammar:
@@ -1380,12 +1367,7 @@ def parserFactory(**grammarOptions):
                 else:
                     classAttr[func.func_name] = func
 
-            # Chose most relaxed lexer among all compatible
-            if option in requiredLexers and \
-                    issubclass(requiredLexers[option], requiredLexer):
-                requiredLexer = requiredLexers[option]
-
-    classAttr['defaultLexer'] = requiredLexer
+    classAttr['defaultLexer'] = lexerFactory(**grammarOptions)
     
     return type('SmiParser', (SmiV2Parser,), classAttr)
 
