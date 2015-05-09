@@ -1,3 +1,4 @@
+import sys
 import re
 import ply.lex as lex
 from pysmi.lexer.base import AbstractLexer
@@ -7,6 +8,7 @@ from pysmi import debug
 UNSIGNED32_MAX = 4294967295
 UNSIGNED64_MAX = 18446744073709551615
 
+### Do not overload single lexer methods - overload all or none of them!
 class SmiV2Lexer(AbstractLexer):
   reserved_words = [
     'ACCESS', 'AGENT-CAPABILITIES', 'APPLICATION', 'AUGMENTS', 'BEGIN', 'BITS',
@@ -233,16 +235,10 @@ class SmiV2Lexer(AbstractLexer):
     raise error.PySmiLexerError("Illegal character '%s', %s characters left unparsed at this stage" % (t.value[0], len(t.value)-1), lineno=t.lineno)
     #t.lexer.skip(1)
  
-  # Test its output
-  def test(self, data):
-    self.lexer.input(data)
-    while True:
-      tok = self.lexer.token()
-      if not tok: break
-      print(tok)
-
-class SmiV1Lexer(SmiV2Lexer):
-  reserved_words = [
+class SupportSmiV1Keywords:
+  @staticmethod
+  def reserved():
+    reserved_words = [
     'ACCESS', 'AGENT-CAPABILITIES', 'APPLICATION', 'AUGMENTS', 'BEGIN', 'BITS',
     'CONTACT-INFO', 'CREATION-REQUIRES', 'Counter', 'Counter32', 'Counter64', 
     'DEFINITIONS', 'DEFVAL', 'DESCRIPTION', 'DISPLAY-HINT', 'END', 'ENTERPRISE',
@@ -259,26 +255,32 @@ class SmiV1Lexer(SmiV2Lexer):
     'SUBJECT-CATEGORIES', 'SUPPORTS', 'SYNTAX', 'TEXTUAL-CONVENTION', 
     'TimeTicks', 'TRAP-TYPE', 'UNIQUENESS', 'UNITS', 'UNIVERSAL', 'Unsigned32',
     'VALUE', 'VARIABLES', 'VARIATION', 'WRITE-SYNTAX'   
-  ]
+    ]
   
-  reserved = {}
-  for w in reserved_words:
-    reserved[w] = w.replace('-', '_').upper()
-    # hack to support SMIv1
-    if w == 'Counter':
-      reserved[w] = 'COUNTER32'
-    elif w == 'Gauge':
-      reserved[w] = 'GAUGE32'
+    reserved = {}
+    for w in reserved_words:
+      reserved[w] = w.replace('-', '_').upper()
+      # hack to support SMIv1
+      if w == 'Counter':
+        reserved[w] = 'COUNTER32'
+      elif w == 'Gauge':
+        reserved[w] = 'GAUGE32'
 
-  forbidden_words = [
+    return reserved
+
+  @staticmethod
+  def forbidden_words():
+    return [
     'ABSENT', 'ANY', 'BIT', 'BOOLEAN', 'BY', 'COMPONENT', 'COMPONENTS',
     'DEFAULT', 'DEFINED', 'ENUMERATED', 'EXPLICIT', 'EXTERNAL', 'FALSE',
     'MIN', 'MINUS-INFINITY', 'NULL', 'OPTIONAL', 'PLUS-INFINITY', 'PRESENT',
     'PRIVATE', 'REAL', 'SET', 'TAGS', 'TRUE', 'WITH'
-  ]
+    ]
 
-  # Token names required!
-  tokens = list(set([
+  @staticmethod
+  def tokens():
+    # Token names required!
+    return list(set([
     'BIN_STRING',
     'CHOICE',
     'COLON_COLON_EQUAL',
@@ -293,10 +295,36 @@ class SmiV1Lexer(SmiV2Lexer):
     'NUMBER64',
     'QUOTED_STRING',
     'UPPERCASE_IDENTIFIER',
-  ] + list(reserved.values())
-  ))
+    ] + list(SupportSmiV1Keywords.reserved().values())
+    ))
 
-class SmiV1CompatLexer(SmiV1Lexer):
-  pass
+relaxedGrammar = {
+    'supportSmiV1Keywords': [ 
+      SupportSmiV1Keywords.reserved,
+      SupportSmiV1Keywords.forbidden_words,
+      SupportSmiV1Keywords.tokens
+    ],
+    'supportIndex': [],
+    'commaAtTheEndOfImport': [],
+    'commaAtTheEndOfSequence': [],
+    'mixOfCommasAndSpaces': [],
+    'uppercaseIdentifier': [],
+    'lowcaseIdentifier': [],
+    'curlyBracesAroundEnterpriseInTrap': [],
+    'noCells': []
+}
 
-### Do not overload single lexer methods - overload all or none of them!
+def lexerFactory(**grammarOptions):
+    classAttr = {}
+    for option in grammarOptions:
+        if grammarOptions[option]:
+            if option not in relaxedGrammar:
+                raise error.PySmiError('Unknown lexer relaxation option: %s' %  option)
+
+            for func in relaxedGrammar[option]:
+                if sys.version_info[0] > 2:
+                    classAttr[func.__name__] = func()
+                else:
+                    classAttr[func.func_name] = func()
+
+    return type('SmiLexer', (SmiV2Lexer,), classAttr)

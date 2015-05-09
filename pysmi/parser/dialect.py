@@ -7,7 +7,7 @@ smiV2 = {}
 
 smiV1 = smiV2.copy()
 smiV1.update(
-    supportNetworkAddress = True,
+    supportSmiV1Keywords = True,
     supportIndex = True
 )
 
