@@ -138,6 +138,7 @@ class SmiV2Parser(AbstractParser):
                         | importedKeyword"""
     p[0] = p[1]
 
+  @classmethod
   def p_importedKeyword(self, p):
     """importedKeyword : importedSMIKeyword
                        | BITS
@@ -1129,6 +1130,7 @@ class SmiV2Parser(AbstractParser):
 
 class SupportNetworkAddress:
   # NETWORKADDRESS added
+  @staticmethod
   def p_importedKeyword(self, p): 
     """importedKeyword : importedSMIKeyword
 		       | BITS
@@ -1148,6 +1150,7 @@ class SupportNetworkAddress:
     p[0] = p[1]
 
   # NETWORKADDRESS added
+  @staticmethod
   def p_typeSMIandSPPI(self, p):
     """typeSMIandSPPI : IPADDRESS
 		      | NETWORKADDRESS
@@ -1158,6 +1161,7 @@ class SupportNetworkAddress:
     p[0] = p[1]
 
   # NETWORKADDRESS added
+  @staticmethod
   def p_ApplicationSyntax(self, p):
     """ApplicationSyntax : IPADDRESS anySubType
 			 | NETWORKADDRESS anySubType
@@ -1179,6 +1183,7 @@ class SupportNetworkAddress:
       p[0] = ('ApplicationSyntax', p[1], p[2])
 
   # NETWORKADDRESS added for SEQUENCE syntax
+  @staticmethod
   def p_sequenceApplicationSyntax(self, p):
     """sequenceApplicationSyntax : IPADDRESS anySubType
 				 | NETWORKADDRESS anySubType
@@ -1196,6 +1201,7 @@ class SupportNetworkAddress:
 
 class SupportIndex:
   # SMIv1 IndexTypes added
+  @staticmethod
   def p_Index(self, p):
     """Index : ObjectName
 	     | typeSMIv1"""
@@ -1205,6 +1211,7 @@ class SupportIndex:
     p[0] = isinstance(p[1], tuple) and p[1][1][0] or p[1]
 
   # for Index rule
+  @staticmethod
   def p_typeSMIv1(self, p):
     """typeSMIv1 : INTEGER
 		 | OCTET STRING
@@ -1220,6 +1227,7 @@ class SupportIndex:
 
 class CommaInImport:
   # comma at the end of import list
+  @staticmethod
   def p_importIdentifiers(self, p):
     """importIdentifiers : importIdentifiers ',' importIdentifier
 			 | importIdentifier
@@ -1234,6 +1242,7 @@ class CommaInImport:
 
 class CommaInSequence:
   # comma at the end of sequence list
+  @staticmethod
   def p_sequenceItems(self, p):
     """sequenceItems : sequenceItems ',' sequenceItem
 		     | sequenceItem
@@ -1249,6 +1258,7 @@ class CommaInSequence:
 
 class CommaAndSpaces:
   # common typos handled (mix of commas and spaces)
+  @staticmethod
   def p_enumItems(self, p):
     """enumItems : enumItems ',' enumItem
 		 | enumItem
@@ -1261,12 +1271,13 @@ class CommaAndSpaces:
       p[0] = [p[1]]
     elif n == 3: # typo case
       if p[2] == ',':
-	p[0] = p[1]
+        p[0] = p[1]
       else:
-	p[0] = p[1] + [p[2]]
+        p[0] = p[1] + [p[2]]
 
 class UppercaseIdentifier:
   # common mistake - using UPPERCASE_IDENTIFIER
+  @staticmethod
   def p_enumItem(self, p):
     """enumItem : LOWERCASE_IDENTIFIER '(' enumNumber ')'
 		| UPPERCASE_IDENTIFIER '(' enumNumber ')'"""
@@ -1274,6 +1285,7 @@ class UppercaseIdentifier:
 
 class LowcaseIdentifier:
   # common mistake - LOWERCASE_IDENTIFIER in symbol's name
+  @staticmethod
   def p_notificationTypeClause(self, p):
     """notificationTypeClause : fuzzy_lowercase_identifier NOTIFICATION_TYPE NotificationObjectsPart STATUS Status DESCRIPTION Text ReferPart COLON_COLON_EQUAL '{' NotificationName '}'""" # some MIBs have uppercase and/or lowercase id
     p[0] = ('notificationTypeClause', p[1], # id
@@ -1286,6 +1298,7 @@ class LowcaseIdentifier:
 
 class CurlyBracesInEnterprises:
   # common mistake - curly brackets around enterprise symbol
+  @staticmethod
   def p_trapTypeClause(self, p):
     """trapTypeClause : fuzzy_lowercase_identifier TRAP_TYPE EnterprisePart VarPart DescrPart ReferPart COLON_COLON_EQUAL NUMBER"""
     # libsmi: TODO: range of number?
@@ -1297,6 +1310,7 @@ class CurlyBracesInEnterprises:
 			    #  p[6], # reference
 			      p[8]) # NUMBER
 
+  @staticmethod
   def p_EnterprisePart(self, p):
     """EnterprisePart : ENTERPRISE objectIdentifier
 		      | ENTERPRISE '{' objectIdentifier '}'"""
@@ -1308,6 +1322,7 @@ class CurlyBracesInEnterprises:
 
 class NoCells:
   # common mistake - no Cells
+  @staticmethod
   def p_CreationPart(self, p):
     """CreationPart : CREATION_REQUIRES '{' Cells '}'
 		    | CREATION_REQUIRES '{' '}'
