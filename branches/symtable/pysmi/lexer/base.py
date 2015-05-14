@@ -1,0 +1,2 @@
+ 
+class AbstractLexer(object): pass
