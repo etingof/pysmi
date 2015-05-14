@@ -473,8 +473,18 @@ class SmiV2Parser(AbstractParser):
                     | conceptualTable
                     | row
                     | entryType
-                    | ApplicationSyntax"""
-    p[0] = p[1]
+                    | ApplicationSyntax
+                    | typeTag SimpleSyntax"""
+    n = len(p)
+    if n == 2:
+      p[0] = p[1]
+    elif n == 3:
+      p[0] = p[2]
+
+  def p_typeTag(self, p):
+    """typeTag : '[' APPLICATION NUMBER ']' IMPLICIT
+               | '[' UNIVERSAL NUMBER ']' IMPLICIT"""
+    pass
 
   def p_sequenceObjectSyntax(self, p):
     """sequenceObjectSyntax : sequenceSimpleSyntax

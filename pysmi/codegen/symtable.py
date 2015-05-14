@@ -61,11 +61,6 @@ class SymtableCodeGen(AbstractCodeGen):
     'ASN1-ENUMERATION': ('NamedValues',),
     'ASN1-REFINEMENT': ('ConstraintsUnion', 'ConstraintsIntersection', 'SingleValueConstraint', 'ValueRangeConstraint', 'ValueSizeConstraint'),
     'SNMPv2-SMI': ('iso',
-                   'Bits', # XXX
-                   'Integer32', # libsmi bug ??? 
-                   'TimeTicks', # bug in some IETF MIBs
-                   'Counter32', # bug in some IETF MIBs (e.g. DSA-MIB)
-                   'Gauge32', # bug in some IETF MIBs (e.g. DSA-MIB)
                    'MibIdentifier'), # OBJECT IDENTIFIER
   }
 
