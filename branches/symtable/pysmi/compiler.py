@@ -7,6 +7,7 @@ except ImportError:
     getpwuid = lambda x: ['<unknown>']
 from pysmi import __name__ as packageName
 from pysmi import __version__ as packageVersion
+from pysmi.codegen.symtable import SymtableCodeGen
 from pysmi import error
 from pysmi import debug
 
@@ -28,7 +29,8 @@ class MibCompiler(object):
     indexFile = 'index'
     def __init__(self, parser, codegen, writer):
         self._parser = parser
-        self._codegen = self._symbolgen = codegen
+        self._codegen = codegen
+        self._symbolgen = SymtableCodeGen()
         self._writer = writer
         self._sources = []
         self._searchers = []
@@ -75,7 +77,7 @@ class MibCompiler(object):
 
                         parsedMibs[mibInfo.alias] = fileInfo, mibInfo, symbolTable, mibTree
                         # XXX
-                        mibInfo.otherMibs = [ x for x in mibInfo.otherMibs if x[:3] != 'ASN' and x[:6] != 'SNMPv2' ]
+                        mibInfo.otherMibs = [ x for x in mibInfo.otherMibs if x[:3] != 'ASN' ]
                         mibsToParse.extend(mibInfo.otherMibs)
 
                         debug.logger & debug.flagCompiler and debug.logger('%s (%s) read from %s, immediate dependencies: %s' % (mibInfo.alias, mibname, fileInfo.mibfile, ', '.join(mibInfo.otherMibs) or '<none>'))
