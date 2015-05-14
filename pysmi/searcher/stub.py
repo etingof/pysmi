@@ -9,7 +9,7 @@ class StubSearcher(AbstractSearcher):
 
     def __str__(self): return '%s' % self.__class__.__name__
 
-    def getTimestamp(self, mibname, rebuild=False):
+    def fileExists(self, mibname, mtime, rebuild=False):
         if mibname in self._mibnames:
             debug.logger & debug.flagSearcher and debug.logger('pretend compiled %s exists and is very new' % mibname)
             raise error.PySmiCompiledFileTakesPrecedenceError('compiled file %s is among %s' % (mibname, ', '.join(self._mibnames)), searcher=self)

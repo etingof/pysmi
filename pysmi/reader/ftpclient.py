@@ -23,7 +23,7 @@ class FtpReader(AbstractReader):
     def __str__(self):
         return '%s{"ftp://%s%s"}' % (self.__class__.__name__, self._host, self._locationTemplate)
 
-    def getData(self, timestamp, mibname):
+    def getData(self, mibname):
         if self._ssl:
             conn = ftplib.FTP_TLS()
         else:
@@ -42,10 +42,11 @@ class FtpReader(AbstractReader):
 
         mibname = decode(mibname)
 
-        debug.logger & debug.flagReader and debug.logger('looking for MIB %s that is newer than %s' % (mibname, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(timestamp))))
+        debug.logger & debug.flagReader and debug.logger('looking for MIB %s' % mibname)
 
         for mibalias, mibfile in self.getMibVariants(mibname):
             location = self._locationTemplate.replace('<mib>', mibfile)
+            mtime = time.time()
             debug.logger & debug.flagReader and debug.logger('trying to fetch MIB %s from %s:%s' % (location, self._host, self._port))
             data = []
             try:
@@ -53,21 +54,13 @@ class FtpReader(AbstractReader):
                     response = conn.sendcmd('MDTM %s' % location)
                 except ftplib.all_errors:
                     debug.logger & debug.flagReader and debug.logger('server %s:%s does not support MDTM command, fetching file %s' % (self._host, self._port, location))
-                    lastModified = timestamp+1
+                    mtime = timestamp+1
                 else:
                     debug.logger & debug.flagReader and debug.logger('server %s:%s MDTM response is %s' % (self._host, self._port, response))
                     if response[:3] == 213:
-                        lastModified = time.mktime(time.strptime(response[4:], "%Y%m%d%H%M%S"))
-                    else:
-                        lastModified = timestamp+1
-
-                if lastModified > timestamp:
-                    debug.logger & debug.flagReader and debug.logger('source MIB %s is new enough (%s), fetching data...' % (location, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(lastModified))))
-                    conn.retrlines('RETR %s' % location, lambda x, y=data: y.append(x))
-                else:
-                    conn.close()
-                    raise error.PySmiSourceNotModifiedError('source MIB %s is older than needed' % location, reader=self)
-
+                        mtime = time.mktime(time.strptime(response[4:], "%Y%m%d%H%M%S"))
+                debug.logger & debug.flagReader and debug.logger('fetching source MIB %s, mtime %s' % (location, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(mtime))))
+                conn.retrlines('RETR %s' % location, lambda x, y=data: y.append(x))
             except ftplib.all_errors:
                 debug.logger & debug.flagReader and debug.logger('failed to fetch MIB %s from %s:%s: %s' % (location, self._host, self._port, sys.exc_info()[1]))
                 continue
@@ -77,7 +70,7 @@ class FtpReader(AbstractReader):
             debug.logger & debug.flagReader and debug.logger('fetched %s bytes in %s' % (len(data), location))
 
             conn.close()
-            return MibInfo(mibfile=location, mibname=mibname, alias=mibalias), data
+            return MibInfo(mibfile=location, mibname=mibname, alias=mibalias, mtime=mtime), data
 
         conn.close()
 

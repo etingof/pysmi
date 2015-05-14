@@ -903,42 +903,36 @@ class PySnmpCodeGen(AbstractCodeGen):
     #'a': lambda x: genXXX(x, 'CONSTRAINT')
   }
 
-  def genCode(self, ast, **kwargs):
-    mibsList = []
+  def genCode(self, ast, symbolTable, **kwargs):
     self.genRules['text'] = kwargs.get('genTexts', False)
-    if ast and ast[0] == 'mibFile' and ast[1]: # mibfile is not empty
-      modules = ast[1]
-      for moduleid in range(len(modules)):
-        out = ''
-        importedModules = ()
-        moduleIdentityOid = None # XXX need to get this from AST
-        self._rows.clear()
-        self._cols.clear()
-        self._exports.clear()
-        self._presentedSyms.clear()
-        self._symsOrder = []
-        self._postponedSyms.clear()
-        self._out.clear()
-        self.moduleName[0], moduleOid, imports, declarations = modules[moduleid]
-        out, importedModules = self.genImports(imports and imports or {})
-        for declr in declarations and declarations or []:
-          if declr:
-            clausetype = declr[0]
-            classmode = clausetype == 'typeDeclaration'
-            self.handlersTable[declr[0]](self, self.prepData(declr[1:], classmode), classmode)
-        if self._postponedSyms:
-          raise error.PySmiSemanticError('Unknown parent OIDs for symbols: %s' % ', '.join(self._postponedSyms)) 
-        for sym in self._symsOrder:
-          if sym not in self._out:
-            raise error.PySmiCodegenError('No generated code for symbol %s' % sym)
-          out += self._out[sym] 
-        out += self.genExports()
-        if 'comments' in kwargs:
-          out = ''.join(['# %s\n' % x for x in kwargs['comments']]) + '#\n' + out
-          out = '#\n# PySNMP MIB module %s (http://pysnmp.sf.net)\n' % self.moduleName[0] + out
-        debug.logger & debug.flagCodegen and debug.logger('canonical MIB name %s (%s), imported MIB(s) %s, Python code size %s bytes' % (self.moduleName[0], moduleOid, ','.join(importedModules) or '<none>', len(out)))
-        mibsList.append((MibInfo(oid=None, alias=self.moduleName[0], otherMibs=tuple([ x for x in importedModules ])), out))
-    return mibsList
+    out = ''
+    importedModules = ()
+    self._rows.clear()
+    self._cols.clear()
+    self._exports.clear()
+    self._presentedSyms.clear()
+    self._symsOrder = []
+    self._postponedSyms.clear()
+    self._out.clear()
+    self.moduleName[0], moduleOid, imports, declarations = ast
+    out, importedModules = self.genImports(imports and imports or {})
+    for declr in declarations and declarations or []:
+      if declr:
+	clausetype = declr[0]
+	classmode = clausetype == 'typeDeclaration'
+	self.handlersTable[declr[0]](self, self.prepData(declr[1:], classmode), classmode)
+    if self._postponedSyms:
+      raise error.PySmiSemanticError('Unknown parent OIDs for symbols: %s' % ', '.join(self._postponedSyms)) 
+    for sym in self._symsOrder:
+      if sym not in self._out:
+	raise error.PySmiCodegenError('No generated code for symbol %s' % sym)
+      out += self._out[sym] 
+    out += self.genExports()
+    if 'comments' in kwargs:
+      out = ''.join(['# %s\n' % x for x in kwargs['comments']]) + '#\n' + out
+      out = '#\n# PySNMP MIB module %s (http://pysnmp.sf.net)\n' % self.moduleName[0] + out
+    debug.logger & debug.flagCodegen and debug.logger('canonical MIB name %s (%s), imported MIB(s) %s, Python code size %s bytes' % (self.moduleName[0], moduleOid, ','.join(importedModules) or '<none>', len(out)))
+    return MibInfo(oid=None, alias=self.moduleName[0], otherMibs=tuple([ x for x in importedModules ])), out
 
   def genIndex(self, mibsMap, **kwargs):
       out = '\nfrom pysnmp.proto.rfc1902 import ObjectName\n\noidToMibMap = {\n'

@@ -23,10 +23,8 @@ class HttpReader(AbstractReader):
     def __str__(self):
         return '%s{"http://%s:%s%s"}' % (self.__class__.__name__, self._host, self._port, self._locationTemplate)
 
-    def getData(self, timestamp, mibname):
-
+    def getData(self, mibname):
         headers = {
-            'If-Modified-Since': time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(timestamp)),
             'Accept': 'text/plain'
         }
         if sys.version_info[:2] < (2, 6):
@@ -36,7 +34,7 @@ class HttpReader(AbstractReader):
 
         mibname = decode(mibname)
 
-        debug.logger & debug.flagReader and debug.logger('looking for MIB %s that is newer than %s' % (mibname, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(timestamp))))
+        debug.logger & debug.flagReader and debug.logger('looking for MIB %s' % mibname)
 
         for mibalias, mibfile in self.getMibVariants(mibname):
             location = self._locationTemplate.replace('<mib>', mibfile)
@@ -50,18 +48,15 @@ class HttpReader(AbstractReader):
 
             debug.logger & debug.flagReader and debug.logger('HTTP response %s' % response.status)
 
-            if response.status == 304:
-                raise error.PySmiSourceNotModifiedError('HTTP response was %s' % response.status, reader=self)
             if response.status == 200:
                 try:
-                    lastModified = time.mktime(time.strptime(response.getheader('Last-Modified'), "%a, %d %b %Y %H:%M:%S %Z"))
+                    mtime = time.mktime(time.strptime(response.getheader('Last-Modified'), "%a, %d %b %Y %H:%M:%S %Z"))
                 except:
                     debug.logger & debug.flagReader and debug.logger('malformed HTTP headers: %s' % sys.exc_info()[1])
-                    lastModified = timestamp+1
-                if lastModified > timestamp:
-                    debug.logger & debug.flagReader and debug.logger('source MIB %s is new enough (%s), fetching data...' % (location, response.getheader('Last-Modified')))
-                    return MibInfo(mibfile=location, mibname=mibname, alias=mibalias), decode(response.read(self.maxMibSize))
-                else:
-                    raise error.PySmiSourceNotModifiedError('source MIB %s is older than needed' % location, reader=self)
+                    mtime = time.time()
+
+                debug.logger & debug.flagReader and debug.logger('fetching source MIB %s, mtime %s' % (location, response.getheader('Last-Modified')))
+
+                return MibInfo(mibfile=location, mibname=mibname, alias=mibalias, mtime=mtime), decode(response.read(self.maxMibSize))
 
         raise error.PySmiSourceNotFoundError('source MIB %s not found' % mibname, reader=self)
