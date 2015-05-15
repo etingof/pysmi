@@ -76,8 +76,6 @@ class MibCompiler(object):
                         )
 
                         parsedMibs[mibInfo.alias] = fileInfo, mibInfo, symbolTable, mibTree
-                        # XXX
-                        mibInfo.otherMibs = [ x for x in mibInfo.otherMibs if x[:3] != 'ASN' ]
                         mibsToParse.extend(mibInfo.otherMibs)
 
                         debug.logger & debug.flagCompiler and debug.logger('%s (%s) read from %s, immediate dependencies: %s' % (mibInfo.alias, mibname, fileInfo.mibfile, ', '.join(mibInfo.otherMibs) or '<none>'))
@@ -93,12 +91,14 @@ class MibCompiler(object):
                     exc.mibname = mibname
                     exc.msg += ' at MIB %s' % mibname
                     debug.logger & debug.flagCompiler and debug.logger('%serror %s from %s' % (kwargs.get('ignoreErrors') and 'ignoring ' or 'failing on ', exc, source))
-                    failedMibs[mibname] = exc
+                    if mibname not in failedMibs:
+                        failedMibs[mibname] = exc
             else:
                 exc = error.PySmiError('MIB source %s not found' % mibname)
                 exc.mibname = mibname
                 debug.logger & debug.flagCompiler and debug.logger('no %s found everywhare' % mibname)
-                failedMibs[mibname] = exc
+                if mibname not in failedMibs:
+                    failedMibs[mibname] = exc
 
         debug.logger & debug.flagCompiler and debug.logger('MIBs analized %s, MIBs failed %s' % (len(parsedMibs), len(failedMibs)))
 
@@ -128,7 +128,8 @@ class MibCompiler(object):
                     exc.mibname = mibname
                     exc.msg += ' at MIB %s' % mibname
                     debug.logger & debug.flagCompiler and debug.logger('error %s from %s' % (exc, source))
-                    failedMibs[mibname] = exc
+                    if mibname not in failedMibs:
+                        failedMibs[mibname] = exc
                     del parsedMibs[mibname]
                     break
             else:
@@ -168,7 +169,8 @@ class MibCompiler(object):
                 exc.mibname = mibname
                 exc.msg += ' at MIB %s' % mibname
                 debug.logger & debug.flagCompiler and debug.logger('error %s from %s' % (exc, self._codegen))
-                failedMibs[mibname] = exc
+                if mibname not in failedMibs:
+                    failedMibs[mibname] = exc
                 del parsedMibs[mibname]
         else:
             debug.logger & debug.flagCompiler and debug.logger('MIBs parsed %s, MIBs failed %s' % (len(parsedMibs), len(failedMibs)))
