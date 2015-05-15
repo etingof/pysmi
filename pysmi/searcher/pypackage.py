@@ -37,7 +37,7 @@ class PyPackageSearcher(AbstractSearcher):
     def fileExists(self, mibname, mtime, rebuild=False):
         if rebuild:
             debug.logger & debug.flagSearcher and debug.logger('pretend %s is very old' % mibname)
-            return    # beginning of time
+            return
         mibname = decode(mibname)
         try:
             p = __import__(self._package, globals(), locals(), ['__init__'])

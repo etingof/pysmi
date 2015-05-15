@@ -57,7 +57,7 @@ class MibCompiler(object):
         # Load and parse all requested and imported MIBs
         #
         processed = {}
-        parsedMibs = {}; failedMibs = {}; builtMibs = {}
+        requestedMibs = {}; parsedMibs = {}; failedMibs = {}; builtMibs = {}
         mibsToParse = [ x for x in mibnames ]
         while mibsToParse:
             mibname = mibsToParse.pop(0)
@@ -77,7 +77,7 @@ class MibCompiler(object):
                             mibTree, {}
                         )
 
-                        parsedMibs[mibInfo.name] = fileInfo, mibInfo, symbolTable, mibTree
+                        parsedMibs[mibInfo.name] = fileInfo, mibInfo, symbolTable, (not kwargs.get('noDeps') or mibname in mibnames) and mibTree or []
                         if mibname in failedMibs:
                             del failedMibs[mibname]
 
@@ -118,7 +118,7 @@ class MibCompiler(object):
             debug.logger & debug.flagCompiler and debug.logger('checking if %s requires updating' % mibname)
             for searcher in self._searchers:
                 try:
-                    existing = searcher.fileExists(mibname, fileInfo.mtime, rebuild=kwargs.get('rebuild'))
+                    searcher.fileExists(mibname, fileInfo.mtime, rebuild=kwargs.get('rebuild'))
                 except error.PySmiCompiledFileNotFoundError:
                     debug.logger & debug.flagCompiler and debug.logger('no compiled MIB %s available through %s' % (mibname, searcher))
                     continue
@@ -127,7 +127,7 @@ class MibCompiler(object):
                         error.PySmiCompiledFileTakesPrecedenceError):
                     debug.logger & debug.flagCompiler and debug.logger('will be using existing compiled MIB %s found by %s' % (mibname, searcher))
                     del parsedMibs[mibname]
-                    processed[mibname] = statusUntouched.setOptions()
+                    processed[mibname] = statusUntouched
                     break
 
                 except error.PySmiError:
@@ -139,6 +139,12 @@ class MibCompiler(object):
                     continue
             else:
                 debug.logger & debug.flagCompiler and debug.logger('no suitable compiled MIB %s found anywhere' % mibname)
+
+                if not mibTree:
+                    debug.logger & debug.flagCompiler and debug.logger('excluding secondary/empty MIB %s from code generation' % mibname)
+                    del parsedMibs[mibname]
+                    processed[mibname] = statusUntouched
+                    continue
         else:
             debug.logger & debug.flagCompiler and debug.logger('MIBs parsed %s, MIBs failed %s' % (len(parsedMibs), len(failedMibs)))
 
