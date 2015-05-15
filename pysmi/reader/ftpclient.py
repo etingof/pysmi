@@ -70,7 +70,7 @@ class FtpReader(AbstractReader):
             debug.logger & debug.flagReader and debug.logger('fetched %s bytes in %s' % (len(data), location))
 
             conn.close()
-            return MibInfo(path=location, file=mibfile, name=mibalias, mtime=mtime), data
+            return MibInfo(path='ftp://%s%s' % (self._host,location), file=mibfile, name=mibalias, mtime=mtime), data
 
         conn.close()
 
