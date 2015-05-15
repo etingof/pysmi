@@ -16,31 +16,6 @@ if sys.version_info[0] > 2:
 else:
     def dorepr(s): return repr(s.encode('utf-8')).decode('utf-8')
 
-# default pysnmp MIB packages
-defaultMibPackages = ('pysnmp.smi.mibs', 'pysnmp_mibs')
-
-# never compile these, they either:
-# - define MACROs (implementation supplies them)
-# - or carry conflicting OIDs (so that all IMPORT's of them will be rewritten)
-# - or have manual fixes
-# - or import base ASN.1 types from implementation-specific MIBs
-baseMibs = ('RFC1065-SMI',
-            'RFC1155-SMI',
-            'RFC1158-MIB',
-            'RFC-1212',
-            'RFC1213-MIB',
-            'RFC-1215',
-            'SNMPv2-SMI',
-            'SNMPv2-TC',
-            'SNMPv2-TM',
-            'SNMPv2-CONF',
-            'ASN1',
-            'ASN1-ENUMERATION',
-            'ASN1-REFINEMENT',
-            'SNMP-FRAMEWORK-MIB',
-            'SNMP-TARGET-MIB',
-            'TRANSPORT-ADDRESS-MIB')
-
 class SymtableCodeGen(AbstractCodeGen):
   symsTable = {
     'MODULE-IDENTITY': ('ModuleIdentity',),
@@ -57,9 +32,6 @@ class SymtableCodeGen(AbstractCodeGen):
   }
 
   constImports = {
-    'ASN1': ('Integer', 'OctetString', 'ObjectIdentifier'),
-    'ASN1-ENUMERATION': ('NamedValues',),
-    'ASN1-REFINEMENT': ('ConstraintsUnion', 'ConstraintsIntersection', 'SingleValueConstraint', 'ValueRangeConstraint', 'ValueSizeConstraint'),
     'SNMPv2-SMI': ('iso',
                    'MibIdentifier'), # OBJECT IDENTIFIER
   }
