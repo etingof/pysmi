@@ -23,7 +23,7 @@ class PyFileSearcher(AbstractSearcher):
     def fileExists(self, mibname, mtime, rebuild=False):
         if rebuild:
             debug.logger & debug.flagSearcher and debug.logger('pretend %s is very old' % mibname)
-            return 0  # beginning of time
+            return
         mibname = decode(mibname)
         pyfile = os.path.join(self._path, mibname)
         for format in imp.PY_COMPILED, imp.PY_SOURCE:
