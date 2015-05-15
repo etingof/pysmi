@@ -165,7 +165,7 @@ class MibCompiler(object):
             try:
                 mibInfo, mibData = self._codegen.genCode(
                         mibTree,
-                        symbolTable,
+                        dict([(x,parsedMibs[x][2]) for x in parsedMibs]),
                         comments=comments,
                         genTexts=kwargs.get('genTexts')
                     )
@@ -206,7 +206,8 @@ class MibCompiler(object):
                     del failedMibs[mibname]
 
                     processed[mibname] = statusBorrowed.setOptions(
-                        file=fileInfo.name
+                        path=fileInfo.path, file=fileInfo.file,
+                        alias=fileInfo.name
                     )
 
                     debug.logger & debug.flagCompiler and debug.logger('%s borrowed with %s' % (mibname, borrower))

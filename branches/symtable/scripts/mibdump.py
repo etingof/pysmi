@@ -21,7 +21,7 @@ from pysmi.borrower.pyfile import PyFileBorrower
 from pysmi.writer.pyfile import PyFileWriter
 from pysmi.parser.smi import parserFactory
 from pysmi.parser.dialect import smiV1Relaxed
-from pysmi.codegen.pysnmp import PySnmpCodeGen, defaultMibPackages, baseMibs
+from pysmi.codegen.pysnmp import PySnmpCodeGen, defaultMibPackages, baseMibs, fakeMibs
 from pysmi.compiler import MibCompiler
 from pysmi import debug
 from pysmi import error
@@ -164,7 +164,7 @@ if not mibSearchers:
     mibSearchers = defaultMibPackages
 
 if not mibStubs:
-    mibStubs = baseMibs
+    mibStubs = [ x for x in baseMibs if x not in fakeMibs ]
 
 if not mibSources:
     mibSources = [ 'file:///usr/share/snmp/mibs',
@@ -179,7 +179,7 @@ if verboseFlag:
 Borrow missing/failed MIBs from: %s
 Existing/compiled MIB locations: %s
 Compiled MIBs destination directory: %s
-MIBs excluded from compilation: %s
+MIBs excluded from code generation: %s
 MIBs to compile: %s
 Destination format: %s
 Parser grammar cache directory: %s

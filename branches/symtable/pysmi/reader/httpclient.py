@@ -21,7 +21,7 @@ class HttpReader(AbstractReader):
             raise error.PySmiError('<mib> placeholder not specified in location at %s' % self)
 
     def __str__(self):
-        return '%s{"http://%s:%s%s"}' % (self.__class__.__name__, self._host, self._port, self._locationTemplate)
+        return '%s{"%s://%s:%s%s"}' % (self.__class__.__name__, self._schema, self._host, self._port, self._locationTemplate)
 
     def getData(self, mibname):
         headers = {
@@ -57,6 +57,6 @@ class HttpReader(AbstractReader):
 
                 debug.logger & debug.flagReader and debug.logger('fetching source MIB %s, mtime %s' % (location, response.getheader('Last-Modified')))
 
-                return MibInfo(path=location, file=mibfile, name=mibalias, mtime=mtime), decode(response.read(self.maxMibSize))
+                return MibInfo(path='%s://%s:%s%s' % (self._schema, self._host, self._port, location), file=mibfile, name=mibalias, mtime=mtime), decode(response.read(self.maxMibSize))
 
         raise error.PySmiSourceNotFoundError('source MIB %s not found' % mibname, reader=self)
