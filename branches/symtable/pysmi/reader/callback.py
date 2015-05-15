@@ -16,5 +16,5 @@ class CallbackReader(AbstractReader):
         debug.logger & debug.flagReader and debug.logger('calling user callback %s for MIB %s' % (self._cbFun, mibname))
         res = self._cbFun(mibname, self._cbCtx)
         if res:
-            return MibInfo(mibfile=self._cbFun, mibname=mibname, alias=mibname, mtime=time.time()), res
-        raise error.PySmiSourceNotFoundError(mibnanme=mibname, reader=self)
+            return MibInfo(path='file:///dev/stdin', file='', name=mibname, mtime=time.time()), res
+        raise error.PySmiSourceNotFoundError(mibname=mibname, reader=self)

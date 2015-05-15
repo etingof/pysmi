@@ -290,6 +290,6 @@ else:
         sys.stderr.write('Up to date MIBs: %s\r\n' % ', '.join(['%s' % x for x in sorted(processed) if processed[x] == 'untouched']))
         sys.stderr.write('Missing source MIBs: %s\r\n' % ', '.join(['%s' % x for x in sorted(processed) if processed[x] == 'missing']))
         sys.stderr.write('Ignored MIBs: %s\r\n' % ', '.join(['%s' % x for x in sorted(processed) if processed[x] == 'unprocessed']))
-        sys.stderr.write('Failed MIBs: %s\r\n' % ', '.join(['%s (%s)' % (x,processed[x].exception) for x in sorted(processed) if processed[x] == 'failed']))
+        sys.stderr.write('Failed MIBs: %s\r\n' % ', '.join(['%s (%s)' % (x,processed[x].error) for x in sorted(processed) if processed[x] == 'failed']))
 
     sys.exit(0)

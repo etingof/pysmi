@@ -57,6 +57,6 @@ class HttpReader(AbstractReader):
 
                 debug.logger & debug.flagReader and debug.logger('fetching source MIB %s, mtime %s' % (location, response.getheader('Last-Modified')))
 
-                return MibInfo(mibfile=location, mibname=mibname, alias=mibalias, mtime=mtime), decode(response.read(self.maxMibSize))
+                return MibInfo(path=location, file=mibfile, name=mibalias, mtime=mtime), decode(response.read(self.maxMibSize))
 
         raise error.PySmiSourceNotFoundError('source MIB %s not found' % mibname, reader=self)

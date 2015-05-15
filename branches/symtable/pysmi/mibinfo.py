@@ -1,9 +1,11 @@
 
 # known attributes:
-# mibname -- requested MIB name
-# alias   -- actual MIB name
-# mibfile -- full path to source MIB file
-# oid     -- top-level OID defined in this MIB
+# name   -- actual MIB name
+# alias  -- possible alternative to MIB name
+# path   -- URL to MIB file
+# file   -- MIB file name
+# mtime  -- MIB file modification time
+# oid    -- top-level OID defined in this MIB
 
 class MibInfo(object):
     def __init__(self, **kwargs):

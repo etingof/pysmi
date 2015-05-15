@@ -73,7 +73,7 @@ class FileReader(AbstractReader):
                     try:
                         mtime = os.stat(f)[8]
                         debug.logger & debug.flagReader and debug.logger('source MIB %s mtime is %s, fetching data...' % (f, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(mtime))))
-                        return MibInfo(mibfile=f, mibname=mibname, alias=mibalias, mtime=mtime), decode(open(f, mode='rb').read(self.maxMibSize))
+                        return MibInfo(path='file://%s' % f, file=mibfile, name=mibalias, mtime=mtime), decode(open(f, mode='rb').read(self.maxMibSize))
                     except (OSError, IOError):
                         debug.logger & debug.flagReader and debug.logger('source file %s open failure: %s' % (f, sys.exc_info()[1]))
                         if not self._ignoreErrors:
