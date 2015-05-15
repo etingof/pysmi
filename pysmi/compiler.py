@@ -7,6 +7,7 @@ except ImportError:
     getpwuid = lambda x: ['<unknown>']
 from pysmi import __name__ as packageName
 from pysmi import __version__ as packageVersion
+from pysmi.mibinfo import MibInfo
 from pysmi.codegen.symtable import SymtableCodeGen
 from pysmi import error
 from pysmi import debug
@@ -55,6 +56,7 @@ class MibCompiler(object):
         #
         # Load and parse all requested and imported MIBs
         #
+        processed = {}
         parsedMibs = {}; failedMibs = {}; builtMibs = {}
         mibsToParse = [ x for x in mibnames ]
         while mibsToParse:
@@ -75,10 +77,13 @@ class MibCompiler(object):
                             mibTree, {}
                         )
 
-                        parsedMibs[mibInfo.alias] = fileInfo, mibInfo, symbolTable, mibTree
-                        mibsToParse.extend(mibInfo.otherMibs)
+                        parsedMibs[mibInfo.name] = fileInfo, mibInfo, symbolTable, mibTree
+                        if mibname in failedMibs:
+                            del failedMibs[mibname]
 
-                        debug.logger & debug.flagCompiler and debug.logger('%s (%s) read from %s, immediate dependencies: %s' % (mibInfo.alias, mibname, fileInfo.mibfile, ', '.join(mibInfo.otherMibs) or '<none>'))
+                        mibsToParse.extend(mibInfo.imported)
+
+                        debug.logger & debug.flagCompiler and debug.logger('%s (%s) read from %s, immediate dependencies: %s' % (mibInfo.name, mibname, fileInfo.path, ', '.join(mibInfo.imported) or '<none>'))
 
                     break
 
@@ -91,14 +96,16 @@ class MibCompiler(object):
                     exc.mibname = mibname
                     exc.msg += ' at MIB %s' % mibname
                     debug.logger & debug.flagCompiler and debug.logger('%serror %s from %s' % (kwargs.get('ignoreErrors') and 'ignoring ' or 'failing on ', exc, source))
-                    if mibname not in failedMibs:
-                        failedMibs[mibname] = exc
+                    failedMibs[mibname] = exc
+                    processed[mibname] = statusFailed.setOptions(error=exc)
             else:
                 exc = error.PySmiError('MIB source %s not found' % mibname)
                 exc.mibname = mibname
                 debug.logger & debug.flagCompiler and debug.logger('no %s found everywhare' % mibname)
                 if mibname not in failedMibs:
                     failedMibs[mibname] = exc
+                if mibname not in processed:
+                    processed[mibname] = statusMissing
 
         debug.logger & debug.flagCompiler and debug.logger('MIBs analized %s, MIBs failed %s' % (len(parsedMibs), len(failedMibs)))
 
@@ -111,7 +118,7 @@ class MibCompiler(object):
             debug.logger & debug.flagCompiler and debug.logger('checking if %s requires updating' % mibname)
             for searcher in self._searchers:
                 try:
-                    searcher.fileExists(mibname, fileInfo.mtime, rebuild=kwargs.get('rebuild'))
+                    existing = searcher.fileExists(mibname, fileInfo.mtime, rebuild=kwargs.get('rebuild'))
                 except error.PySmiCompiledFileNotFoundError:
                     debug.logger & debug.flagCompiler and debug.logger('no compiled MIB %s available through %s' % (mibname, searcher))
                     continue
@@ -120,6 +127,7 @@ class MibCompiler(object):
                         error.PySmiCompiledFileTakesPrecedenceError):
                     debug.logger & debug.flagCompiler and debug.logger('will be using existing compiled MIB %s found by %s' % (mibname, searcher))
                     del parsedMibs[mibname]
+                    processed[mibname] = statusUntouched.setOptions()
                     break
 
                 except error.PySmiError:
@@ -128,10 +136,7 @@ class MibCompiler(object):
                     exc.mibname = mibname
                     exc.msg += ' at MIB %s' % mibname
                     debug.logger & debug.flagCompiler and debug.logger('error %s from %s' % (exc, source))
-                    if mibname not in failedMibs:
-                        failedMibs[mibname] = exc
-                    del parsedMibs[mibname]
-                    break
+                    continue
             else:
                 debug.logger & debug.flagCompiler and debug.logger('no suitable compiled MIB %s found anywhere' % mibname)
         else:
@@ -148,7 +153,7 @@ class MibCompiler(object):
                 'Produced by %s-%s from %s at %s' % (packageName, packageVersion, mibname, time.asctime()),
                 'On host %s platform %s version %s by user %s' % (os.uname()[1], os.uname()[0], os.uname()[2], getpwuid(os.getuid())[0]),
                 'Using Python version %s' % sys.version.split('\n')[0],
-                'From source file %s' % fileInfo.mibfile
+                'From source %s' % fileInfo.path
             ]
 
             try:
@@ -159,9 +164,10 @@ class MibCompiler(object):
                         genTexts=kwargs.get('genTexts')
                     )
 
-                builtMibs[mibname] = mibData
+                builtMibs[mibname] = fileInfo, mibInfo, symbolTable, mibData
+                del parsedMibs[mibname]
 
-                debug.logger & debug.flagCompiler and debug.logger('%s read from %s and compiled by %s' % (mibname, fileInfo.mibfile, self._writer))
+                debug.logger & debug.flagCompiler and debug.logger('%s read from %s and compiled by %s' % (mibname, fileInfo.path, self._writer))
 
             except error.PySmiError:
                 exc_class, exc, tb = sys.exc_info()
@@ -169,8 +175,8 @@ class MibCompiler(object):
                 exc.mibname = mibname
                 exc.msg += ' at MIB %s' % mibname
                 debug.logger & debug.flagCompiler and debug.logger('error %s from %s' % (exc, self._codegen))
-                if mibname not in failedMibs:
-                    failedMibs[mibname] = exc
+                processed[mibname] = statusFailed.setOptions(error=exc)
+                failedMibs[mibname] = exc
                 del parsedMibs[mibname]
         else:
             debug.logger & debug.flagCompiler and debug.logger('MIBs parsed %s, MIBs failed %s' % (len(parsedMibs), len(failedMibs)))
@@ -188,9 +194,14 @@ class MibCompiler(object):
 			genTexts=kwargs.get('genTexts')
 		    )
 
-                    builtMibs[mibname] = fileData
+                    builtMibs[mibname] = fileInfo, MibInfo(name=mibname, imported=[]), {}, fileData
+
 
                     del failedMibs[mibname]
+
+                    processed[mibname] = statusBorrowed.setOptions(
+                        file=fileInfo.name
+                    )
 
                     debug.logger & debug.flagCompiler and debug.logger('%s borrowed with %s' % (mibname, borrower))
 
@@ -205,15 +216,8 @@ class MibCompiler(object):
 
         if failedMibs and not kwargs.get('ignoreErrors'):
             debug.logger & debug.flagCompiler and debug.logger('failing with problem MIBs %s' % ', '.join(failedMibs))
-            processed = {}
-            for mibname in failedMibs:
-                processed[mibname] = statusFailed.setOptions(
-                    exception=failedMibs[mibname]
-                )
-            for mibname in parsedMibs:
-                processed[mibname] = statusUnprocessed.setOptions(
-                    exception=error.PySmiError('Ignore MIB due to other failures')
-                )
+            for mibname in builtMibs:
+                processed[mibname] = statusUnprocessed
             return processed
 
         debug.logger & debug.flagCompiler and debug.logger('proceeding with built MIBs %s, failed MIBs %s' % (', '.join(builtMibs), ', '.join(failedMibs)))
@@ -223,12 +227,19 @@ class MibCompiler(object):
         #
 
         for mibname in builtMibs.copy():
+            fileInfo, mibInfo, symbolTable, mibData = builtMibs[mibname]
             try:
-                self._writer.putData(
-                    mibname, builtMibs[mibname], dryRun=kwargs.get('dryRun')
+                created = self._writer.putData(
+                    mibname, mibData, dryRun=kwargs.get('dryRun')
                 )
 
                 debug.logger & debug.flagCompiler and debug.logger('%s stored by %s' % (mibname, self._writer))
+
+                del builtMibs[mibname]
+
+                processed[mibname] = statusCompiled.setOptions(
+                    path=fileInfo.path, file=fileInfo.file, alias=fileInfo.name
+                )
 
             except error.PySmiError:
                 exc_class, exc, tb = sys.exc_info()
@@ -236,20 +247,12 @@ class MibCompiler(object):
                 exc.mibname = mibname
                 exc.msg += ' at MIB %s' % mibname
                 debug.logger & debug.flagCompiler and debug.logger('error %s from %s' % (exc, self._writer))
+                processed[mibname] = statusFailed.setOptions(error=exc)
                 failedMibs[mibname] = exc
                 del builtMibs[mibname]
         else:
-            debug.logger & debug.flagCompiler and debug.logger('%s MIBs stored' % len(parsedMibs))
+            debug.logger & debug.flagCompiler and debug.logger('MIBs stored')
 
-        processed = {}
-        for mibname in failedMibs:
-            processed[mibname] = statusFailed.setOptions(
-                exception=failedMibs[mibname], alias=mibname
-            )
-        for mibname in builtMibs:
-            processed[mibname] = statusCompiled.setOptions(
-                alias=mibname
-        )
         return processed
 
     def buildIndex(self, processedMibs, **kwargs):

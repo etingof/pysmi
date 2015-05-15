@@ -903,4 +903,4 @@ class SymtableCodeGen(AbstractCodeGen):
       out = ''.join(['# %s\n' % x for x in kwargs['comments']]) + '#\n' + out
       out = '#\n# PySNMP MIB module %s (http://pysnmp.sf.net)\n' % self.moduleName[0] + out
     debug.logger & debug.flagCodegen and debug.logger('canonical MIB name %s (%s), imported MIB(s) %s, Python code size %s bytes' % (self.moduleName[0], moduleOid, ','.join(importedModules) or '<none>', len(out)))
-    return MibInfo(oid=None, alias=self.moduleName[0], otherMibs=tuple([ x for x in importedModules ])), out  # XXX should return a dict of symbols
+    return MibInfo(oid=None, name=self.moduleName[0], imported=tuple([ x for x in importedModules ])), out  # XXX should return a dict of symbols
