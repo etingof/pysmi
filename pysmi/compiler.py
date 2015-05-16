@@ -58,6 +58,7 @@ class MibCompiler(object):
         #
         processed = {}
         parsedMibs = {}; failedMibs = {}; borrowedMibs = {}; builtMibs = {}
+        symbolTableMap = {}
         mibsToParse = [ x for x in mibnames ]
         while mibsToParse:
             mibname = mibsToParse.pop(0)
@@ -74,10 +75,12 @@ class MibCompiler(object):
                     fileInfo, fileData = source.getData(mibname)
                     for mibTree in self._parser.parse(fileData):
                         mibInfo, symbolTable = self._symbolgen.genCode(
-                            mibTree, {}
+                            mibTree, symbolTableMap
                         )
 
-                        parsedMibs[mibInfo.name] = fileInfo, mibInfo, symbolTable, mibTree
+                        symbolTableMap[mibInfo.name] = symbolTable
+
+                        parsedMibs[mibInfo.name] = fileInfo, mibInfo, mibTree
                         if mibname in failedMibs:
                             del failedMibs[mibname]
 
@@ -114,7 +117,7 @@ class MibCompiler(object):
         #
 
         for mibname in parsedMibs.copy():
-            fileInfo, mibInfo, symbolTable, mibTree = parsedMibs[mibname]
+            fileInfo, mibInfo, mibTree = parsedMibs[mibname]
             debug.logger & debug.flagCompiler and debug.logger('checking if %s requires updating' % mibname)
             for searcher in self._searchers:
                 try:
@@ -152,7 +155,7 @@ class MibCompiler(object):
         #
 
         for mibname in parsedMibs.copy():
-            fileInfo, mibInfo, symbolTable, mibTree = parsedMibs[mibname]
+            fileInfo, mibInfo, mibTree = parsedMibs[mibname]
 
             comments = [
                 'ASN.1 source %s' % fileInfo.path,
@@ -164,12 +167,12 @@ class MibCompiler(object):
             try:
                 mibInfo, mibData = self._codegen.genCode(
                         mibTree,
-                        dict([(x,parsedMibs[x][2]) for x in parsedMibs]),
+                        symbolTableMap,
                         comments=comments,
                         genTexts=kwargs.get('genTexts')
                     )
 
-                builtMibs[mibname] = fileInfo, mibInfo, symbolTable, mibData
+                builtMibs[mibname] = fileInfo, mibInfo, mibData
                 del parsedMibs[mibname]
 
                 debug.logger & debug.flagCompiler and debug.logger('%s read from %s and compiled by %s' % (mibname, fileInfo.path, self._writer))
@@ -203,7 +206,7 @@ class MibCompiler(object):
                         genTexts=kwargs.get('genTexts')
                     )
 
-                    borrowedMibs[mibname] = fileInfo, MibInfo(name=mibname, imported=[]), {}, fileData
+                    borrowedMibs[mibname] = fileInfo, MibInfo(name=mibname, imported=[]), fileData
 
                     del failedMibs[mibname]
 
@@ -221,7 +224,7 @@ class MibCompiler(object):
 
         for mibname in borrowedMibs.copy():
             debug.logger & debug.flagCompiler and debug.logger('checking if failed MIB %s requires borrowing' % mibname)
-            fileInfo, mibInfo, symbolTable, mibData = borrowedMibs[mibname]
+            fileInfo, mibInfo, mibData = borrowedMibs[mibname]
             for searcher in self._searchers:
                 try:
                     searcher.fileExists(mibname, fileInfo.mtime, rebuild=kwargs.get('rebuild'))
@@ -278,7 +281,7 @@ class MibCompiler(object):
         #
 
         for mibname in builtMibs.copy():
-            fileInfo, mibInfo, symbolTable, mibData = builtMibs[mibname]
+            fileInfo, mibInfo, mibData = builtMibs[mibname]
             try:
                 created = self._writer.putData(
                     mibname, mibData, dryRun=kwargs.get('dryRun')
