@@ -50,7 +50,7 @@ class PyPackageSearcher(AbstractSearcher):
                 return PyFileSearcher(os.path.split(p.__file__)[0]).fileExists(mibname, mtime, rebuild=rebuild)
 
         except ImportError:
-            raise error.PySmiCompiledFileNotFoundError('%s is not importable, trying as a path' % self._package, searcher=self)
+            raise error.PySmiFileNotFoundError('%s is not importable, trying as a path' % self._package, searcher=self)
 
         for format in imp.PY_COMPILED, imp.PY_SOURCE:
             for pySfx, pyMode in self.suffixes[format]:
@@ -65,8 +65,9 @@ class PyPackageSearcher(AbstractSearcher):
                         pyTime = struct.unpack('<L', pyData[:4])[0]
                         debug.logger & debug.flagSearcher and debug.logger('found %s, mtime %s' % (f, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(pyTime))))
                         if pyTime >= mtime:
-                            raise error.PySmiSourceNotModifiedError()
-                        return
+                            raise error.PySmiFileNotModifiedError()
+                        else:
+                            raise error.PySmiFileNotFoundError('older file %s exists' % mibname, searcher=self)
                     else:
                         debug.logger & debug.flagSearcher and debug.logger('bad magic in %s' % f)
                         continue
@@ -78,8 +79,8 @@ class PyPackageSearcher(AbstractSearcher):
 
                     debug.logger & debug.flagSearcher and debug.logger('found %s, mtime %s' % (f, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(pyTime))))
                     if pyTime >= mtime:
-                        raise error.PySmiSourceNotModifiedError()
+                        raise error.PySmiFileNotModifiedError()
+                    else:
+                        raise error.PySmiFileNotFoundError('older file %s exists' % mibname, searcher=self)
 
-                    return
-
-        raise error.PySmiCompiledFileNotFoundError('no file %s found' % mibname, searcher=self)
+        raise error.PySmiFileNotFoundError('no file %s found' % mibname, searcher=self)

@@ -12,6 +12,6 @@ class StubSearcher(AbstractSearcher):
     def fileExists(self, mibname, mtime, rebuild=False):
         if mibname in self._mibnames:
             debug.logger & debug.flagSearcher and debug.logger('pretend compiled %s exists and is very new' % mibname)
-            raise error.PySmiCompiledFileTakesPrecedenceError('compiled file %s is among %s' % (mibname, ', '.join(self._mibnames)), searcher=self)
+            raise error.PySmiFileNotModifiedError('compiled file %s is among %s' % (mibname, ', '.join(self._mibnames)), searcher=self)
 
-        raise error.PySmiCompiledFileNotFoundError('no compiled file %s found among %s' % (mibname, ', '.join(self._mibnames)), searcher=self)
+        raise error.PySmiFileNotFoundError('no compiled file %s found among %s' % (mibname, ', '.join(self._mibnames)), searcher=self)

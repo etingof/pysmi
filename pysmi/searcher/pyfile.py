@@ -42,8 +42,9 @@ class PyFileSearcher(AbstractSearcher):
                         pyTime = struct.unpack('<L', pyData[:4])[0]
                         debug.logger & debug.flagSearcher and debug.logger('found %s, mtime %s' % (f, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(pyTime))))
                         if pyTime >= mtime:
-                            raise error.PySmiSourceNotModifiedError()
-                        return
+                            raise error.PySmiFileNotModifiedError()
+                        else:
+                            raise error.PySmiFileNotFoundError('older file exists' % mibname, searcher=self)
                     else:
                         debug.logger & debug.flagSearcher and debug.logger('bad magic in %s' % f)
                         continue
@@ -55,6 +56,6 @@ class PyFileSearcher(AbstractSearcher):
 
                     debug.logger & debug.flagSearcher and debug.logger('found %s, mtime %s' % (f, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(pyTime))))
                     if pyTime >= mtime:
-                        raise error.PySmiSourceNotModifiedError()
+                        raise error.PySmiFileNotModifiedError()
 
-        raise error.PySmiCompiledFileNotFoundError('no compiled file %s found' % mibname, searcher=self)
+        raise error.PySmiFileNotFoundError('no compiled file %s found' % mibname, searcher=self)
