@@ -293,7 +293,6 @@ class SymtableCodeGen(AbstractCodeGen):
   }
  
   smiv1IdxTypes = [ 'INTEGER', 'OCTET STRING', 'IPADDRESS', 'NETWORKADDRESS' ]
-
   ifTextStr = 'if mibBuilder.loadTexts: '
   indent = ' '*4
   fakeidx = 1000 # starting index for fake symbols
@@ -303,9 +302,10 @@ class SymtableCodeGen(AbstractCodeGen):
     self._cols = {} # k, v = name, datatype
     self._exports = set()
     self._presentedSyms = set()
+    self._parentOids = set()
+    self._importMap = {} # k, v = symbol, MIB
     self._symsOrder = []
-    self._postponedSyms = {} # k, v = name, (parent OID, generated code)
-    self._out = {} # k, v = name, generated code
+    self._out = {} # k, v = symbol, properties
     self.moduleName = ['DUMMY']
     self.genRules = { 'text' : 1 }
  
@@ -353,7 +353,6 @@ class SymtableCodeGen(AbstractCodeGen):
     return data 
 
   def genImports(self, imports):
-    outStr = ''
     # convertion to SNMPv2
     toDel = []
     for module in list(imports):
@@ -376,231 +375,143 @@ class SymtableCodeGen(AbstractCodeGen):
         imports[module] += self.constImports[module]
       else:
         imports[module] = self.constImports[module]
+
     for module in sorted(imports):
       symbols = ()
       for symbol in set(imports[module]):
         symbols += self.symTrans(symbol)
       if symbols:
         self._presentedSyms = self._presentedSyms.union([self.transOpers(s) for s in symbols])
-        outStr += '( %s, ) = mibBuilder.importSymbols("%s")\n' % \
-          ( ', '.join([self.transOpers(s) for s in symbols]),
-            '", "'.join((module,) + symbols) )
-    return outStr, tuple(sorted(imports))
+        self._importMap.update([(self.transOpers(s), module) for s in symbols]) 
+    return {}, tuple(sorted(imports))
 
-  def genExports(self, ):
-    exports = list(self._exports)
-    exportsNum = len(exports)
-    chunkNum = exportsNum/254
-    outStr = ''
-    for i in range(int(chunkNum+1)):
-      outStr += 'mibBuilder.exportSymbols("' + self.moduleName[0] + '", '
-      outStr += ', '.join(exports[254*i:254*(i+1)]) + ')\n'
-    return self._exports and outStr or ''
-
-  def genLabel(self, symbol, classmode=0):
-    if symbol.find('-') != -1:
-      return classmode and 'label = "' + symbol + '"\n' or \
-                           '.setLabel("' + symbol + '")'
-    return ''
-
-  def addToExports(self, symbol, moduleIdentity=0):
-    if moduleIdentity:
-      self._exports.add('PYSNMP_MODULE_ID=%s' % symbol)
-    self._exports.add('%s=%s' % (symbol, symbol))
-    self._presentedSyms.add(symbol)
-
-  def regSym(self, symbol, outStr, parentOid=None, moduleIdentity=0):
-    if symbol in self._presentedSyms or symbol in self._postponedSyms:
+  def regSym(self, symbol, symProps):
+    if symbol in self._out or symbol in self._importMap:
       raise error.PySmiSemanticError('Duplicate symbol found: %s' % symbol)
-    if not parentOid or parentOid in self._presentedSyms:
-      self._presentedSyms.add(symbol)
-      self._symsOrder.append(symbol)
-      self.regPostponedSyms()
-    else: 
-      self._postponedSyms[symbol] = (parentOid, outStr)
-    self.addToExports(symbol, moduleIdentity)
-    self._out[symbol] = outStr
+    self._out[symbol] = symProps
 
-  def regPostponedSyms(self):
-    regedSyms = []
-    for sym, val in self._postponedSyms.items():
-      parent, code = val
-      if parent in self._presentedSyms:
-        self._presentedSyms.add(sym)
-        self._symsOrder.append(sym)
-        regedSyms.append(sym)
-    for sym in regedSyms:
-      self._postponedSyms.pop(sym)
-
-### Clause generation functions
+### Clause handlers
   def genAgentCapabilities(self, data, classmode=0):
     name, description, oid = data
-    label = self.genLabel(name)
     name = self.transOpers(name)
-    oidStr, parentOid = oid
-    outStr =  name + ' = AgentCapabilities(' + oidStr + ')' + label + '\n'
-    if self.genRules['text']:
-      outStr += self.ifTextStr + name + description + '\n'
-    self.regSym(name, outStr, parentOid)
-    return outStr
+    symProps = {'type': 'AgentCapabilities',
+                'oid': oid, 
+    }
+    self.regSym(name, symProps)
 
   def genModuleIdentity(self, data, classmode=0):
     name, organization, contactInfo, description, revisions, oid  = data
-    label = self.genLabel(name)
     name = self.transOpers(name)
-    oidStr, parentOid = oid
-    revisions = revisions and revisions or ''
-    outStr = name + ' = ModuleIdentity(' + oidStr + ')' + label + revisions + '\n'
-    if self.genRules['text']:
-      outStr += self.ifTextStr + name + organization + '\n' 
-      outStr += self.ifTextStr + name + contactInfo + '\n' 
-      outStr += self.ifTextStr + name + description + '\n' 
-    self.regSym(name, outStr, parentOid, moduleIdentity=1)
-    return outStr
+    symProps = {'type': 'ModuleIdentity',
+                'oid': oid,
+    }
+    self.regSym(name, symProps)
 
   def genModuleCompliance(self, data, classmode=0):
     name, description, compliances, oid = data
-    label = self.genLabel(name)
     name = self.transOpers(name)
-    oidStr, parentOid = oid
-    outStr = name + ' = ModuleCompliance(' + oidStr + ')' + label
-    outStr += compliances + '\n'
-    if self.genRules['text']:
-      outStr += self.ifTextStr + name + description + '\n'
-    self.regSym(name, outStr, parentOid)
-    return outStr
+    symProps = {'type': 'ModuleCompliance',
+                 'oid': oid,
+    }
+    self.regSym(name, symProps)
 
   def genNotificationGroup(self, data, classmode=0):
     name, objects, description, oid = data
-    label = self.genLabel(name)
     name = self.transOpers(name)
-    oidStr, parentOid = oid
-    objStr = ''
-    if objects:
-      objects = [ '("' + self.moduleName[0] + '", "' + self.transOpers(obj) + '"),' \
-                  for obj in objects ]
-    objStr = ' '.join(objects)
-    outStr = name + ' = NotificationGroup(' + oidStr + ')' + label
-    outStr += '.setObjects(*(' + objStr + '))\n'
-    if self.genRules['text']:
-      outStr += self.ifTextStr + name + description + '\n'
-    self.regSym(name, outStr, parentOid)
-    return outStr  
+    symProps = {'type': 'NotificationGroup',
+                'oid': oid,
+    }
+    self.regSym(name, symProps)
 
   def genNotificationType(self, data, classmode=0):
     name, objects, description, oid = data
-    label = self.genLabel(name)
     name = self.transOpers(name)
-    oidStr, parentOid = oid
-    objStr = ''
-    if objects:
-      objects = [ '("' + self.moduleName[0] + '", "' + self.transOpers(obj) + '"),' \
-                  for obj in objects ]
-    objStr = ' '.join(objects)
-    outStr = name + ' = NotificationType(' + oidStr + ')' + label
-    outStr += '.setObjects(*(' + objStr + '))\n'
-    if self.genRules['text']:
-      outStr += self.ifTextStr + name + description + '\n'
-    self.regSym(name, outStr, parentOid)
-    return outStr
+    symProps = {'type': 'NotificationType',
+                'oid': oid,
+    }
+    self.regSym(name, symProps)
 
   def genObjectGroup(self, data, classmode=0):
     name, objects, description, oid = data
-    label = self.genLabel(name)
     name = self.transOpers(name)
-    oidStr, parentOid = oid
-    objStr = ''
-    if objects:
-      objects = [ '("' + self.moduleName[0] + '", "' + self.transOpers(obj) + '"),' \
-                  for obj in objects ]
-    objStr = ' '.join(objects)
-    outStr = name + ' = ObjectGroup(' + oidStr + ')' + label
-    outStr += '.setObjects(*(' + objStr + '))\n'
-    if self.genRules['text']:
-      outStr += self.ifTextStr + name + description + '\n'
-    self.regSym(name, outStr, parentOid)
-    return outStr
+    symProps = {'type': 'ObjectGroup',
+                'oid': oid,
+    }
+    self.regSym(name, symProps)
 
   def genObjectIdentity(self, data, classmode=0):
     name, description, oid = data
-    label = self.genLabel(name)
     name = self.transOpers(name)
-    oidStr, parentOid = oid
-    outStr =  name + ' = ObjectIdentity(' + oidStr + ')' + label + '\n'
-    if self.genRules['text']:
-      outStr += self.ifTextStr + name + description + '\n'
-    self.regSym(name, outStr, parentOid)
-    return outStr
+    symProps = {'type': 'ObjectIdentity',
+                'oid': oid,
+    }
+    self.regSym(name, symProps)
 
   def genObjectType(self, data, classmode=0):
     name, syntax, units, maxaccess, description, augmention, index, defval, oid = data
-    label = self.genLabel(name)
+#    label = self.genLabel(name)
     name = self.transOpers(name)
-    oidStr, parentOid = oid
-    indexStr, fakeStrlist, fakeSyms = index and index or ('', '', [])
-    subtype = syntax[0] == 'Bits' and 'Bits()' + syntax[1] or \
-                                      syntax[1] # Bits hack #1
-    classtype = self.typeClasses.get(syntax[0], syntax[0])
-    classtype = self.transOpers(classtype)
-    classtype = syntax[0] == 'Bits' and 'MibScalar' or classtype # Bits hack #2
-    classtype = name in self._cols and 'MibTableColumn' or classtype
-    outStr = name + ' = ' + classtype  + '(' + oidStr  + ', ' + subtype + \
-             (defval and defval or '') + ')' + label
-    outStr += (units and units) or ''
-    outStr += (maxaccess and maxaccess) or ''
-    outStr += (indexStr and indexStr) or ''
-    outStr += '\n'
-    if augmention:
-      augmention = self.transOpers(augmention)
-      outStr += augmention + '.registerAugmentions(("' + self.moduleName[0] + \
-                '", "' + name + '"))\n'
-      outStr += name + '.setIndexNames(*' + augmention + '.getIndexNames())\n'
-    if self.genRules['text'] and description:
-      outStr += self.ifTextStr + name + description + '\n'
-    self.regSym(name, outStr, parentOid)
-    if fakeSyms: # fake symbols for INDEX to support SMIv1
-      for i in range(len(fakeSyms)):
-        fakeOutStr = fakeStrlist[i] % oidStr
-        self.regSym(fakeSyms[i], fakeOutStr, name)
-    return outStr
+#    oidStr, parentOid = oid
+#    indexStr, fakeStrlist, fakeSyms = index and index or ('', '', [])
+#    subtype = syntax[0] == 'Bits' and 'Bits()' + syntax[1] or \
+#                                      syntax[1] # Bits hack #1
+#    classtype = self.typeClasses.get(syntax[0], syntax[0])
+#    classtype = self.transOpers(classtype)
+#    classtype = syntax[0] == 'Bits' and 'MibScalar' or classtype # Bits hack #2
+#    classtype = name in self._cols and 'MibTableColumn' or classtype
+#    outStr = name + ' = ' + classtype  + '(' + oidStr  + ', ' + subtype + \
+#             (defval and defval or '') + ')' + label
+#    outStr += (units and units) or ''
+#    outStr += (maxaccess and maxaccess) or ''
+#    outStr += (indexStr and indexStr) or ''
+#    outStr += '\n'
+#    if augmention:
+#      augmention = self.transOpers(augmention)
+#      outStr += augmention + '.registerAugmentions(("' + self.moduleName[0] + \
+#                '", "' + name + '"))\n'
+#      outStr += name + '.setIndexNames(*' + augmention + '.getIndexNames())\n'
+#    if self.genRules['text'] and description:
+#      outStr += self.ifTextStr + name + description + '\n'
+#    self.regSym(name, outStr, parentOid)
+#    if fakeSyms: # fake symbols for INDEX to support SMIv1
+#      for i in range(len(fakeSyms)):
+#        fakeOutStr = fakeStrlist[i] % oidStr
+#        self.regSym(fakeSyms[i], fakeOutStr, name)
+#    return outStr
+    symProps = {'type': 'ObjectType',
+                'oid': oid,
+    }
+    self.regSym(name, symProps)
 
   def genTrapType(self, data, classmode=0):
     name, enterprise, variables, description, value = data
-    label = self.genLabel(name)
     name = self.transOpers(name)
-    enterpriseStr, parentOid = enterprise
-    varStr = ''
-    if variables:
-      variables = [ '("' + self.moduleName[0] + '", "' + self.transOpers(var) + '"),' \
-                    for var in variables ]
-    varStr = ' '.join(variables)   
-    outStr = name + ' = NotificationType(' + enterpriseStr + \
-             ' + (0,' + str(value) + '))' + label
-    outStr += '.setObjects(*(' + varStr + '))\n'
-    if self.genRules['text']:
-      outStr += self.ifTextStr + name + description + '\n'
-    self.regSym(name, outStr, parentOid)
-    return outStr
+    symProps = { 'type': 'NotificationType',
+                 'oid': enterprise + (0, value),
+    }
+    self.regSym(name, symProps)
 
   def genTypeDeclaration(self, data, classmode=0):
-    outStr = ''
     name, declaration = data
-    if declaration:
-      parentType, attrs = declaration
-      if parentType: # skipping SEQUENCE case
-        name = self.transOpers(name)
-        outStr = 'class ' + name + '(' + parentType +'):\n' + attrs + '\n'
-        self.regSym(name, outStr)
-    return outStr 
-
+    name = self.transOpers(name)
+#    if declaration:
+#      parentType, attrs = declaration
+#      if parentType: # skipping SEQUENCE case
+#        name = self.transOpers(name)
+#        outStr = 'class ' + name + '(' + parentType +'):\n' + attrs + '\n'
+#        self.regSym(name, outStr)
+#    return outStr 
+    symProps = { 'type': 'TypeDeclaration',
+    }
+    self.regSym(name, symProps)
+    
   def genValueDeclaration(self, data, classmode=0):
     name, oid = data
-    label = self.genLabel(name)
     name = self.transOpers(name)
-    oidStr, parentOid = oid
-    outStr = name + ' = MibIdentifier(' + oidStr + ')' + label + '\n'
-    self.regSym(name, outStr, parentOid)
-    return outStr
+    symProps = { 'type': 'MibIdentifier',
+                 'oid': oid,
+    }
+    self.regSym(name, symProps)
 
 ### Subparts generation functions
   def genBitNames(self, data, classmode=0):
@@ -751,20 +662,19 @@ class SymtableCodeGen(AbstractCodeGen):
     return outStr
 
   def genOid(self, data, classmode=0):
-    outStr = ''
-    parent = '' 
+    out = ()
     for el in data[0]:
       if isinstance(el, (str, unicode)):
         parent = self.transOpers(el)
-        s = parent + '.getName()'
+        self._parentOids.add(parent)
+        out += ((parent, self._importMap.get(parent, self.moduleName[0])),)
       elif isinstance(el, (int, long)):
-        s = '(' + str(el) + ',)'
+        out += (el,)
       elif isinstance(el, tuple):
-        s = '(' + str(el[1]) + ',)' # XXX Do we need to create a new object el[0]?
+        out += (el[1],) # XXX Do we need to create a new object el[0]?
       else:
         raise error.PySmiSemanticError('unknown datatype for OID: %s' % el)
-      outStr += not outStr and s or ' + ' + s 
-    return outStr, parent
+    return out
 
   def genObjects(self, data, classmode=0):
     if data[0]:
@@ -876,14 +786,12 @@ class SymtableCodeGen(AbstractCodeGen):
 
   def genCode(self, ast, symbolTable, **kwargs):
     self.genRules['text'] = kwargs.get('genTexts', False)
-    out = ''
-    importedModules = ()
     self._rows.clear()
     self._cols.clear()
     self._exports.clear()
     self._presentedSyms.clear()
-    self._symsOrder = []
-    self._postponedSyms.clear()
+    self._parentOids.clear()
+    self._importMap.clear()
     self._out.clear()
     self.moduleName[0], moduleOid, imports, declarations = ast
     out, importedModules = self.genImports(imports and imports or {})
@@ -892,15 +800,8 @@ class SymtableCodeGen(AbstractCodeGen):
 	clausetype = declr[0]
 	classmode = clausetype == 'typeDeclaration'
 	self.handlersTable[declr[0]](self, self.prepData(declr[1:], classmode), classmode)
-    if self._postponedSyms:
-      raise error.PySmiSemanticError('Unknown parent OIDs for symbols: %s' % ', '.join(self._postponedSyms)) 
-    for sym in self._symsOrder:
-      if sym not in self._out:
-	raise error.PySmiCodegenError('No generated code for symbol %s' % sym)
-      out += self._out[sym] 
-    out += self.genExports()
-    if 'comments' in kwargs:
-      out = ''.join(['# %s\n' % x for x in kwargs['comments']]) + '#\n' + out
-      out = '#\n# PySNMP MIB module %s (http://pysnmp.sf.net)\n' % self.moduleName[0] + out
-    debug.logger & debug.flagCodegen and debug.logger('canonical MIB name %s (%s), imported MIB(s) %s, Python code size %s bytes' % (self.moduleName[0], moduleOid, ','.join(importedModules) or '<none>', len(out)))
-    return MibInfo(oid=None, name=self.moduleName[0], imported=tuple([ x for x in importedModules ])), out  # XXX should return a dict of symbols
+    for sym in self._parentOids:
+      if sym not in self._out and sym not in self._importMap:
+        raise error.PySmiSemanticError('Unknown parent symbol: %s' % sym) 
+    debug.logger & debug.flagCodegen and debug.logger('canonical MIB name %s (%s), imported MIB(s) %s, Symbol table size %s symbols' % (self.moduleName[0], moduleOid, ','.join(importedModules) or '<none>', len(self._out)))
+    return MibInfo(oid=None, name=self.moduleName[0], imported=tuple([ x for x in importedModules ])), self._out  # XXX should return a dict of symbols
