@@ -195,7 +195,7 @@ class MibCompiler(object):
 
         for mibname in failedMibs.copy():
             if kwargs.get('noDeps') and mibname not in mibnames:
-		debug.logger & debug.flagCompiler and debug.logger('excluding imported MIB %s from borrowing' % mibname)
+                debug.logger & debug.flagCompiler and debug.logger('excluding imported MIB %s from borrowing' % mibname)
                 continue
 
             for borrower in self._borrowers:
