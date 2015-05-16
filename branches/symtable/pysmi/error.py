@@ -28,12 +28,11 @@ class PySmiParserError(PySmiLexerError): pass
 class PySmiSyntaxError(PySmiParserError): pass
 
 class PySmiSearcherError(PySmiError): pass
-class PySmiSourceNotModifiedError(PySmiSearcherError): pass
-class PySmiCompiledFileNotFoundError(PySmiSearcherError): pass
-class PySmiCompiledFileTakesPrecedenceError(PySmiSearcherError): pass
+class PySmiFileNotModifiedError(PySmiSearcherError): pass
+class PySmiFileNotFoundError(PySmiSearcherError): pass
 
 class PySmiReaderError(PySmiError): pass
-class PySmiSourceNotFoundError(PySmiReaderError): pass
+class PySmiReaderFileNotFoundError(PySmiReaderError): pass
 
 class PySmiCodegenError(PySmiError): pass
 class PySmiSemanticError(PySmiCodegenError): pass

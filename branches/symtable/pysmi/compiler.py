@@ -87,7 +87,7 @@ class MibCompiler(object):
 
                     break
 
-                except error.PySmiSourceNotFoundError:
+                except error.PySmiReaderFileNotFoundError:
                     debug.logger & debug.flagCompiler and debug.logger('no %s found at %s' % (mibname, source))
                     continue
                 except error.PySmiError:
@@ -119,12 +119,11 @@ class MibCompiler(object):
             for searcher in self._searchers:
                 try:
                     searcher.fileExists(mibname, fileInfo.mtime, rebuild=kwargs.get('rebuild'))
-                except error.PySmiCompiledFileNotFoundError:
+                except error.PySmiFileNotFoundError:
                     debug.logger & debug.flagCompiler and debug.logger('no compiled MIB %s available through %s' % (mibname, searcher))
                     continue
 
-                except (error.PySmiSourceNotModifiedError,
-                        error.PySmiCompiledFileTakesPrecedenceError):
+                except error.PySmiFileNotModifiedError:
                     debug.logger & debug.flagCompiler and debug.logger('will be using existing compiled MIB %s found by %s' % (mibname, searcher))
                     del parsedMibs[mibname]
                     processed[mibname] = statusUntouched
@@ -226,12 +225,11 @@ class MibCompiler(object):
             for searcher in self._searchers:
                 try:
                     searcher.fileExists(mibname, fileInfo.mtime, rebuild=kwargs.get('rebuild'))
-                except error.PySmiCompiledFileNotFoundError:
+                except error.PySmiFileNotFoundError:
                     debug.logger & debug.flagCompiler and debug.logger('no compiled MIB %s available through %s' % (mibname, searcher))
                     continue
 
-                except (error.PySmiSourceNotModifiedError,
-                        error.PySmiCompiledFileTakesPrecedenceError):
+                except error.PySmiFileNotModifiedError:
                     debug.logger & debug.flagCompiler and debug.logger('will be using existing compiled MIB %s found by %s' % (mibname, searcher))
                     del borrowedMibs[mibname]
                     processed[mibname] = statusUntouched

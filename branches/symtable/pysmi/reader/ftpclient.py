@@ -32,13 +32,13 @@ class FtpReader(AbstractReader):
         try:
             conn.connect(self._host, self._port, self._timeout)
         except ftplib.all_errors:
-            raise error.PySmiSourceNotFoundError('failed to connect to FTP server %s:%s: %s' % (self._host, self._port, sys.exc_info()[1]), reader=self)
+            raise error.PySmiReaderFileNotFoundError('failed to connect to FTP server %s:%s: %s' % (self._host, self._port, sys.exc_info()[1]), reader=self)
 
         try:
             conn.login(self._user, self._password)
         except ftplib.all_errors:
             conn.close()
-            raise error.PySmiSourceNotFoundError('failed to log in to FTP server %s:%s as %s/%s: %s' % (self._host, self._port, self._user, self._password, sys.exc_info()[1]), reader=self)
+            raise error.PySmiReaderFileNotFoundError('failed to log in to FTP server %s:%s as %s/%s: %s' % (self._host, self._port, self._user, self._password, sys.exc_info()[1]), reader=self)
 
         mibname = decode(mibname)
 
@@ -74,4 +74,4 @@ class FtpReader(AbstractReader):
 
         conn.close()
 
-        raise error.PySmiSourceNotFoundError('source MIB %s not found' % mibname, reader=self)
+        raise error.PySmiReaderFileNotFoundError('source MIB %s not found' % mibname, reader=self)

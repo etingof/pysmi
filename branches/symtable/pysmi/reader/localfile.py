@@ -79,6 +79,6 @@ class FileReader(AbstractReader):
                         if not self._ignoreErrors:
                             raise error.PySmiError('file %s access error: %s' % (f, sys.exc_info()[1]))
 
-                    raise error.PySmiSourceNotModifiedError('source MIB %s is older than needed' % f, reader=self)
+                    raise error.PySmiReaderFileNotModifiedError('source MIB %s is older than needed' % f, reader=self)
 
-        raise error.PySmiSourceNotFoundError('source MIB %s not found' % mibname, reader=self)
+        raise error.PySmiReaderFileNotFoundError('source MIB %s not found' % mibname, reader=self)

@@ -59,4 +59,4 @@ class HttpReader(AbstractReader):
 
                 return MibInfo(path='%s://%s:%s%s' % (self._schema, self._host, self._port, location), file=mibfile, name=mibalias, mtime=mtime), decode(response.read(self.maxMibSize))
 
-        raise error.PySmiSourceNotFoundError('source MIB %s not found' % mibname, reader=self)
+        raise error.PySmiReaderFileNotFoundError('source MIB %s not found' % mibname, reader=self)
