@@ -155,10 +155,10 @@ class MibCompiler(object):
             fileInfo, mibInfo, symbolTable, mibTree = parsedMibs[mibname]
 
             comments = [
-                'Produced by %s-%s from %s at %s' % (packageName, packageVersion, mibname, time.asctime()),
+                'ASN.1 source %s' % fileInfo.path,
+                'Produced by %s-%s at %s' % (packageName, packageVersion, time.asctime()),
                 'On host %s platform %s version %s by user %s' % (os.uname()[1], os.uname()[0], os.uname()[2], getpwuid(os.getuid())[0]),
-                'Using Python version %s' % sys.version.split('\n')[0],
-                'From source %s' % fileInfo.path
+                'Using Python version %s' % sys.version.split('\n')[0]
             ]
 
             try:
