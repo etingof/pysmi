@@ -2,8 +2,8 @@
 * generate reverse OID -> MIB index
 * handle SMIv1 MAX clause in range constraint
 * support MAX clause mapping it into type-specific value
-* possibly add additional AST processing phase to resolve imported symbols
-  in a more consistent way
+* possibly split symbol table code generator onto imported modules and symbol
+  table code generators.
 * support more common broken SMI constructs 
 * DEFVAL and AUGMENTS should not depend on the order of symbols in MIB
 * make a collection of fixed MIBs (e.g. Huawei has lots of bad/broken MIBs)
