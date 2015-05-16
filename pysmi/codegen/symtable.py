@@ -781,18 +781,15 @@ class SymtableCodeGen(AbstractCodeGen):
     'typeDeclarationRHS': genTypeDeclarationRHS,
     'UNITS': genUnits,
     'VarTypes': genObjects,
-    #'a': lambda x: genXXX(x, 'CONSTRAINT')
   }
 
   def genCode(self, ast, symbolTable, **kwargs):
     self.genRules['text'] = kwargs.get('genTexts', False)
     self._rows.clear()
     self._cols.clear()
-    self._exports.clear()
-    self._presentedSyms.clear()
     self._parentOids.clear()
     self._importMap.clear()
-    self._out.clear()
+    self._out = {} # should be new object, do not use `clear` method
     self.moduleName[0], moduleOid, imports, declarations = ast
     out, importedModules = self.genImports(imports and imports or {})
     for declr in declarations and declarations or []:
@@ -804,4 +801,4 @@ class SymtableCodeGen(AbstractCodeGen):
       if sym not in self._out and sym not in self._importMap:
         raise error.PySmiSemanticError('Unknown parent symbol: %s' % sym) 
     debug.logger & debug.flagCodegen and debug.logger('canonical MIB name %s (%s), imported MIB(s) %s, Symbol table size %s symbols' % (self.moduleName[0], moduleOid, ','.join(importedModules) or '<none>', len(self._out)))
-    return MibInfo(oid=None, name=self.moduleName[0], imported=tuple([ x for x in importedModules ])), self._out  # XXX should return a dict of symbols
+    return MibInfo(oid=None, name=self.moduleName[0], imported=tuple([ x for x in importedModules ])), self._out
