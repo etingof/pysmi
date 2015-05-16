@@ -29,7 +29,7 @@ httpSources = [
     ('mibs.snmplabs.com', 80, '/asn1/<mib>')
 ]
 ftpSources = [
-    ('ftp.cisco.com', '/pub/mibs/v1/<mib>')
+    ('ftp.cisco.com', '/pub/mibs/v2/<mib>')
 ]
 dstDirectory = '.pysnmp-mibs'
 
