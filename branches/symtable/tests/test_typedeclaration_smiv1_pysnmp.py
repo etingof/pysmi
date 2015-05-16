@@ -42,7 +42,7 @@ END
  """
 
     def setUp(self):
-        self.mibInfo, pycode = PySnmpCodeGen().genCode(parserFactory(**smiV1Relaxed)().parse(self.__class__.__doc__), genTexts=True)[0]
+        self.mibInfo, pycode = PySnmpCodeGen().genCode(parserFactory(**smiV1Relaxed)().parse(self.__class__.__doc__)[0], {}, genTexts=True)
         codeobj = compile(pycode, 'test', 'exec')
 
         mibBuilder = MibBuilder()
