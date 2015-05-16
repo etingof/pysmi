@@ -58,6 +58,8 @@ class PySnmpCodeGen(AbstractCodeGen):
     'ASN1-ENUMERATION': ('NamedValues',),
     'ASN1-REFINEMENT': ('ConstraintsUnion', 'ConstraintsIntersection', 'SingleValueConstraint', 'ValueRangeConstraint', 'ValueSizeConstraint'),
     'SNMPv2-SMI': ('iso',
+                   'Bits', # XXX
+                   'Integer32', # XXX
                    'MibIdentifier'), # OBJECT IDENTIFIER
   }
 
@@ -328,8 +330,8 @@ class PySnmpCodeGen(AbstractCodeGen):
     self._cols = {} # k, v = name, datatype
     self._exports = set()
     self._presentedSyms = set()
+    self._importMap = {}
     self._symsOrder = []
-    self._postponedSyms = {} # k, v = name, (parent OID, generated code)
     self._out = {} # k, v = name, generated code
     self.moduleName = ['DUMMY']
     self.genRules = { 'text' : 1 }
@@ -407,6 +409,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         symbols += self.symTrans(symbol)
       if symbols:
         self._presentedSyms = self._presentedSyms.union([self.transOpers(s) for s in symbols])
+        self._importMap.update([(self.transOpers(s), module) for s in symbols]) 
         outStr += '( %s, ) = mibBuilder.importSymbols("%s")\n' % \
           ( ', '.join([self.transOpers(s) for s in symbols]),
             '", "'.join((module,) + symbols) )
@@ -435,27 +438,30 @@ class PySnmpCodeGen(AbstractCodeGen):
     self._presentedSyms.add(symbol)
 
   def regSym(self, symbol, outStr, parentOid=None, moduleIdentity=0):
-    if symbol in self._presentedSyms or symbol in self._postponedSyms:
+    if symbol in self._presentedSyms:
       raise error.PySmiSemanticError('Duplicate symbol found: %s' % symbol)
-    if not parentOid or parentOid in self._presentedSyms:
-      self._presentedSyms.add(symbol)
-      self._symsOrder.append(symbol)
-      self.regPostponedSyms()
-    else: 
-      self._postponedSyms[symbol] = (parentOid, outStr)
+    self._symsOrder.append(symbol)
     self.addToExports(symbol, moduleIdentity)
     self._out[symbol] = outStr
 
-  def regPostponedSyms(self):
-    regedSyms = []
-    for sym, val in self._postponedSyms.items():
-      parent, code = val
-      if parent in self._presentedSyms:
-        self._presentedSyms.add(sym)
-        self._symsOrder.append(sym)
-        regedSyms.append(sym)
-    for sym in regedSyms:
-      self._postponedSyms.pop(sym)
+  def genNumericOid(self, oid):
+    numericOid = ()
+    for part in oid:
+      if isinstance(part, tuple): 
+        parent, module = part
+        if parent == 'iso':
+          numericOid += (1,)
+          continue
+        if module not in self.symbolTable:
+          # XXX do getname for possible future borrowed mibs 
+          raise error.PySmiSemanticError('no module "%s" in symbolTable' % module)
+          continue
+        if parent not in self.symbolTable[module]:
+          raise error.PySmiSemanticError('no symbol "%s" in module "%s"' % (parent, module))  
+        numericOid += self.genNumericOid(self.symbolTable[module][parent]['oid'])
+      else:
+        numericOid += (part, )
+    return numericOid
 
 ### Clause generation functions
   def genAgentCapabilities(self, data, classmode=0):
@@ -684,8 +690,13 @@ class PySnmpCodeGen(AbstractCodeGen):
     elif defval[0] == defval[-1] and defval[0] == '"': # quoted strimg
       val = dorepr(defval[1:-1])
     else: # symbol (oid as defval) or name for enumeration member
-      if defval in self._presentedSyms:
-        val = defval + '.getName()' 
+      if defval in self.symbolTable[self.moduleName[0]] or \
+         defval in self._importMap:
+        module = self._importMap.get(defval, self.moduleName[0])
+        try:
+          val = str(self.genNumericOid(self.symbolTable[module][defval]['oid']))
+        except:
+          raise error.PySmiSemanticError('no symbol "%s" in module "%s"' % (parent, module)) ### or no module if it will be borrowed later 
       else:
         val = dorepr(defval)
     return '.clone(' + val + ')'
@@ -776,20 +787,19 @@ class PySnmpCodeGen(AbstractCodeGen):
     return outStr
 
   def genOid(self, data, classmode=0):
-    outStr = ''
+    out = ()
     parent = '' 
     for el in data[0]:
       if isinstance(el, (str, unicode)):
         parent = self.transOpers(el)
-        s = parent + '.getName()'
+        out += ((parent, self._importMap.get(parent, self.moduleName[0])),)
       elif isinstance(el, (int, long)):
-        s = '(' + str(el) + ',)'
+        out += (el,) 
       elif isinstance(el, tuple):
-        s = '(' + str(el[1]) + ',)' # XXX Do we need to create a new object el[0]?
+        out += (el[1],) # XXX Do we need to create a new object el[0]?
       else:
         raise error.PySmiSemanticError('unknown datatype for OID: %s' % el)
-      outStr += not outStr and s or ' + ' + s 
-    return outStr, parent
+    return str(self.genNumericOid(out)), parent
 
   def genObjects(self, data, classmode=0):
     if data[0]:
@@ -901,14 +911,15 @@ class PySnmpCodeGen(AbstractCodeGen):
 
   def genCode(self, ast, symbolTable, **kwargs):
     self.genRules['text'] = kwargs.get('genTexts', False)
+    self.symbolTable = symbolTable
     out = ''
     importedModules = ()
     self._rows.clear()
     self._cols.clear()
     self._exports.clear()
     self._presentedSyms.clear()
+    self._importMap.clear()
     self._symsOrder = []
-    self._postponedSyms.clear()
     self._out.clear()
     self.moduleName[0], moduleOid, imports, declarations = ast
     out, importedModules = self.genImports(imports and imports or {})
@@ -917,8 +928,6 @@ class PySnmpCodeGen(AbstractCodeGen):
         clausetype = declr[0]
         classmode = clausetype == 'typeDeclaration'
         self.handlersTable[declr[0]](self, self.prepData(declr[1:], classmode), classmode)
-    if self._postponedSyms:
-      raise error.PySmiSemanticError('Unknown parent OIDs for symbols: %s' % ', '.join(self._postponedSyms)) 
     for sym in self._symsOrder:
       if sym not in self._out:
         raise error.PySmiCodegenError('No generated code for symbol %s' % sym)
