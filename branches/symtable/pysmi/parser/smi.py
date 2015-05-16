@@ -41,9 +41,14 @@ class SmiV2Parser(AbstractParser):
                             debuglog=debuglogger,
                             errorlog=logger)
 
+  def reset(self):
+    # Ply requires lexer reinitialization for (at least) resetting lineno
+    self.lexer.reset()
+
   def parse(self, data, **kwargs):
     debug.logger & debug.flagParser and debug.logger('source MIB size is %s characters, first 50 characters are "%s..."' % (len(data), data[:50]))
     ast = self.parser.parse(data, lexer=self.lexer.lexer)
+    self.reset()
     if ast and ast[0] == 'mibFile' and ast[1]:   # mibfile is not empty
         return ast[1]
     else:

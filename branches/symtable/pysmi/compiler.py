@@ -72,7 +72,7 @@ class MibCompiler(object):
                 debug.logger & debug.flagCompiler and debug.logger('trying source %s' % source)
                 try:
                     fileInfo, fileData = source.getData(mibname)
-                    for mibTree in self._parser.__class__().parse(fileData):
+                    for mibTree in self._parser.parse(fileData):
                         mibInfo, symbolTable = self._symbolgen.genCode(
                             mibTree, {}
                         )
