@@ -17,7 +17,7 @@ from pysmi.codegen.pysnmp import PySnmpCodeGen, baseMibs
 from pysmi.compiler import MibCompiler
 from pysmi import debug
 
-debug.setLogger(debug.Debug('compiler'))
+#debug.setLogger(debug.Debug('compiler'))
 
 inputMibs = [ 'IF-MIB', 'IP-MIB' ]
 srcDir = '/usr/share/snmp/mibs/'  # we will read MIBs from here
