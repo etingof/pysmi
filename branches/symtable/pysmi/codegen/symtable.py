@@ -794,9 +794,9 @@ class SymtableCodeGen(AbstractCodeGen):
     out, importedModules = self.genImports(imports and imports or {})
     for declr in declarations and declarations or []:
       if declr:
-	clausetype = declr[0]
-	classmode = clausetype == 'typeDeclaration'
-	self.handlersTable[declr[0]](self, self.prepData(declr[1:], classmode), classmode)
+        clausetype = declr[0]
+        classmode = clausetype == 'typeDeclaration'
+        self.handlersTable[declr[0]](self, self.prepData(declr[1:], classmode), classmode)
     for sym in self._parentOids:
       if sym not in self._out and sym not in self._importMap:
         raise error.PySmiSemanticError('Unknown parent symbol: %s' % sym) 

@@ -914,14 +914,14 @@ class PySnmpCodeGen(AbstractCodeGen):
     out, importedModules = self.genImports(imports and imports or {})
     for declr in declarations and declarations or []:
       if declr:
-	clausetype = declr[0]
-	classmode = clausetype == 'typeDeclaration'
-	self.handlersTable[declr[0]](self, self.prepData(declr[1:], classmode), classmode)
+        clausetype = declr[0]
+        classmode = clausetype == 'typeDeclaration'
+        self.handlersTable[declr[0]](self, self.prepData(declr[1:], classmode), classmode)
     if self._postponedSyms:
       raise error.PySmiSemanticError('Unknown parent OIDs for symbols: %s' % ', '.join(self._postponedSyms)) 
     for sym in self._symsOrder:
       if sym not in self._out:
-	raise error.PySmiCodegenError('No generated code for symbol %s' % sym)
+        raise error.PySmiCodegenError('No generated code for symbol %s' % sym)
       out += self._out[sym] 
     out += self.genExports()
     if 'comments' in kwargs:
