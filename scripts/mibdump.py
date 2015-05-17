@@ -7,13 +7,7 @@
 import os
 import sys
 import getopt
-try:
-    import urlparse
-except ImportError:
-    from urllib import parse as urlparse
-from pysmi.reader.localfile import FileReader
-from pysmi.reader.httpclient import HttpReader
-from pysmi.reader.ftpclient import FtpReader
+from pysmi.reader.url import getReadersFromUrls
 from pysmi.searcher.pyfile import PyFileSearcher
 from pysmi.searcher.pypackage import PyPackageSearcher
 from pysmi.searcher.stub import StubSearcher
@@ -220,25 +214,10 @@ mibCompiler = MibCompiler(
 )
 
 try:
-    for mibSource in mibSources:
-        mibSource = urlparse.urlparse(mibSource)
-        if sys.version_info[0:2] < (2, 5):
-            class ParseResult(tuple): pass
-            mibSource = ParseResult(mibSource)
-            for k,v in zip(('scheme', 'netloc', 'path', 'params',
-                            'query', 'fragment', 'username', 'password',
-                            'hostname', 'port'), mibSource + ('','','',None)):
-                setattr(mibSource, k, v)
-        if not mibSource.scheme or mibSource.scheme == 'file':
-            mibCompiler.addSources(FileReader(mibSource.path).setOptions(fuzzyMatching=doFuzzyMatchingFlag))
-        elif mibSource.scheme in ('http', 'https'):
-            mibCompiler.addSources(HttpReader(mibSource.hostname or mibSource.netloc, mibSource.port or 80, mibSource.path, ssl=mibSource.scheme == 'https').setOptions(fuzzyMatching=doFuzzyMatchingFlag))
-        elif mibSource.scheme in ('ftp', 'sftp'):
-            mibCompiler.addSources(FtpReader(mibSource.hostname or mibSource.netloc, mibSource.path, ssl=mibSource.scheme == 'sftp', port=mibSource.port or 21, user=mibSource.username or 'anonymous', password=mibSource.password or 'anonymous@').setOptions(fuzzyMatching=doFuzzyMatchingFlag))
-        else:
-            sys.stderr.write('ERROR: unsupported URL scheme %s\r\n%s\r\n' % (opt[1], helpMessage))
-            sys.exit(-1)
-        
+    mibCompiler.addSources(
+        *getReadersFromUrls(*mibSources, fuzzyMatching=doFuzzyMatchingFlag)
+    )
+
     mibCompiler.addSearchers(PyFileSearcher(dstDirectory))
 
     for mibSearcher in mibSearchers:
@@ -246,24 +225,9 @@ try:
 
     mibCompiler.addSearchers(StubSearcher(*mibStubs))
 
-    for mibBorrower in mibBorrowers:
-        mibBorrower = urlparse.urlparse(mibBorrower)
-        if sys.version_info[0:2] < (2, 5):
-            class ParseResult(tuple): pass
-            mibBorrower = ParseResult(mibBorrower)
-            for k,v in zip(('scheme', 'netloc', 'path', 'params',
-                            'query', 'fragment', 'username', 'password',
-                            'hostname', 'port'), mibSource + ('','','',None)):
-                setattr(mibBorrower, k, v)
-        if not mibBorrower.scheme or mibBorrower.scheme == 'file':
-            mibCompiler.addBorrowers(PyFileBorrower(FileReader(mibBorrower.path).setOptions(originalMatching=False, lowcaseMatching=False)).setOptions(genTexts=genMibTextsFlag))
-        elif mibBorrower.scheme in ('http', 'https'):
-            mibCompiler.addBorrowers(PyFileBorrower(HttpReader(mibBorrower.hostname or mibBorrower.netloc, mibBorrower.port or 80, mibBorrower.path, ssl=mibBorrower.scheme == 'https').setOptions(originalMatching=False, lowcaseMatching=False)).setOptions(genTexts=genMibTextsFlag))
-        elif mibBorrower.scheme in ('ftp', 'sftp'):
-            mibCompiler.addBorrowers(PyFileBorrower(FtpReader(mibBorrower.hostname or mibBorrower.netloc, mibBorrower.path, ssl=mibBorrower.scheme == 'sftp', port=mibBorrower.port or 21, user=mibBorrower.username or 'anonymous', password=mibBorrower.password or 'anonymous@').setOptions(originalMatching=False, lowcaseMatching=False)).setOptions(genTexts=genMibTextsFlag))
-        else:
-            sys.stderr.write('ERROR: unsupported URL scheme %s\r\n%s\r\n' % (opt[1], helpMessage))
-            sys.exit(-1)
+    mibCompiler.addBorrowers(
+        *[ PyFileBorrower(x) for x in getReadersFromUrls(mibBorrowers, originalMatching=False, lowcaseMatching=False) ]
+    )
 
     processed = mibCompiler.compile(*inputMibs,
                                     **dict(noDeps=nodepsFlag,
