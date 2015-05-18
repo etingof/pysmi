@@ -8,7 +8,7 @@ from pysmi.reader.httpclient import HttpReader
 from pysmi.reader.ftpclient import FtpReader
 from pysmi import error
 
-def getReadersFromUrls(self, *sourceUrls, **options):
+def getReadersFromUrls(*sourceUrls, **options):
     readers = []
     for sourceUrl in sourceUrls:
         mibSource = urlparse.urlparse(sourceUrl)
