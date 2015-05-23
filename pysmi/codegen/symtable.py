@@ -36,6 +36,7 @@ class SymtableCodeGen(AbstractCodeGen):
                    'MibIdentifier'), # OBJECT IDENTIFIER
   }
 
+  baseTypes = [ 'Integer', 'Integer32', 'Bits', 'ObjectIdentifier', 'OctetString' ]
   updateDict = lambda x, newitems: x.update(newitems) or x
 
   commonSyms = { 'RFC1155-SMI/RFC1065-SMI':
@@ -480,7 +481,10 @@ class SymtableCodeGen(AbstractCodeGen):
 #    return outStr
     symProps = {'type': 'ObjectType',
                 'oid': oid,
+                'syntax': syntax,
     }
+    if defval:
+      symProps['defval'] = defval
     self.regSym(name, symProps)
 
   def genTrapType(self, data, classmode=0):
@@ -502,6 +506,7 @@ class SymtableCodeGen(AbstractCodeGen):
 #        self.regSym(name, outStr)
 #    return outStr 
     symProps = { 'type': 'TypeDeclaration',
+                 'syntax': declaration,
     }
     self.regSym(name, symProps)
     
@@ -516,22 +521,16 @@ class SymtableCodeGen(AbstractCodeGen):
 ### Subparts generation functions
   def genBitNames(self, data, classmode=0):
     names = data[0]
-    return '("' + '","'.join(names) + '",)'  
+    return names
+    # done  
 
   def genBits(self, data, classmode=0):
     bits = data[0]
-    namedval = [ '("' + bit[0] + '", ' +  str(bit[1]) + '),' for bit in bits ] 
-    numFuncCalls = len(namedval)/255 + 1
-    funcCalls = ''
-    for i in range(int(numFuncCalls)):
-      funcCalls += 'NamedValues(' + ' '.join(namedval[255*i:255*(i+1)]) + ') + ' 
-    funcCalls = funcCalls[:-3]
-    outStr = classmode and \
-      self.indent + 'namedValues = ' + funcCalls + '\n' or \
-      '.clone(namedValues=' + funcCalls + ')'
-    return 'Bits', outStr
+    return 'Bits', bits
+    # done
 
   def genCompliances(self, data, classmode=0):
+    return '' # XXX
     complStr = ''
     compliances = []
     for complianceModule in data[0]:
@@ -543,16 +542,18 @@ class SymtableCodeGen(AbstractCodeGen):
 
   def genConceptualTable(self, data, classmode=0):
     row = data[0]
-    if row[1] and row[1][-2:] == '()':
-      row = row[1][:-2]
+    if row[0]:
       self._rows.add(row)
     return 'MibTable', ''
+    # done
 
   def genContactInfo(self, data, classmode=0):
+    return '' # XXX
     text = data[0]
     return '.setContactInfo(' + dorepr(text) + ')'
 
   def genDisplayHint(self, data, classmode=0):
+    return '' # XXX
     return self.indent + 'displayHint = ' + dorepr(data[0]) + '\n'
    
   def genDefVal(self, data, classmode=0):
@@ -565,7 +566,7 @@ class SymtableCodeGen(AbstractCodeGen):
       binval = defval[1:-2]
       hexval = binval and hex(int(binval, 2))[2:] or ''
       val = 'hexValue="' + hexval + '"'
-    elif defval[0] == defval[-1] and defval[0] == '(': # bits list
+    elif isinstance(defval, list): # bits list
       val = defval
     elif defval[0] == defval[-1] and defval[0] == '"': # quoted strimg
       val = dorepr(defval[1:-1])
@@ -574,33 +575,18 @@ class SymtableCodeGen(AbstractCodeGen):
         val = defval + '.getName()' 
       else:
         val = dorepr(defval)
-    return '.clone(' + val + ')'
+    return val
 
   def genDescription(self, data, classmode=0):
+    return '' # XXX
     text = data[0]
     return '.setDescription(' + dorepr(text) + ')'
 
   def genEnumSpec(self, data, classmode=0):
-    items = data[0]
-    singleval = [ str(item[1]) + ',' for item in items ]
-    outStr = classmode and self.indent + 'subtypeSpec = %s.subtypeSpec+' or \
-             '.subtype(subtypeSpec='
-    numFuncCalls = len(singleval)/255 + 1
-    singleCall = numFuncCalls == 1 or False
-    funcCalls = ''
-    outStr += not singleCall and 'ConstraintsUnion(' or ''
-    for i in range(int(numFuncCalls)):
-      funcCalls += 'SingleValueConstraint(' + \
-                        ' '.join(singleval[255*i:255*(i+1)]) + '), '
-    funcCalls = funcCalls[:-2]
-    outStr += funcCalls
-    outStr += not singleCall and \
-              (classmode and ')\n' or '))') or \
-              (not classmode and ')' or '\n')  
-    outStr += self.genBits(data, classmode=classmode)[1]
-    return outStr
+    return self.genBits(data, classmode=classmode)[1]
 
   def genIndex(self, data, classmode=0):
+    return '' # XXX
     def genFakeSyms(fakeidx, idxType):
       fakeSymName = 'pysmiFakeCol%s' % fakeidx
       objType = self.typeClasses.get(idxType, idxType)
@@ -624,6 +610,7 @@ class SymtableCodeGen(AbstractCodeGen):
     return '.setIndexNames(' + ', '.join(idxStrlist)+ ')', fakeStrlist, fakeSyms
 
   def genIntegerSubType(self, data, classmode=0):
+    return '' # XXX
     singleRange = len(data[0]) == 1 or False
     outStr = classmode and self.indent + 'subtypeSpec = %s.subtypeSpec+' or \
                            '.subtype(subtypeSpec='
@@ -639,10 +626,12 @@ class SymtableCodeGen(AbstractCodeGen):
     return outStr
 
   def genMaxAccess(self, data, classmode=0):
+    return '' # XXX
     access = data[0].replace('-', '')
     return access != 'notaccessible' and '.setMaxAccess("' + access + '")' or ''
 
   def genOctetStringSubType(self, data, classmode=0):
+    return '' # XXX
     singleRange = len(data[0]) == 1 or False
     outStr = classmode and self.indent + 'subtypeSpec = %s.subtypeSpec+' or \
                            '.subtype(subtypeSpec='
@@ -677,11 +666,13 @@ class SymtableCodeGen(AbstractCodeGen):
     return out
 
   def genObjects(self, data, classmode=0):
+    return '' # XXX
     if data[0]:
       return [ self.transOpers(obj) for obj in data[0] ] # XXX self.transOpers or not??
     return []
 
   def genTime(self, data, classmode=0):
+    return '' # XXX
     times = []
     for t in data:
       lenTimeStr = len(t)
@@ -700,32 +691,36 @@ class SymtableCodeGen(AbstractCodeGen):
     return times
 
   def genOrganization(self, data, classmode=0):
+    return '' # XXX
     text = data[0]
     return '.setOrganization(' + dorepr(text) + ')'
 
   def genRevisions(self, data, classmode=0):
+    return '' # XXX
     times = self.genTime(data[0]) 
     return '.setRevisions(("' + '", "'.join(times) + '",))'
 
   def genRow(self, data, classmode=0):
     row = data[0]
     return row in self._rows and ('MibTableRow', '') or self.genSimpleSyntax(data, classmode=classmode)
+    # done
 
   def genSequence(self, data, classmode=0):
     cols = data[0]
     self._cols.update(cols)
     return '', ''
+    # done
 
   def genSimpleSyntax(self, data, classmode=0):
     objType = data[0]
+    module = ''
     objType = self.typeClasses.get(objType, objType)
     objType = self.transOpers(objType)
+    if objType not in self.baseTypes:
+      module = self._importMap.get(objType, self.moduleName[0])
     subtype = len(data) == 2 and data[1] or ''
-    if classmode:
-      subtype = '%s' in subtype and subtype % objType or subtype # XXX hack?
-      return objType, subtype
-    outStr = objType + '()' + subtype
-    return 'MibScalar', outStr
+    return (objType, module), subtype
+    # done
 
   def genTypeDeclarationRHS(self, data, classmode=0):
     if len(data) == 1:
@@ -734,12 +729,11 @@ class SymtableCodeGen(AbstractCodeGen):
       # Textual convention
       display, syntax = data
       parentType, attrs = syntax
-      parentType = 'TextualConvention, ' + parentType
-      attrs = (display and display or '') + attrs
-    attrs = attrs or self.indent + 'pass\n'
     return parentType, attrs
+    # done
 
   def genUnits(self, data, classmode=0):
+    return '' # XXX
     text = data[0]
     return '.setUnits(' + dorepr(text) + ')'
 
@@ -797,6 +791,7 @@ class SymtableCodeGen(AbstractCodeGen):
         clausetype = declr[0]
         classmode = clausetype == 'typeDeclaration'
         self.handlersTable[declr[0]](self, self.prepData(declr[1:], classmode), classmode)
+#    print self._out
     for sym in self._parentOids:
       if sym not in self._out and sym not in self._importMap:
         raise error.PySmiSemanticError('Unknown parent symbol: %s' % sym) 
