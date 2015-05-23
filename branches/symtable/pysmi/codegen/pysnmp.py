@@ -438,7 +438,7 @@ class PySnmpCodeGen(AbstractCodeGen):
     self._presentedSyms.add(symbol)
 
   def regSym(self, symbol, outStr, parentOid=None, moduleIdentity=0):
-    if symbol in self._presentedSyms:
+    if symbol in self._presentedSyms and symbol not in self._importMap:
       raise error.PySmiSemanticError('Duplicate symbol found: %s' % symbol)
     self._symsOrder.append(symbol)
     self.addToExports(symbol, moduleIdentity)
