@@ -450,35 +450,7 @@ class SymtableCodeGen(AbstractCodeGen):
 
   def genObjectType(self, data, classmode=0):
     name, syntax, units, maxaccess, description, augmention, index, defval, oid = data
-#    label = self.genLabel(name)
     name = self.transOpers(name)
-#    oidStr, parentOid = oid
-#    indexStr, fakeStrlist, fakeSyms = index and index or ('', '', [])
-#    subtype = syntax[0] == 'Bits' and 'Bits()' + syntax[1] or \
-#                                      syntax[1] # Bits hack #1
-#    classtype = self.typeClasses.get(syntax[0], syntax[0])
-#    classtype = self.transOpers(classtype)
-#    classtype = syntax[0] == 'Bits' and 'MibScalar' or classtype # Bits hack #2
-#    classtype = name in self._cols and 'MibTableColumn' or classtype
-#    outStr = name + ' = ' + classtype  + '(' + oidStr  + ', ' + subtype + \
-#             (defval and defval or '') + ')' + label
-#    outStr += (units and units) or ''
-#    outStr += (maxaccess and maxaccess) or ''
-#    outStr += (indexStr and indexStr) or ''
-#    outStr += '\n'
-#    if augmention:
-#      augmention = self.transOpers(augmention)
-#      outStr += augmention + '.registerAugmentions(("' + self.moduleName[0] + \
-#                '", "' + name + '"))\n'
-#      outStr += name + '.setIndexNames(*' + augmention + '.getIndexNames())\n'
-#    if self.genRules['text'] and description:
-#      outStr += self.ifTextStr + name + description + '\n'
-#    self.regSym(name, outStr, parentOid)
-#    if fakeSyms: # fake symbols for INDEX to support SMIv1
-#      for i in range(len(fakeSyms)):
-#        fakeOutStr = fakeStrlist[i] % oidStr
-#        self.regSym(fakeSyms[i], fakeOutStr, name)
-#    return outStr
     symProps = {'type': 'ObjectType',
                 'oid': oid,
                 'syntax': syntax,
@@ -498,13 +470,6 @@ class SymtableCodeGen(AbstractCodeGen):
   def genTypeDeclaration(self, data, classmode=0):
     name, declaration = data
     name = self.transOpers(name)
-#    if declaration:
-#      parentType, attrs = declaration
-#      if parentType: # skipping SEQUENCE case
-#        name = self.transOpers(name)
-#        outStr = 'class ' + name + '(' + parentType +'):\n' + attrs + '\n'
-#        self.regSym(name, outStr)
-#    return outStr 
     symProps = { 'type': 'TypeDeclaration',
                  'syntax': declaration,
     }
@@ -544,7 +509,7 @@ class SymtableCodeGen(AbstractCodeGen):
     row = data[0]
     if row[0]:
       self._rows.add(row)
-    return 'MibTable', ''
+    return ('MibTable', ''), ''
     # done
 
   def genContactInfo(self, data, classmode=0):
@@ -702,7 +667,7 @@ class SymtableCodeGen(AbstractCodeGen):
 
   def genRow(self, data, classmode=0):
     row = data[0]
-    return row in self._rows and ('MibTableRow', '') or self.genSimpleSyntax(data, classmode=classmode)
+    return row in self._rows and (('MibTableRow', ''), '') or self.genSimpleSyntax(data, classmode=classmode)
     # done
 
   def genSequence(self, data, classmode=0):

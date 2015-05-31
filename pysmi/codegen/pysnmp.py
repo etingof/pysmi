@@ -63,6 +63,7 @@ class PySnmpCodeGen(AbstractCodeGen):
                    'MibIdentifier'), # OBJECT IDENTIFIER
   }
 
+  baseTypes = [ 'Integer', 'Integer32', 'Bits', 'ObjectIdentifier', 'OctetString' ]
   updateDict = lambda x, newitems: x.update(newitems) or x
 
   commonSyms = { 'RFC1155-SMI/RFC1065-SMI':
@@ -463,6 +464,23 @@ class PySnmpCodeGen(AbstractCodeGen):
         numericOid += (part, )
     return numericOid
 
+  def getBaseType(self, symName, module):
+    if module not in self.symbolTable:
+      raise error.PySmiSemanticError('no module "%s" in symbolTable' % module)
+    if symName not in self.symbolTable[module]:
+      raise error.PySmiSemanticError('no symbol "%s" in module "%s"' % (symName, module))
+    symType, symSubtype = self.symbolTable[module][symName].get('syntax', (('', ''), ''))
+    if symType and symType[0] in self.baseTypes:
+      return symType, symSubtype
+    else:
+      baseSymType, baseSymSubtype = self.getBaseType(*symType)
+      if isinstance(baseSymSubtype, list):
+        if isinstance(symSubtype, list): 
+          symSubtype += baseSymSubtype
+        else:
+          symSubtype = baseSymSubtype
+      return baseSymType, symSubtype
+    
 ### Clause generation functions
   def genAgentCapabilities(self, data, classmode=0):
     name, description, oid = data
@@ -575,6 +593,7 @@ class PySnmpCodeGen(AbstractCodeGen):
     classtype = self.transOpers(classtype)
     classtype = syntax[0] == 'Bits' and 'MibScalar' or classtype # Bits hack #2
     classtype = name in self._cols and 'MibTableColumn' or classtype
+    defval = self.genDefVal(defval, objname=name)
     outStr = name + ' = ' + classtype  + '(' + oidStr  + ', ' + subtype + \
              (defval and defval or '') + ')' + label
     outStr += (units and units) or ''
@@ -675,8 +694,13 @@ class PySnmpCodeGen(AbstractCodeGen):
   def genDisplayHint(self, data, classmode=0):
     return self.indent + 'displayHint = ' + dorepr(data[0]) + '\n'
    
-  def genDefVal(self, data, classmode=0):
+  def genDefVal(self, data, classmode=0, objname=None):
+    if not data:
+      return ''
+    if not objname: 
+      return data
     defval = data[0]
+    defvalType = self.getBaseType(objname, self.moduleName[0])
     if isinstance(defval, (int, long)): # number
       val = str(defval)
     elif self.isHex(defval): # hex
@@ -690,15 +714,20 @@ class PySnmpCodeGen(AbstractCodeGen):
     elif defval[0] == defval[-1] and defval[0] == '"': # quoted strimg
       val = dorepr(defval[1:-1])
     else: # symbol (oid as defval) or name for enumeration member
-      if defval in self.symbolTable[self.moduleName[0]] or \
-         defval in self._importMap:
+      if defvalType[0][0] == 'ObjectIdentifier' and \
+         (defval in self.symbolTable[self.moduleName[0]] or \
+          defval in self._importMap): # oid
         module = self._importMap.get(defval, self.moduleName[0])
         try:
           val = str(self.genNumericOid(self.symbolTable[module][defval]['oid']))
         except:
-          raise error.PySmiSemanticError('no symbol "%s" in module "%s"' % (parent, module)) ### or no module if it will be borrowed later 
-      else:
+          raise error.PySmiSemanticError('no symbol "%s" in module "%s"' % (defval, module)) ### or no module if it will be borrowed later 
+      elif defvalType[0][0] in ('Bits', 'Integer32', 'Integer') and \
+           isinstance(defvalType[1], list) and \
+           defval in dict(defvalType[1]): # enumeration
         val = dorepr(defval)
+      else:
+        raise error.PySmiSemanticError('unknown type "%s" for defval "%s" of symbol "%s"' % (defvalType, defval, objname))  
     return '.clone(' + val + ')'
 
   def genDescription(self, data, classmode=0):
