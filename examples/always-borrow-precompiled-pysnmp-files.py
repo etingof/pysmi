@@ -20,7 +20,7 @@ from pysmi import debug
 inputMibs = [ 'BORROWED-MIB' ]
 
 httpBorrowers = [
-    ('mibs.snmplabs.com', 80, '/pysnmp/notexts/<mib>')
+    ('mibs.snmplabs.com', 80, '/pysnmp/notexts/@mib@')
 ]
 dstDirectory = '.pysnmp-mibs'
 

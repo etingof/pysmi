@@ -26,10 +26,10 @@ from pysmi import debug
 
 inputMibs = [ 'IF-MIB', 'IP-MIB' ]
 httpSources = [ 
-    ('mibs.snmplabs.com', 80, '/asn1/<mib>')
+    ('mibs.snmplabs.com', 80, '/asn1/@mib@')
 ]
 ftpSources = [
-    ('ftp.cisco.com', '/pub/mibs/v2/<mib>')
+    ('ftp.cisco.com', '/pub/mibs/v2/@mib@')
 ]
 dstDirectory = '.pysnmp-mibs'
 

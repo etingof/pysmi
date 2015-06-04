@@ -17,8 +17,8 @@ class HttpReader(AbstractReader):
         self._port = port
         self._locationTemplate = decode(locationTemplate)
         self._timeout = timeout
-        if '<mib>' not in locationTemplate:
-            raise error.PySmiError('<mib> placeholder not specified in location at %s' % self)
+        if '@mib@' not in locationTemplate:
+            raise error.PySmiError('@mib@ placeholder not specified in location at %s' % self)
 
     def __str__(self):
         return '%s{"%s://%s:%s%s"}' % (self.__class__.__name__, self._schema, self._host, self._port, self._locationTemplate)
@@ -37,7 +37,7 @@ class HttpReader(AbstractReader):
         debug.logger & debug.flagReader and debug.logger('looking for MIB %s' % mibname)
 
         for mibalias, mibfile in self.getMibVariants(mibname):
-            location = self._locationTemplate.replace('<mib>', mibfile)
+            location = self._locationTemplate.replace('@mib@', mibfile)
             debug.logger & debug.flagReader and debug.logger('trying to fetch MIB from %s://%s:%s%s' % (self._schema, self._host, self._port, location))
             try:
                 conn.request('GET', location, '', headers)
