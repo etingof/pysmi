@@ -68,7 +68,7 @@ Usage: %s [--help]
       [ mibfile [ mibfile [...]]]
 Where:
     url      - file, http, https, ftp, sftp schemes are supported. 
-               Use <mib> placeholder token in URL location to refer
+               Use @mib@ placeholder token in URL location to refer
                to MIB module name requested.
     format   - pysnmp format is only supported.""" % (
           sys.argv[0],
@@ -162,11 +162,11 @@ if not mibStubs:
 
 if not mibSources:
     mibSources = [ 'file:///usr/share/snmp/mibs',
-                   'http://mibs.snmplabs.com/asn1/<mib>' ]
+                   'http://mibs.snmplabs.com/asn1/@mib@' ]
 
 if not mibBorrowers:
-    mibBorrowers = [ 'http://mibs.snmplabs.com/pysnmp/notexts/<mib>',
-                     'http://mibs.snmplabs.com/pysnmp/fulltexts/<mib>' ]
+    mibBorrowers = [ 'http://mibs.snmplabs.com/pysnmp/notexts/@mib@',
+                     'http://mibs.snmplabs.com/pysnmp/fulltexts/@mib@' ]
 
 if verboseFlag:
     sys.stderr.write("""Source MIB repositories: %s
