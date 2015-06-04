@@ -5,8 +5,10 @@ class AbstractBorrower(object):
     genTexts = False
     exts = []
 
-    def __init__(self, reader):
+    def __init__(self, reader, genTexts=None):
         self._reader = reader.setOptions(exts=self.exts)
+        if genTexts is not None:
+            self.genTexts = genTexts
 
     def __str__(self): return '%s{%s, genTexts=%s}' % (self.__class__.__name__, self._reader, self.genTexts)
 
