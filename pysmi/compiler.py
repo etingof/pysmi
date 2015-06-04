@@ -160,7 +160,7 @@ class MibCompiler(object):
             comments = [
                 'ASN.1 source %s' % fileInfo.path,
                 'Produced by %s-%s at %s' % (packageName, packageVersion, time.asctime()),
-                'On host %s platform %s version %s by user %s' % (os.uname()[1], os.uname()[0], os.uname()[2], getpwuid(os.getuid())[0]),
+                'On host %s platform %s version %s by user %s' % (hasattr(os, 'uname') and os.uname()[1] or '?', hasattr(os, 'uname') and os.uname()[0] or '?', hasattr(os, 'uname') and os.uname()[2] or '?', hasattr(os, 'getuid') and getpwuid(os.getuid())[0] or '?'),
                 'Using Python version %s' % sys.version.split('\n')[0]
             ]
 
@@ -314,7 +314,7 @@ class MibCompiler(object):
     def buildIndex(self, processedMibs, **kwargs):
         comments = [
             'Produced by %s-%s at %s' % (packageName, packageVersion, time.asctime()),
-            'On host %s platform %s version %s by user %s' % (os.uname()[1], os.uname()[0], os.uname()[2], getpwuid(os.getuid())[0]),
+            'On host %s platform %s version %s by user %s' % (hasattr(os, 'uname') and os.uname()[1] or '?', hasattr(os, 'uname') and os.uname()[0] or '?', hasattr(os, 'uname') and os.uname()[2] or '?', hasattr(os, 'getuid') and getpwuid(os.getuid())[0]) or '?',
             'Using Python version %s' % sys.version.split('\n')[0]
         ]
         try:
