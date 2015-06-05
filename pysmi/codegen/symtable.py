@@ -28,7 +28,8 @@ class SymtableCodeGen(AbstractCodeGen):
     'AGENT-CAPABILITIES': ('AgentCapabilities',),
     'OBJECT-IDENTITY': ('ObjectIdentity',),
     'TRAP-TYPE': ('NotificationType',),  # smidump always uses NotificationType
-    'NOTIFICATION-TYPE': ('NotificationType',)
+    'NOTIFICATION-TYPE': ('NotificationType',),
+    'BITS': ('Bits',),
   }
 
   constImports = {
@@ -387,7 +388,7 @@ class SymtableCodeGen(AbstractCodeGen):
     return {}, tuple(sorted(imports))
 
   def regSym(self, symbol, symProps):
-    if symbol in self._out or symbol in self._importMap:
+    if symbol in self._out: # add ti strict mode - or symbol in self._importMap:
       raise error.PySmiSemanticError('Duplicate symbol found: %s' % symbol)
     self._out[symbol] = symProps
 
@@ -491,7 +492,7 @@ class SymtableCodeGen(AbstractCodeGen):
 
   def genBits(self, data, classmode=0):
     bits = data[0]
-    return 'Bits', bits
+    return ('Bits', ''), bits
     # done
 
   def genCompliances(self, data, classmode=0):
@@ -526,7 +527,7 @@ class SymtableCodeGen(AbstractCodeGen):
     if isinstance(defval, (int, long)): # number
       val = str(defval)
     elif self.isHex(defval): # hex
-      val = 'hexValue="' + defval[1:-2] + '"'
+      val = 'hexValue="' + defval[1:-2] + '"' #not working for Integer baseTypes
     elif self.isBinary(defval): # binary
       binval = defval[1:-2]
       hexval = binval and hex(int(binval, 2))[2:] or ''

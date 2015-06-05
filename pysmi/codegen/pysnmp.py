@@ -50,7 +50,8 @@ class PySnmpCodeGen(AbstractCodeGen):
     'AGENT-CAPABILITIES': ('AgentCapabilities',),
     'OBJECT-IDENTITY': ('ObjectIdentity',),
     'TRAP-TYPE': ('NotificationType',),  # smidump always uses NotificationType
-    'NOTIFICATION-TYPE': ('NotificationType',)
+    'NOTIFICATION-TYPE': ('NotificationType',),
+    'BITS': ('Bits',),
   }
 
   constImports = {
@@ -60,6 +61,11 @@ class PySnmpCodeGen(AbstractCodeGen):
     'SNMPv2-SMI': ('iso',
                    'Bits', # XXX
                    'Integer32', # XXX
+                   'TimeTicks', # bug in some IETF MIBs
+                   'Counter32', # bug in some IETF MIBs (e.g. DSA-MIB)
+                   'Counter64', # bug in some MIBs (e.g.A3COM-HUAWEI-LswINF-MIB)
+                   'NotificationType', # bug in some MIBs (e.g. A3COM-HUAWEI-DHCPSNOOP-MIB)
+                   'Gauge32', # bug in some IETF MIBs (e.g. DSA-MIB)
                    'MibIdentifier'), # OBJECT IDENTIFIER
   }
 
@@ -470,7 +476,9 @@ class PySnmpCodeGen(AbstractCodeGen):
     if symName not in self.symbolTable[module]:
       raise error.PySmiSemanticError('no symbol "%s" in module "%s"' % (symName, module))
     symType, symSubtype = self.symbolTable[module][symName].get('syntax', (('', ''), ''))
-    if symType and symType[0] in self.baseTypes:
+    if not symType[0]:
+      raise error.PySmiSemanticError('unknown type for symbol "%s"' % symName) 
+    if symType[0] in self.baseTypes:
       return symType, symSubtype
     else:
       baseSymType, baseSymSubtype = self.getBaseType(*symType)
@@ -655,7 +663,7 @@ class PySnmpCodeGen(AbstractCodeGen):
 ### Subparts generation functions
   def genBitNames(self, data, classmode=0):
     names = data[0]
-    return '("' + '","'.join(names) + '",)'  
+    return names  
 
   def genBits(self, data, classmode=0):
     bits = data[0]
@@ -704,13 +712,14 @@ class PySnmpCodeGen(AbstractCodeGen):
     if isinstance(defval, (int, long)): # number
       val = str(defval)
     elif self.isHex(defval): # hex
-      val = 'hexValue="' + defval[1:-2] + '"'
+      if defvalType[0][0] in ('Integer32', 'Integer'): # common bug in MIBs
+        val = str(int(defval[1:-2], 16))
+      else:
+        val = 'hexValue="' + defval[1:-2] + '"'
     elif self.isBinary(defval): # binary
       binval = defval[1:-2]
       hexval = binval and hex(int(binval, 2))[2:] or ''
       val = 'hexValue="' + hexval + '"'
-    elif defval[0] == defval[-1] and defval[0] == '(': # bits list
-      val = defval
     elif defval[0] == defval[-1] and defval[0] == '"': # quoted strimg
       val = dorepr(defval[1:-1])
     else: # symbol (oid as defval) or name for enumeration member
@@ -722,10 +731,20 @@ class PySnmpCodeGen(AbstractCodeGen):
           val = str(self.genNumericOid(self.symbolTable[module][defval]['oid']))
         except:
           raise error.PySmiSemanticError('no symbol "%s" in module "%s"' % (defval, module)) ### or no module if it will be borrowed later 
-      elif defvalType[0][0] in ('Bits', 'Integer32', 'Integer') and \
+      elif defvalType[0][0] in ('Integer32', 'Integer') and \
            isinstance(defvalType[1], list) and \
            defval in dict(defvalType[1]): # enumeration
         val = dorepr(defval)
+      elif defvalType[0][0] == 'Bits':
+        defvalBits = [] 
+        bits = dict(defvalType[1])
+        for bit in defval:
+          bitValue = bits.get(bit, None)
+          if bitValue is not None:
+            defvalBits.append((bit, bitValue))
+          else:
+            raise error.PySmiSemanticError('no such bit as "%s" for symbol "%s"' % (bit, objname))
+        return self.genBits([defvalBits])[1]
       else:
         raise error.PySmiSemanticError('unknown type "%s" for defval "%s" of symbol "%s"' % (defvalType, defval, objname))  
     return '.clone(' + val + ')'
