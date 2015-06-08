@@ -7,13 +7,7 @@
 import os
 import sys
 import getopt
-try:
-    import urlparse
-except ImportError:
-    from urllib import parse as urlparse
-from pysmi.reader.localfile import FileReader
-from pysmi.reader.httpclient import HttpReader
-from pysmi.reader.ftpclient import FtpReader
+from pysmi.reader.url import getReadersFromUrls
 from pysmi.searcher.pyfile import PyFileSearcher
 from pysmi.searcher.pypackage import PyPackageSearcher
 from pysmi.searcher.stub import StubSearcher
@@ -21,7 +15,7 @@ from pysmi.borrower.pyfile import PyFileBorrower
 from pysmi.writer.pyfile import PyFileWriter
 from pysmi.parser.smi import parserFactory
 from pysmi.parser.dialect import smiV1Relaxed
-from pysmi.codegen.pysnmp import PySnmpCodeGen, defaultMibPackages, baseMibs
+from pysmi.codegen.pysnmp import PySnmpCodeGen, defaultMibPackages, baseMibs, fakeMibs
 from pysmi.compiler import MibCompiler
 from pysmi import debug
 from pysmi import error
@@ -74,7 +68,7 @@ Usage: %s [--help]
       [ mibfile [ mibfile [...]]]
 Where:
     url      - file, http, https, ftp, sftp schemes are supported. 
-               Use <mib> placeholder token in URL location to refer
+               Use @mib@ placeholder token in URL location to refer
                to MIB module name requested.
     format   - pysnmp format is only supported.""" % (
           sys.argv[0],
@@ -164,22 +158,22 @@ if not mibSearchers:
     mibSearchers = defaultMibPackages
 
 if not mibStubs:
-    mibStubs = baseMibs
+    mibStubs = [ x for x in baseMibs if x not in fakeMibs ]
 
 if not mibSources:
     mibSources = [ 'file:///usr/share/snmp/mibs',
-                   'http://mibs.snmplabs.com/asn1/<mib>' ]
+                   'http://mibs.snmplabs.com/asn1/@mib@' ]
 
 if not mibBorrowers:
-    mibBorrowers = [ 'http://mibs.snmplabs.com/pysnmp/notexts/<mib>',
-                     'http://mibs.snmplabs.com/pysnmp/fulltexts/<mib>' ]
+    mibBorrowers = [ 'http://mibs.snmplabs.com/pysnmp/notexts/@mib@',
+                     'http://mibs.snmplabs.com/pysnmp/fulltexts/@mib@' ]
 
 if verboseFlag:
     sys.stderr.write("""Source MIB repositories: %s
 Borrow missing/failed MIBs from: %s
 Existing/compiled MIB locations: %s
 Compiled MIBs destination directory: %s
-MIBs excluded from compilation: %s
+MIBs excluded from code generation: %s
 MIBs to compile: %s
 Destination format: %s
 Parser grammar cache directory: %s
@@ -220,25 +214,10 @@ mibCompiler = MibCompiler(
 )
 
 try:
-    for mibSource in mibSources:
-        mibSource = urlparse.urlparse(mibSource)
-        if sys.version_info[0:2] < (2, 5):
-            class ParseResult(tuple): pass
-            mibSource = ParseResult(mibSource)
-            for k,v in zip(('scheme', 'netloc', 'path', 'params',
-                            'query', 'fragment', 'username', 'password',
-                            'hostname', 'port'), mibSource + ('','','',None)):
-                setattr(mibSource, k, v)
-        if not mibSource.scheme or mibSource.scheme == 'file':
-            mibCompiler.addSources(FileReader(mibSource.path).setOptions(fuzzyMatching=doFuzzyMatchingFlag))
-        elif mibSource.scheme in ('http', 'https'):
-            mibCompiler.addSources(HttpReader(mibSource.hostname or mibSource.netloc, mibSource.port or 80, mibSource.path, ssl=mibSource.scheme == 'https').setOptions(fuzzyMatching=doFuzzyMatchingFlag))
-        elif mibSource.scheme in ('ftp', 'sftp'):
-            mibCompiler.addSources(FtpReader(mibSource.hostname or mibSource.netloc, mibSource.path, ssl=mibSource.scheme == 'sftp', port=mibSource.port or 21, user=mibSource.username or 'anonymous', password=mibSource.password or 'anonymous@').setOptions(fuzzyMatching=doFuzzyMatchingFlag))
-        else:
-            sys.stderr.write('ERROR: unsupported URL scheme %s\r\n%s\r\n' % (opt[1], helpMessage))
-            sys.exit(-1)
-        
+    mibCompiler.addSources(
+        *getReadersFromUrls(*mibSources, fuzzyMatching=doFuzzyMatchingFlag)
+    )
+
     mibCompiler.addSearchers(PyFileSearcher(dstDirectory))
 
     for mibSearcher in mibSearchers:
@@ -246,24 +225,9 @@ try:
 
     mibCompiler.addSearchers(StubSearcher(*mibStubs))
 
-    for mibBorrower in mibBorrowers:
-        mibBorrower = urlparse.urlparse(mibBorrower)
-        if sys.version_info[0:2] < (2, 5):
-            class ParseResult(tuple): pass
-            mibBorrower = ParseResult(mibBorrower)
-            for k,v in zip(('scheme', 'netloc', 'path', 'params',
-                            'query', 'fragment', 'username', 'password',
-                            'hostname', 'port'), mibSource + ('','','',None)):
-                setattr(mibBorrower, k, v)
-        if not mibBorrower.scheme or mibBorrower.scheme == 'file':
-            mibCompiler.addBorrowers(PyFileBorrower(FileReader(mibBorrower.path).setOptions(originalMatching=False, lowcaseMatching=False)).setOptions(genTexts=genMibTextsFlag))
-        elif mibBorrower.scheme in ('http', 'https'):
-            mibCompiler.addBorrowers(PyFileBorrower(HttpReader(mibBorrower.hostname or mibBorrower.netloc, mibBorrower.port or 80, mibBorrower.path, ssl=mibBorrower.scheme == 'https').setOptions(originalMatching=False, lowcaseMatching=False)).setOptions(genTexts=genMibTextsFlag))
-        elif mibBorrower.scheme in ('ftp', 'sftp'):
-            mibCompiler.addBorrowers(PyFileBorrower(FtpReader(mibBorrower.hostname or mibBorrower.netloc, mibBorrower.path, ssl=mibBorrower.scheme == 'sftp', port=mibBorrower.port or 21, user=mibBorrower.username or 'anonymous', password=mibBorrower.password or 'anonymous@').setOptions(originalMatching=False, lowcaseMatching=False)).setOptions(genTexts=genMibTextsFlag))
-        else:
-            sys.stderr.write('ERROR: unsupported URL scheme %s\r\n%s\r\n' % (opt[1], helpMessage))
-            sys.exit(-1)
+    mibCompiler.addBorrowers(
+        *[ PyFileBorrower(x) for x in getReadersFromUrls(*mibBorrowers, originalMatching=False, lowcaseMatching=False) ]
+    )
 
     processed = mibCompiler.compile(*inputMibs,
                                     **dict(noDeps=nodepsFlag,
@@ -286,10 +250,10 @@ except error.PySmiError:
 else:
     if verboseFlag:
         sys.stderr.write('%sreated/updated MIBs: %s\r\n' % (dryrunFlag and 'Would be c' or 'C', ', '.join(['%s%s' % (x,x != processed[x].alias and ' (%s)' % processed[x].alias or '') for x in sorted(processed) if processed[x] == 'compiled'])))
-        sys.stderr.write('Pre-compiled MIBs %sborrowed: %s\r\n' % (dryrunFlag and 'would be ' or '', ', '.join(['%s%s' % (x,x != processed[x].alias and ' (%s)' % processed[x].alias or '') for x in sorted(processed) if processed[x] == 'borrowed'])))
+        sys.stderr.write('Pre-compiled MIBs %sborrowed: %s\r\n' % (dryrunFlag and 'Would be ' or '', ', '.join(['%s (%s)' % (x,processed[x].path) for x in sorted(processed) if processed[x] == 'borrowed'])))
         sys.stderr.write('Up to date MIBs: %s\r\n' % ', '.join(['%s' % x for x in sorted(processed) if processed[x] == 'untouched']))
         sys.stderr.write('Missing source MIBs: %s\r\n' % ', '.join(['%s' % x for x in sorted(processed) if processed[x] == 'missing']))
         sys.stderr.write('Ignored MIBs: %s\r\n' % ', '.join(['%s' % x for x in sorted(processed) if processed[x] == 'unprocessed']))
-        sys.stderr.write('Failed MIBs: %s\r\n' % ', '.join(['%s (%s)' % (x,processed[x].exception) for x in sorted(processed) if processed[x] == 'failed']))
+        sys.stderr.write('Failed MIBs: %s\r\n' % ', '.join(['%s (%s)' % (x,processed[x].error) for x in sorted(processed) if processed[x] == 'failed']))
 
     sys.exit(0)

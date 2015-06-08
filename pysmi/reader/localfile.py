@@ -62,8 +62,8 @@ class FileReader(AbstractReader):
 
         return super(FileReader, self).getMibVariants(mibname)
 
-    def getData(self, timestamp, mibname):
-        debug.logger & debug.flagReader and debug.logger('%slooking for MIB %s that is newer than %s' % (self._recursive and 'recursively ' or '', mibname, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(timestamp))))
+    def getData(self, mibname):
+        debug.logger & debug.flagReader and debug.logger('%slooking for MIB %s' % (self._recursive and 'recursively ' or '', mibname))
         for path in self.getSubdirs(self._path, self._recursive,
                                     self._ignoreErrors):
             for mibalias, mibfile in self.getMibVariants(mibname):
@@ -71,15 +71,14 @@ class FileReader(AbstractReader):
                 debug.logger & debug.flagReader and debug.logger('trying MIB %s' % f)
                 if os.path.exists(f) and os.path.isfile(f):
                     try:
-                        lastModified = os.stat(f)[8]
-                        if lastModified > timestamp:
-                            debug.logger & debug.flagReader and debug.logger('source MIB %s is new enough (%s), fetching data...' % (f, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(lastModified))))
-                            return MibInfo(mibfile=f, mibname=mibname, alias=mibalias), decode(open(f, mode='rb').read(self.maxMibSize))
+                        mtime = os.stat(f)[8]
+                        debug.logger & debug.flagReader and debug.logger('source MIB %s mtime is %s, fetching data...' % (f, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(mtime))))
+                        return MibInfo(path='file://%s' % f, file=mibfile, name=mibalias, mtime=mtime), decode(open(f, mode='rb').read(self.maxMibSize))
                     except (OSError, IOError):
                         debug.logger & debug.flagReader and debug.logger('source file %s open failure: %s' % (f, sys.exc_info()[1]))
                         if not self._ignoreErrors:
                             raise error.PySmiError('file %s access error: %s' % (f, sys.exc_info()[1]))
 
-                    raise error.PySmiSourceNotModifiedError('source MIB %s is older than needed' % f, reader=self)
+                    raise error.PySmiReaderFileNotModifiedError('source MIB %s is older than needed' % f, reader=self)
 
-        raise error.PySmiSourceNotFoundError('source MIB %s not found' % mibname, reader=self)
+        raise error.PySmiReaderFileNotFoundError('source MIB %s not found' % mibname, reader=self)

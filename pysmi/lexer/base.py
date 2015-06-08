@@ -1,2 +1,4 @@
  
-class AbstractLexer(object): pass
+class AbstractLexer(object):
+  def reset(self):
+        raise NotImplementedError()

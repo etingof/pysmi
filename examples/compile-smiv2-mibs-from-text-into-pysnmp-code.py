@@ -17,7 +17,7 @@ from pysmi.codegen.pysnmp import PySnmpCodeGen, baseMibs
 from pysmi.compiler import MibCompiler
 from pysmi import debug
 
-#debug.setLogger(debug.Debug('all'))
+#debug.setLogger(debug.Debug('compiler'))
 
 inputMibs = [ 'IF-MIB', 'IP-MIB' ]
 srcDir = '/usr/share/snmp/mibs/'  # we will read MIBs from here
@@ -33,7 +33,7 @@ mibCompiler = MibCompiler(
 
 # our own callback function serves as a MIB source here
 mibCompiler.addSources(
-  CallbackReader(lambda t,m,c: open(srcDir+m+'.txt').read())
+  CallbackReader(lambda m,c: open(srcDir+m+'.txt').read())
 )
 
 # never recompile MIBs with MACROs

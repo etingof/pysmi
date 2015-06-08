@@ -34,10 +34,10 @@ class PyPackageSearcher(AbstractSearcher):
              -1)                               # dst
         return time.mktime(t)
 
-    def getTimestamp(self, mibname, rebuild=False):
+    def fileExists(self, mibname, mtime, rebuild=False):
         if rebuild:
             debug.logger & debug.flagSearcher and debug.logger('pretend %s is very old' % mibname)
-            return 0  # beginning of time
+            return
         mibname = decode(mibname)
         try:
             p = __import__(self._package, globals(), locals(), ['__init__'])
@@ -47,10 +47,10 @@ class PyPackageSearcher(AbstractSearcher):
                 debug.logger & debug.flagSearcher and debug.logger('%s is an importable egg at %s' % (self._package, os.path.split(p.__file__)[0]))
             else:
                 debug.logger & debug.flagSearcher and debug.logger('%s is not an egg, trying it as a package directory' % self._package)
-                return PyFileSearcher(os.path.split(p.__file__)[0]).getTimestamp(mibname)
+                return PyFileSearcher(os.path.split(p.__file__)[0]).fileExists(mibname, mtime, rebuild=rebuild)
 
         except ImportError:
-            raise error.PySmiCompiledFileNotFoundError('%s is not importable, trying as a path' % self._package, searcher=self)
+            raise error.PySmiFileNotFoundError('%s is not importable, trying as a path' % self._package, searcher=self)
 
         for format in imp.PY_COMPILED, imp.PY_SOURCE:
             for pySfx, pyMode in self.suffixes[format]:
@@ -64,7 +64,10 @@ class PyPackageSearcher(AbstractSearcher):
                         pyData = pyData[4:]
                         pyTime = struct.unpack('<L', pyData[:4])[0]
                         debug.logger & debug.flagSearcher and debug.logger('found %s, mtime %s' % (f, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(pyTime))))
-                        return pyTime
+                        if pyTime >= mtime:
+                            raise error.PySmiFileNotModifiedError()
+                        else:
+                            raise error.PySmiFileNotFoundError('older file %s exists' % mibname, searcher=self)
                     else:
                         debug.logger & debug.flagSearcher and debug.logger('bad magic in %s' % f)
                         continue
@@ -75,6 +78,9 @@ class PyPackageSearcher(AbstractSearcher):
                     )
 
                     debug.logger & debug.flagSearcher and debug.logger('found %s, mtime %s' % (f, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(pyTime))))
-                    return pyTime
+                    if pyTime >= mtime:
+                        raise error.PySmiFileNotModifiedError()
+                    else:
+                        raise error.PySmiFileNotFoundError('older file %s exists' % mibname, searcher=self)
 
-        raise error.PySmiCompiledFileNotFoundError('no file %s found' % mibname, searcher=self)
+        raise error.PySmiFileNotFoundError('no file %s found' % mibname, searcher=self)

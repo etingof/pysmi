@@ -20,10 +20,10 @@ class PyFileSearcher(AbstractSearcher):
 
     def __str__(self): return '%s{"%s"}' % (self.__class__.__name__, self._path)
 
-    def getTimestamp(self, mibname, rebuild=False):
+    def fileExists(self, mibname, mtime, rebuild=False):
         if rebuild:
             debug.logger & debug.flagSearcher and debug.logger('pretend %s is very old' % mibname)
-            return 0  # beginning of time
+            return
         mibname = decode(mibname)
         pyfile = os.path.join(self._path, mibname)
         for format in imp.PY_COMPILED, imp.PY_SOURCE:
@@ -41,7 +41,10 @@ class PyFileSearcher(AbstractSearcher):
                         pyData = pyData[4:]
                         pyTime = struct.unpack('<L', pyData[:4])[0]
                         debug.logger & debug.flagSearcher and debug.logger('found %s, mtime %s' % (f, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(pyTime))))
-                        return pyTime
+                        if pyTime >= mtime:
+                            raise error.PySmiFileNotModifiedError()
+                        else:
+                            raise error.PySmiFileNotFoundError('older file exists' % mibname, searcher=self)
                     else:
                         debug.logger & debug.flagSearcher and debug.logger('bad magic in %s' % f)
                         continue
@@ -52,6 +55,7 @@ class PyFileSearcher(AbstractSearcher):
                         raise error.PySmiSearcherError('failure opening compiled file %s: %s' % (f, sys.exc_info()[1]), searcher=self)
 
                     debug.logger & debug.flagSearcher and debug.logger('found %s, mtime %s' % (f, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(pyTime))))
-                    return pyTime
+                    if pyTime >= mtime:
+                        raise error.PySmiFileNotModifiedError()
 
-        raise error.PySmiCompiledFileNotFoundError('no compiled file %s found' % mibname, searcher=self)
+        raise error.PySmiFileNotFoundError('no compiled file %s found' % mibname, searcher=self)
