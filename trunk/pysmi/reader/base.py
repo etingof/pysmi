@@ -37,5 +37,5 @@ class AbstractReader(object):
 
         return ((x, x+y) for x in filenames for y in self.exts)
 
-    def getData(self, timestamp, filename):
+    def getData(self, filename):
         raise NotImplementedError()

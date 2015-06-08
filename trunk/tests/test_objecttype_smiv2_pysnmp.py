@@ -8,6 +8,7 @@ if sys.version_info[0:2] < (2, 7) or \
 else:
     import unittest
 from pysmi.parser.smi import parserFactory
+from pysmi.codegen.symtable import SymtableCodeGen
 from pysmi.codegen.pysnmp import PySnmpCodeGen
 from pysnmp.smi.builder import MibBuilder
 
@@ -31,7 +32,9 @@ END
  """
 
     def setUp(self):
-        self.mibInfo, pycode = PySnmpCodeGen().genCode(parserFactory()().parse(self.__class__.__doc__), genTexts=True)[0]
+        ast = parserFactory()().parse(self.__class__.__doc__)[0]
+        mibInfo, symtable = SymtableCodeGen().genCode(ast, {}, genTexts=True)
+        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, { mibInfo.name: symtable }, genTexts=True)
         codeobj = compile(pycode, 'test', 'exec')
 
         mibBuilder = MibBuilder()
@@ -123,7 +126,9 @@ END
  """
 
     def setUp(self):
-        self.mibInfo, pycode = PySnmpCodeGen().genCode(parserFactory()().parse(self.__class__.__doc__), genTexts=True)[0]
+        ast = parserFactory()().parse(self.__class__.__doc__)[0]
+        mibInfo, symtable = SymtableCodeGen().genCode(ast, {}, genTexts=True)
+        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, { mibInfo.name: symtable }, genTexts=True)
         codeobj = compile(pycode, 'test', 'exec')
 
         self.ctx = { 'mibBuilder': MibBuilder() }
@@ -159,7 +164,9 @@ END
  """
 
     def setUp(self):
-        self.mibInfo, pycode = PySnmpCodeGen().genCode(parserFactory()().parse(self.__class__.__doc__), genTexts=True)[0]
+        ast = parserFactory()().parse(self.__class__.__doc__)[0]
+        mibInfo, symtable = SymtableCodeGen().genCode(ast, {}, genTexts=True)
+        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, { mibInfo.name: symtable }, genTexts=True)
         codeobj = compile(pycode, 'test', 'exec')
 
         self.ctx = { 'mibBuilder': MibBuilder() }
@@ -192,7 +199,9 @@ END
  """
 
     def setUp(self):
-        self.mibInfo, pycode = PySnmpCodeGen().genCode(parserFactory()().parse(self.__class__.__doc__), genTexts=True)[0]
+        ast = parserFactory()().parse(self.__class__.__doc__)[0]
+        mibInfo, symtable = SymtableCodeGen().genCode(ast, {}, genTexts=True)
+        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, { mibInfo.name: symtable }, genTexts=True)
         codeobj = compile(pycode, 'test', 'exec')
 
         self.ctx = { 'mibBuilder': MibBuilder() }
@@ -226,7 +235,9 @@ END
  """
 
     def setUp(self):
-        self.mibInfo, pycode = PySnmpCodeGen().genCode(parserFactory()().parse(self.__class__.__doc__), genTexts=True)[0]
+        ast = parserFactory()().parse(self.__class__.__doc__)[0]
+        mibInfo, symtable = SymtableCodeGen().genCode(ast, {}, genTexts=True)
+        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, { mibInfo.name: symtable }, genTexts=True)
         codeobj = compile(pycode, 'test', 'exec')
 
         self.ctx = { 'mibBuilder': MibBuilder() }
@@ -259,7 +270,9 @@ END
  """
 
     def setUp(self):
-        self.mibInfo, pycode = PySnmpCodeGen().genCode(parserFactory()().parse(self.__class__.__doc__), genTexts=True)[0]
+        ast = parserFactory()().parse(self.__class__.__doc__)[0]
+        mibInfo, symtable = SymtableCodeGen().genCode(ast, {}, genTexts=True)
+        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, { mibInfo.name: symtable }, genTexts=True)
         codeobj = compile(pycode, 'test', 'exec')
 
         self.ctx = { 'mibBuilder': MibBuilder() }
@@ -292,7 +305,9 @@ END
  """
 
     def setUp(self):
-        self.mibInfo, pycode = PySnmpCodeGen().genCode(parserFactory()().parse(self.__class__.__doc__), genTexts=True)[0]
+        ast = parserFactory()().parse(self.__class__.__doc__)[0]
+        mibInfo, symtable = SymtableCodeGen().genCode(ast, {}, genTexts=True)
+        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, { mibInfo.name: symtable }, genTexts=True)
         codeobj = compile(pycode, 'test', 'exec')
 
         self.ctx = { 'mibBuilder': MibBuilder() }
@@ -325,7 +340,9 @@ END
  """
 
     def setUp(self):
-        self.mibInfo, pycode = PySnmpCodeGen().genCode(parserFactory()().parse(self.__class__.__doc__), genTexts=True)[0]
+        ast = parserFactory()().parse(self.__class__.__doc__)[0]
+        mibInfo, symtable = SymtableCodeGen().genCode(ast, {}, genTexts=True)
+        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, { mibInfo.name: symtable }, genTexts=True)
         codeobj = compile(pycode, 'test', 'exec')
 
         self.ctx = { 'mibBuilder': MibBuilder() }
@@ -384,7 +401,9 @@ END
  """
 
     def setUp(self):
-        self.mibInfo, pycode = PySnmpCodeGen().genCode(parserFactory()().parse(self.__class__.__doc__), genTexts=True)[0]
+        ast = parserFactory()().parse(self.__class__.__doc__)[0]
+        mibInfo, symtable = SymtableCodeGen().genCode(ast, {}, genTexts=True)
+        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, { mibInfo.name: symtable }, genTexts=True)
         codeobj = compile(pycode, 'test', 'exec')
 
         self.ctx = { 'mibBuilder': MibBuilder() }
@@ -456,7 +475,9 @@ END
  """
 
     def setUp(self):
-        self.mibInfo, pycode = PySnmpCodeGen().genCode(parserFactory()().parse(self.__class__.__doc__), genTexts=True)[0]
+        ast = parserFactory()().parse(self.__class__.__doc__)[0]
+        mibInfo, symtable = SymtableCodeGen().genCode(ast, {}, genTexts=True)
+        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, { mibInfo.name: symtable }, genTexts=True)
         codeobj = compile(pycode, 'test', 'exec')
 
         self.ctx = { 'mibBuilder': MibBuilder() }
@@ -515,7 +536,9 @@ END
  """
 
     def setUp(self):
-        self.mibInfo, pycode = PySnmpCodeGen().genCode(parserFactory()().parse(self.__class__.__doc__), genTexts=True)[0]
+        ast = parserFactory()().parse(self.__class__.__doc__)[0]
+        mibInfo, symtable = SymtableCodeGen().genCode(ast, {}, genTexts=True)
+        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, { mibInfo.name: symtable }, genTexts=True)
         codeobj = compile(pycode, 'test', 'exec')
 
         self.ctx = { 'mibBuilder': MibBuilder() }
@@ -592,7 +615,9 @@ END
  """
 
     def setUp(self):
-        self.mibInfo, pycode = PySnmpCodeGen().genCode(parserFactory()().parse(self.__class__.__doc__), genTexts=True)[0]
+        ast = parserFactory()().parse(self.__class__.__doc__)[0]
+        mibInfo, symtable = SymtableCodeGen().genCode(ast, {}, genTexts=True)
+        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, { mibInfo.name: symtable }, genTexts=True)
         codeobj = compile(pycode, 'test', 'exec')
 
         self.ctx = { 'mibBuilder': MibBuilder() }

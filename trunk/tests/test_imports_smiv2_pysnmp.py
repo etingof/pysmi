@@ -24,7 +24,7 @@ IMPORTS
 END
  """
     def setUp(self):
-        self.mibInfo, pycode = PySnmpCodeGen().genCode(parserFactory()().parse(self.__class__.__doc__), genTexts=True)[0]
+        self.mibInfo, pycode = PySnmpCodeGen().genCode(parserFactory()().parse(self.__class__.__doc__)[0], {}, genTexts=True)
         codeobj = compile(pycode, 'test', 'exec')
 
         self.ctx = { 'mibBuilder': MibBuilder() }
@@ -33,9 +33,8 @@ END
 
     def testModuleImportsRequiredMibs(self):
         self.assertTupleEqual(
-            self.mibInfo.otherMibs,
-            ('ASN1', 'ASN1-ENUMERATION', 'ASN1-REFINEMENT',
-             'SNMP-FRAMEWORK-MIB', 'SNMPv2-SMI'),
+            self.mibInfo.imported,
+            ('SNMP-FRAMEWORK-MIB', 'SNMPv2-SMI'),
             'imported MIBs not reported'
         )
 

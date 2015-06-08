@@ -1,3 +1,7 @@
+#
+# This is a stub codegen copied over from pysnmp. It should be
+# reworked to build a internally used symbol table for each passed MIB.
+# 
 import sys
 from time import strptime, strftime
 from pysmi.mibinfo import MibInfo
@@ -12,33 +16,7 @@ if sys.version_info[0] > 2:
 else:
     def dorepr(s): return repr(s.encode('utf-8')).decode('utf-8')
 
-# default pysnmp MIB packages
-defaultMibPackages = ('pysnmp.smi.mibs', 'pysnmp_mibs')
-
-# never compile these, they either:
-# - define MACROs (implementation supplies them)
-# - or carry conflicting OIDs (so that all IMPORT's of them will be rewritten)
-# - or have manual fixes
-# - or import base ASN.1 types from implementation-specific MIBs
-fakeMibs = ('ASN1',
-            'ASN1-ENUMERATION',
-            'ASN1-REFINEMENT')
-baseMibs = fakeMibs + \
-           ('RFC1065-SMI',
-            'RFC1155-SMI',
-            'RFC1158-MIB',
-            'RFC-1212',
-            'RFC1213-MIB',
-            'RFC-1215',
-            'SNMPv2-SMI',
-            'SNMPv2-TC',
-            'SNMPv2-TM',
-            'SNMPv2-CONF',
-            'SNMP-FRAMEWORK-MIB',
-            'SNMP-TARGET-MIB',
-            'TRANSPORT-ADDRESS-MIB')
-
-class PySnmpCodeGen(AbstractCodeGen):
+class SymtableCodeGen(AbstractCodeGen):
   symsTable = {
     'MODULE-IDENTITY': ('ModuleIdentity',),
     'OBJECT-TYPE': ('MibScalar', 'MibTable', 'MibTableRow', 'MibTableColumn'),
@@ -55,17 +33,7 @@ class PySnmpCodeGen(AbstractCodeGen):
   }
 
   constImports = {
-    'ASN1': ('Integer', 'OctetString', 'ObjectIdentifier'),
-    'ASN1-ENUMERATION': ('NamedValues',),
-    'ASN1-REFINEMENT': ('ConstraintsUnion', 'ConstraintsIntersection', 'SingleValueConstraint', 'ValueRangeConstraint', 'ValueSizeConstraint'),
     'SNMPv2-SMI': ('iso',
-                   'Bits', # XXX
-                   'Integer32', # XXX
-                   'TimeTicks', # bug in some IETF MIBs
-                   'Counter32', # bug in some IETF MIBs (e.g. DSA-MIB)
-                   'Counter64', # bug in some MIBs (e.g.A3COM-HUAWEI-LswINF-MIB)
-                   'NotificationType', # bug in some MIBs (e.g. A3COM-HUAWEI-DHCPSNOOP-MIB)
-                   'Gauge32', # bug in some IETF MIBs (e.g. DSA-MIB)
                    'MibIdentifier'), # OBJECT IDENTIFIER
   }
 
@@ -327,7 +295,6 @@ class PySnmpCodeGen(AbstractCodeGen):
   }
  
   smiv1IdxTypes = [ 'INTEGER', 'OCTET STRING', 'IPADDRESS', 'NETWORKADDRESS' ]
-
   ifTextStr = 'if mibBuilder.loadTexts: '
   indent = ' '*4
   fakeidx = 1000 # starting index for fake symbols
@@ -337,9 +304,10 @@ class PySnmpCodeGen(AbstractCodeGen):
     self._cols = {} # k, v = name, datatype
     self._exports = set()
     self._presentedSyms = set()
-    self._importMap = {}
+    self._parentOids = set()
+    self._importMap = {} # k, v = symbol, MIB
     self._symsOrder = []
-    self._out = {} # k, v = name, generated code
+    self._out = {} # k, v = symbol, properties
     self.moduleName = ['DUMMY']
     self.genRules = { 'text' : 1 }
  
@@ -387,7 +355,6 @@ class PySnmpCodeGen(AbstractCodeGen):
     return data 
 
   def genImports(self, imports):
-    outStr = ''
     # convertion to SNMPv2
     toDel = []
     for module in list(imports):
@@ -410,6 +377,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         imports[module] += self.constImports[module]
       else:
         imports[module] = self.constImports[module]
+
     for module in sorted(imports):
       symbols = ()
       for symbol in set(imports[module]):
@@ -417,268 +385,118 @@ class PySnmpCodeGen(AbstractCodeGen):
       if symbols:
         self._presentedSyms = self._presentedSyms.union([self.transOpers(s) for s in symbols])
         self._importMap.update([(self.transOpers(s), module) for s in symbols]) 
-        outStr += '( %s, ) = mibBuilder.importSymbols("%s")\n' % \
-          ( ', '.join([self.transOpers(s) for s in symbols]),
-            '", "'.join((module,) + symbols) )
-    return outStr, tuple(sorted(imports))
+    return {}, tuple(sorted(imports))
 
-  def genExports(self, ):
-    exports = list(self._exports)
-    exportsNum = len(exports)
-    chunkNum = exportsNum/254
-    outStr = ''
-    for i in range(int(chunkNum+1)):
-      outStr += 'mibBuilder.exportSymbols("' + self.moduleName[0] + '", '
-      outStr += ', '.join(exports[254*i:254*(i+1)]) + ')\n'
-    return self._exports and outStr or ''
-
-  def genLabel(self, symbol, classmode=0):
-    if symbol.find('-') != -1:
-      return classmode and 'label = "' + symbol + '"\n' or \
-                           '.setLabel("' + symbol + '")'
-    return ''
-
-  def addToExports(self, symbol, moduleIdentity=0):
-    if moduleIdentity:
-      self._exports.add('PYSNMP_MODULE_ID=%s' % symbol)
-    self._exports.add('%s=%s' % (symbol, symbol))
-    self._presentedSyms.add(symbol)
-
-  def regSym(self, symbol, outStr, parentOid=None, moduleIdentity=0):
-    if symbol in self._presentedSyms and symbol not in self._importMap:
+  def regSym(self, symbol, symProps):
+    if symbol in self._out: # add ti strict mode - or symbol in self._importMap:
       raise error.PySmiSemanticError('Duplicate symbol found: %s' % symbol)
-    self._symsOrder.append(symbol)
-    self.addToExports(symbol, moduleIdentity)
-    self._out[symbol] = outStr
+    self._out[symbol] = symProps
 
-  def genNumericOid(self, oid):
-    numericOid = ()
-    for part in oid:
-      if isinstance(part, tuple): 
-        parent, module = part
-        if parent == 'iso':
-          numericOid += (1,)
-          continue
-        if module not in self.symbolTable:
-          # XXX do getname for possible future borrowed mibs 
-          raise error.PySmiSemanticError('no module "%s" in symbolTable' % module)
-          continue
-        if parent not in self.symbolTable[module]:
-          raise error.PySmiSemanticError('no symbol "%s" in module "%s"' % (parent, module))  
-        numericOid += self.genNumericOid(self.symbolTable[module][parent]['oid'])
-      else:
-        numericOid += (part, )
-    return numericOid
-
-  def getBaseType(self, symName, module):
-    if module not in self.symbolTable:
-      raise error.PySmiSemanticError('no module "%s" in symbolTable' % module)
-    if symName not in self.symbolTable[module]:
-      raise error.PySmiSemanticError('no symbol "%s" in module "%s"' % (symName, module))
-    symType, symSubtype = self.symbolTable[module][symName].get('syntax', (('', ''), ''))
-    if not symType[0]:
-      raise error.PySmiSemanticError('unknown type for symbol "%s"' % symName) 
-    if symType[0] in self.baseTypes:
-      return symType, symSubtype
-    else:
-      baseSymType, baseSymSubtype = self.getBaseType(*symType)
-      if isinstance(baseSymSubtype, list):
-        if isinstance(symSubtype, list): 
-          symSubtype += baseSymSubtype
-        else:
-          symSubtype = baseSymSubtype
-      return baseSymType, symSubtype
-    
-### Clause generation functions
+### Clause handlers
   def genAgentCapabilities(self, data, classmode=0):
     name, description, oid = data
-    label = self.genLabel(name)
     name = self.transOpers(name)
-    oidStr, parentOid = oid
-    outStr =  name + ' = AgentCapabilities(' + oidStr + ')' + label + '\n'
-    if self.genRules['text']:
-      outStr += self.ifTextStr + name + description + '\n'
-    self.regSym(name, outStr, parentOid)
-    return outStr
+    symProps = {'type': 'AgentCapabilities',
+                'oid': oid, 
+    }
+    self.regSym(name, symProps)
 
   def genModuleIdentity(self, data, classmode=0):
     name, organization, contactInfo, description, revisions, oid  = data
-    label = self.genLabel(name)
     name = self.transOpers(name)
-    oidStr, parentOid = oid
-    revisions = revisions and revisions or ''
-    outStr = name + ' = ModuleIdentity(' + oidStr + ')' + label + revisions + '\n'
-    if self.genRules['text']:
-      outStr += self.ifTextStr + name + organization + '\n' 
-      outStr += self.ifTextStr + name + contactInfo + '\n' 
-      outStr += self.ifTextStr + name + description + '\n' 
-    self.regSym(name, outStr, parentOid, moduleIdentity=1)
-    return outStr
+    symProps = {'type': 'ModuleIdentity',
+                'oid': oid,
+    }
+    self.regSym(name, symProps)
 
   def genModuleCompliance(self, data, classmode=0):
     name, description, compliances, oid = data
-    label = self.genLabel(name)
     name = self.transOpers(name)
-    oidStr, parentOid = oid
-    outStr = name + ' = ModuleCompliance(' + oidStr + ')' + label
-    outStr += compliances + '\n'
-    if self.genRules['text']:
-      outStr += self.ifTextStr + name + description + '\n'
-    self.regSym(name, outStr, parentOid)
-    return outStr
+    symProps = {'type': 'ModuleCompliance',
+                 'oid': oid,
+    }
+    self.regSym(name, symProps)
 
   def genNotificationGroup(self, data, classmode=0):
     name, objects, description, oid = data
-    label = self.genLabel(name)
     name = self.transOpers(name)
-    oidStr, parentOid = oid
-    objStr = ''
-    if objects:
-      objects = [ '("' + self.moduleName[0] + '", "' + self.transOpers(obj) + '"),' \
-                  for obj in objects ]
-    objStr = ' '.join(objects)
-    outStr = name + ' = NotificationGroup(' + oidStr + ')' + label
-    outStr += '.setObjects(*(' + objStr + '))\n'
-    if self.genRules['text']:
-      outStr += self.ifTextStr + name + description + '\n'
-    self.regSym(name, outStr, parentOid)
-    return outStr  
+    symProps = {'type': 'NotificationGroup',
+                'oid': oid,
+    }
+    self.regSym(name, symProps)
 
   def genNotificationType(self, data, classmode=0):
     name, objects, description, oid = data
-    label = self.genLabel(name)
     name = self.transOpers(name)
-    oidStr, parentOid = oid
-    objStr = ''
-    if objects:
-      objects = [ '("' + self.moduleName[0] + '", "' + self.transOpers(obj) + '"),' \
-                  for obj in objects ]
-    objStr = ' '.join(objects)
-    outStr = name + ' = NotificationType(' + oidStr + ')' + label
-    outStr += '.setObjects(*(' + objStr + '))\n'
-    if self.genRules['text']:
-      outStr += self.ifTextStr + name + description + '\n'
-    self.regSym(name, outStr, parentOid)
-    return outStr
+    symProps = {'type': 'NotificationType',
+                'oid': oid,
+    }
+    self.regSym(name, symProps)
 
   def genObjectGroup(self, data, classmode=0):
     name, objects, description, oid = data
-    label = self.genLabel(name)
     name = self.transOpers(name)
-    oidStr, parentOid = oid
-    objStr = ''
-    if objects:
-      objects = [ '("' + self.moduleName[0] + '", "' + self.transOpers(obj) + '"),' \
-                  for obj in objects ]
-    objStr = ' '.join(objects)
-    outStr = name + ' = ObjectGroup(' + oidStr + ')' + label
-    outStr += '.setObjects(*(' + objStr + '))\n'
-    if self.genRules['text']:
-      outStr += self.ifTextStr + name + description + '\n'
-    self.regSym(name, outStr, parentOid)
-    return outStr
+    symProps = {'type': 'ObjectGroup',
+                'oid': oid,
+    }
+    self.regSym(name, symProps)
 
   def genObjectIdentity(self, data, classmode=0):
     name, description, oid = data
-    label = self.genLabel(name)
     name = self.transOpers(name)
-    oidStr, parentOid = oid
-    outStr =  name + ' = ObjectIdentity(' + oidStr + ')' + label + '\n'
-    if self.genRules['text']:
-      outStr += self.ifTextStr + name + description + '\n'
-    self.regSym(name, outStr, parentOid)
-    return outStr
+    symProps = {'type': 'ObjectIdentity',
+                'oid': oid,
+    }
+    self.regSym(name, symProps)
 
   def genObjectType(self, data, classmode=0):
     name, syntax, units, maxaccess, description, augmention, index, defval, oid = data
-    label = self.genLabel(name)
     name = self.transOpers(name)
-    oidStr, parentOid = oid
-    indexStr, fakeStrlist, fakeSyms = index and index or ('', '', [])
-    subtype = syntax[0] == 'Bits' and 'Bits()' + syntax[1] or \
-                                      syntax[1] # Bits hack #1
-    classtype = self.typeClasses.get(syntax[0], syntax[0])
-    classtype = self.transOpers(classtype)
-    classtype = syntax[0] == 'Bits' and 'MibScalar' or classtype # Bits hack #2
-    classtype = name in self._cols and 'MibTableColumn' or classtype
-    defval = self.genDefVal(defval, objname=name)
-    outStr = name + ' = ' + classtype  + '(' + oidStr  + ', ' + subtype + \
-             (defval and defval or '') + ')' + label
-    outStr += (units and units) or ''
-    outStr += (maxaccess and maxaccess) or ''
-    outStr += (indexStr and indexStr) or ''
-    outStr += '\n'
-    if augmention:
-      augmention = self.transOpers(augmention)
-      outStr += augmention + '.registerAugmentions(("' + self.moduleName[0] + \
-                '", "' + name + '"))\n'
-      outStr += name + '.setIndexNames(*' + augmention + '.getIndexNames())\n'
-    if self.genRules['text'] and description:
-      outStr += self.ifTextStr + name + description + '\n'
-    self.regSym(name, outStr, parentOid)
-    if fakeSyms: # fake symbols for INDEX to support SMIv1
-      for i in range(len(fakeSyms)):
-        fakeOutStr = fakeStrlist[i] % oidStr
-        self.regSym(fakeSyms[i], fakeOutStr, name)
-    return outStr
+    symProps = {'type': 'ObjectType',
+                'oid': oid,
+                'syntax': syntax,
+    }
+    if defval:
+      symProps['defval'] = defval
+    self.regSym(name, symProps)
 
   def genTrapType(self, data, classmode=0):
     name, enterprise, variables, description, value = data
-    label = self.genLabel(name)
     name = self.transOpers(name)
-    enterpriseStr, parentOid = enterprise
-    varStr = ''
-    if variables:
-      variables = [ '("' + self.moduleName[0] + '", "' + self.transOpers(var) + '"),' \
-                    for var in variables ]
-    varStr = ' '.join(variables)   
-    outStr = name + ' = NotificationType(' + enterpriseStr + \
-             ' + (0,' + str(value) + '))' + label
-    outStr += '.setObjects(*(' + varStr + '))\n'
-    if self.genRules['text']:
-      outStr += self.ifTextStr + name + description + '\n'
-    self.regSym(name, outStr, parentOid)
-    return outStr
+    symProps = { 'type': 'NotificationType',
+                 'oid': enterprise + (0, value),
+    }
+    self.regSym(name, symProps)
 
   def genTypeDeclaration(self, data, classmode=0):
-    outStr = ''
     name, declaration = data
-    if declaration:
-      parentType, attrs = declaration
-      if parentType: # skipping SEQUENCE case
-        name = self.transOpers(name)
-        outStr = 'class ' + name + '(' + parentType +'):\n' + attrs + '\n'
-        self.regSym(name, outStr)
-    return outStr 
-
+    name = self.transOpers(name)
+    symProps = { 'type': 'TypeDeclaration',
+                 'syntax': declaration,
+    }
+    self.regSym(name, symProps)
+    
   def genValueDeclaration(self, data, classmode=0):
     name, oid = data
-    label = self.genLabel(name)
     name = self.transOpers(name)
-    oidStr, parentOid = oid
-    outStr = name + ' = MibIdentifier(' + oidStr + ')' + label + '\n'
-    self.regSym(name, outStr, parentOid)
-    return outStr
+    symProps = { 'type': 'MibIdentifier',
+                 'oid': oid,
+    }
+    self.regSym(name, symProps)
 
 ### Subparts generation functions
   def genBitNames(self, data, classmode=0):
     names = data[0]
-    return names  
+    return names
+    # done  
 
   def genBits(self, data, classmode=0):
     bits = data[0]
-    namedval = [ '("' + bit[0] + '", ' +  str(bit[1]) + '),' for bit in bits ] 
-    numFuncCalls = len(namedval)/255 + 1
-    funcCalls = ''
-    for i in range(int(numFuncCalls)):
-      funcCalls += 'NamedValues(' + ' '.join(namedval[255*i:255*(i+1)]) + ') + ' 
-    funcCalls = funcCalls[:-3]
-    outStr = classmode and \
-      self.indent + 'namedValues = ' + funcCalls + '\n' or \
-      '.clone(namedValues=' + funcCalls + ')'
-    return 'Bits', outStr
+    return ('Bits', ''), bits
+    # done
 
   def genCompliances(self, data, classmode=0):
+    return '' # XXX
     complStr = ''
     compliances = []
     for complianceModule in data[0]:
@@ -690,90 +508,51 @@ class PySnmpCodeGen(AbstractCodeGen):
 
   def genConceptualTable(self, data, classmode=0):
     row = data[0]
-    if row[1] and row[1][-2:] == '()':
-      row = row[1][:-2]
+    if row[0]:
       self._rows.add(row)
-    return 'MibTable', ''
+    return ('MibTable', ''), ''
+    # done
 
   def genContactInfo(self, data, classmode=0):
+    return '' # XXX
     text = data[0]
     return '.setContactInfo(' + dorepr(text) + ')'
 
   def genDisplayHint(self, data, classmode=0):
+    return '' # XXX
     return self.indent + 'displayHint = ' + dorepr(data[0]) + '\n'
    
-  def genDefVal(self, data, classmode=0, objname=None):
-    if not data:
-      return ''
-    if not objname: 
-      return data
+  def genDefVal(self, data, classmode=0):
     defval = data[0]
-    defvalType = self.getBaseType(objname, self.moduleName[0])
     if isinstance(defval, (int, long)): # number
       val = str(defval)
     elif self.isHex(defval): # hex
-      if defvalType[0][0] in ('Integer32', 'Integer'): # common bug in MIBs
-        val = str(int(defval[1:-2], 16))
-      else:
-        val = 'hexValue="' + defval[1:-2] + '"'
+      val = 'hexValue="' + defval[1:-2] + '"' #not working for Integer baseTypes
     elif self.isBinary(defval): # binary
       binval = defval[1:-2]
       hexval = binval and hex(int(binval, 2))[2:] or ''
       val = 'hexValue="' + hexval + '"'
+    elif isinstance(defval, list): # bits list
+      val = defval
     elif defval[0] == defval[-1] and defval[0] == '"': # quoted strimg
       val = dorepr(defval[1:-1])
     else: # symbol (oid as defval) or name for enumeration member
-      if defvalType[0][0] == 'ObjectIdentifier' and \
-         (defval in self.symbolTable[self.moduleName[0]] or \
-          defval in self._importMap): # oid
-        module = self._importMap.get(defval, self.moduleName[0])
-        try:
-          val = str(self.genNumericOid(self.symbolTable[module][defval]['oid']))
-        except:
-          raise error.PySmiSemanticError('no symbol "%s" in module "%s"' % (defval, module)) ### or no module if it will be borrowed later 
-      elif defvalType[0][0] in ('Integer32', 'Integer') and \
-           isinstance(defvalType[1], list) and \
-           defval in dict(defvalType[1]): # enumeration
-        val = dorepr(defval)
-      elif defvalType[0][0] == 'Bits':
-        defvalBits = [] 
-        bits = dict(defvalType[1])
-        for bit in defval:
-          bitValue = bits.get(bit, None)
-          if bitValue is not None:
-            defvalBits.append((bit, bitValue))
-          else:
-            raise error.PySmiSemanticError('no such bit as "%s" for symbol "%s"' % (bit, objname))
-        return self.genBits([defvalBits])[1]
+      if defval in self._presentedSyms:
+        val = defval + '.getName()' 
       else:
-        raise error.PySmiSemanticError('unknown type "%s" for defval "%s" of symbol "%s"' % (defvalType, defval, objname))  
-    return '.clone(' + val + ')'
+        val = dorepr(defval)
+    return val
 
   def genDescription(self, data, classmode=0):
+    return '' # XXX
     text = data[0]
     return '.setDescription(' + dorepr(text) + ')'
 
   def genEnumSpec(self, data, classmode=0):
-    items = data[0]
-    singleval = [ str(item[1]) + ',' for item in items ]
-    outStr = classmode and self.indent + 'subtypeSpec = %s.subtypeSpec+' or \
-             '.subtype(subtypeSpec='
-    numFuncCalls = len(singleval)/255 + 1
-    singleCall = numFuncCalls == 1 or False
-    funcCalls = ''
-    outStr += not singleCall and 'ConstraintsUnion(' or ''
-    for i in range(int(numFuncCalls)):
-      funcCalls += 'SingleValueConstraint(' + \
-                        ' '.join(singleval[255*i:255*(i+1)]) + '), '
-    funcCalls = funcCalls[:-2]
-    outStr += funcCalls
-    outStr += not singleCall and \
-              (classmode and ')\n' or '))') or \
-              (not classmode and ')' or '\n')  
-    outStr += self.genBits(data, classmode=classmode)[1]
-    return outStr
+    return self.genBits(data, classmode=classmode)[1]
 
   def genIndex(self, data, classmode=0):
+    return '' # XXX
     def genFakeSyms(fakeidx, idxType):
       fakeSymName = 'pysmiFakeCol%s' % fakeidx
       objType = self.typeClasses.get(idxType, idxType)
@@ -797,6 +576,7 @@ class PySnmpCodeGen(AbstractCodeGen):
     return '.setIndexNames(' + ', '.join(idxStrlist)+ ')', fakeStrlist, fakeSyms
 
   def genIntegerSubType(self, data, classmode=0):
+    return '' # XXX
     singleRange = len(data[0]) == 1 or False
     outStr = classmode and self.indent + 'subtypeSpec = %s.subtypeSpec+' or \
                            '.subtype(subtypeSpec='
@@ -812,10 +592,12 @@ class PySnmpCodeGen(AbstractCodeGen):
     return outStr
 
   def genMaxAccess(self, data, classmode=0):
+    return '' # XXX
     access = data[0].replace('-', '')
     return access != 'notaccessible' and '.setMaxAccess("' + access + '")' or ''
 
   def genOctetStringSubType(self, data, classmode=0):
+    return '' # XXX
     singleRange = len(data[0]) == 1 or False
     outStr = classmode and self.indent + 'subtypeSpec = %s.subtypeSpec+' or \
                            '.subtype(subtypeSpec='
@@ -836,25 +618,27 @@ class PySnmpCodeGen(AbstractCodeGen):
 
   def genOid(self, data, classmode=0):
     out = ()
-    parent = '' 
     for el in data[0]:
       if isinstance(el, (str, unicode)):
         parent = self.transOpers(el)
+        self._parentOids.add(parent)
         out += ((parent, self._importMap.get(parent, self.moduleName[0])),)
       elif isinstance(el, (int, long)):
-        out += (el,) 
+        out += (el,)
       elif isinstance(el, tuple):
         out += (el[1],) # XXX Do we need to create a new object el[0]?
       else:
         raise error.PySmiSemanticError('unknown datatype for OID: %s' % el)
-    return str(self.genNumericOid(out)), parent
+    return out
 
   def genObjects(self, data, classmode=0):
+    return '' # XXX
     if data[0]:
       return [ self.transOpers(obj) for obj in data[0] ] # XXX self.transOpers or not??
     return []
 
   def genTime(self, data, classmode=0):
+    return '' # XXX
     times = []
     for t in data:
       lenTimeStr = len(t)
@@ -873,32 +657,36 @@ class PySnmpCodeGen(AbstractCodeGen):
     return times
 
   def genOrganization(self, data, classmode=0):
+    return '' # XXX
     text = data[0]
     return '.setOrganization(' + dorepr(text) + ')'
 
   def genRevisions(self, data, classmode=0):
+    return '' # XXX
     times = self.genTime(data[0]) 
     return '.setRevisions(("' + '", "'.join(times) + '",))'
 
   def genRow(self, data, classmode=0):
     row = data[0]
-    return row in self._rows and ('MibTableRow', '') or self.genSimpleSyntax(data, classmode=classmode)
+    return row in self._rows and (('MibTableRow', ''), '') or self.genSimpleSyntax(data, classmode=classmode)
+    # done
 
   def genSequence(self, data, classmode=0):
     cols = data[0]
     self._cols.update(cols)
     return '', ''
+    # done
 
   def genSimpleSyntax(self, data, classmode=0):
     objType = data[0]
+    module = ''
     objType = self.typeClasses.get(objType, objType)
     objType = self.transOpers(objType)
+    if objType not in self.baseTypes:
+      module = self._importMap.get(objType, self.moduleName[0])
     subtype = len(data) == 2 and data[1] or ''
-    if classmode:
-      subtype = '%s' in subtype and subtype % objType or subtype # XXX hack?
-      return objType, subtype
-    outStr = objType + '()' + subtype
-    return 'MibScalar', outStr
+    return (objType, module), subtype
+    # done
 
   def genTypeDeclarationRHS(self, data, classmode=0):
     if len(data) == 1:
@@ -907,12 +695,11 @@ class PySnmpCodeGen(AbstractCodeGen):
       # Textual convention
       display, syntax = data
       parentType, attrs = syntax
-      parentType = 'TextualConvention, ' + parentType
-      attrs = (display and display or '') + attrs
-    attrs = attrs or self.indent + 'pass\n'
     return parentType, attrs
+    # done
 
   def genUnits(self, data, classmode=0):
+    return '' # XXX
     text = data[0]
     return '.setUnits(' + dorepr(text) + ')'
 
@@ -954,21 +741,15 @@ class PySnmpCodeGen(AbstractCodeGen):
     'typeDeclarationRHS': genTypeDeclarationRHS,
     'UNITS': genUnits,
     'VarTypes': genObjects,
-    #'a': lambda x: genXXX(x, 'CONSTRAINT')
   }
 
   def genCode(self, ast, symbolTable, **kwargs):
     self.genRules['text'] = kwargs.get('genTexts', False)
-    self.symbolTable = symbolTable
-    out = ''
-    importedModules = ()
     self._rows.clear()
     self._cols.clear()
-    self._exports.clear()
-    self._presentedSyms.clear()
+    self._parentOids.clear()
     self._importMap.clear()
-    self._symsOrder = []
-    self._out.clear()
+    self._out = {} # should be new object, do not use `clear` method
     self.moduleName[0], moduleOid, imports, declarations = ast
     out, importedModules = self.genImports(imports and imports or {})
     for declr in declarations and declarations or []:
@@ -976,26 +757,9 @@ class PySnmpCodeGen(AbstractCodeGen):
         clausetype = declr[0]
         classmode = clausetype == 'typeDeclaration'
         self.handlersTable[declr[0]](self, self.prepData(declr[1:], classmode), classmode)
-    for sym in self._symsOrder:
-      if sym not in self._out:
-        raise error.PySmiCodegenError('No generated code for symbol %s' % sym)
-      out += self._out[sym] 
-    out += self.genExports()
-    if 'comments' in kwargs:
-      out = ''.join(['# %s\n' % x for x in kwargs['comments']]) + '#\n' + out
-      out = '#\n# PySNMP MIB module %s (http://pysnmp.sf.net)\n' % self.moduleName[0] + out
-    debug.logger & debug.flagCodegen and debug.logger('canonical MIB name %s (%s), imported MIB(s) %s, Python code size %s bytes' % (self.moduleName[0], moduleOid, ','.join(importedModules) or '<none>', len(out)))
-    return MibInfo(oid=None, name=self.moduleName[0], imported=tuple([ x for x in importedModules if x not in fakeMibs ])), out
-
-  def genIndex(self, mibsMap, **kwargs):
-      out = '\nfrom pysnmp.proto.rfc1902 import ObjectName\n\noidToMibMap = {\n'
-      count = 0
-      for name, oid in mibsMap:
-          out += 'ObjectName("%s"): "%s",\n' % (oid, name)
-          count += 1
-      out += '}\n'
-      if 'comments' in kwargs:
-        out = ''.join(['# %s\n' % x for x in kwargs['comments']]) + '#\n' + out
-        out = '#\n# PySNMP MIB indices (http://pysnmp.sf.net)\n' + out
-      debug.logger & debug.flagCodegen and debug.logger('OID->MIB index built, %s entries, %s bytes' % (count, len(out)))
-      return out
+#    print self._out
+    for sym in self._parentOids:
+      if sym not in self._out and sym not in self._importMap:
+        raise error.PySmiSemanticError('Unknown parent symbol: %s' % sym) 
+    debug.logger & debug.flagCodegen and debug.logger('canonical MIB name %s (%s), imported MIB(s) %s, Symbol table size %s symbols' % (self.moduleName[0], moduleOid, ','.join(importedModules) or '<none>', len(self._out)))
+    return MibInfo(oid=None, name=self.moduleName[0], imported=tuple([ x for x in importedModules ])), self._out

@@ -1,3 +1,3 @@
 class AbstractSearcher(object):
-    def getTimestamp(self, mibname, rebuild=False):
+    def fileExists(self, mibname, mtime, rebuild=False):
         raise NotImplementedError()
