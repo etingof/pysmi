@@ -66,7 +66,10 @@ class PySnmpCodeGen(AbstractCodeGen):
                    'Counter64', # bug in some MIBs (e.g.A3COM-HUAWEI-LswINF-MIB)
                    'NotificationType', # bug in some MIBs (e.g. A3COM-HUAWEI-DHCPSNOOP-MIB)
                    'Gauge32', # bug in some IETF MIBs (e.g. DSA-MIB)
+		   'ModuleIdentity', 'MibScalar', 'MibTable', 'MibTableRow', 'MibTableColumn', 'ObjectIdentity', 'Unsigned32', 'IpAddress', # XXX
                    'MibIdentifier'), # OBJECT IDENTIFIER
+    'SNMPv2-TC': ('DisplayString', 'TextualConvention',), # XXX
+    'SNMPv2-CONF': ('ModuleCompliance', 'NotificationGroup',), # XXX
   }
 
   baseTypes = [ 'Integer', 'Integer32', 'Bits', 'ObjectIdentifier', 'OctetString' ]
@@ -600,7 +603,7 @@ class PySnmpCodeGen(AbstractCodeGen):
     classtype = self.typeClasses.get(syntax[0], syntax[0])
     classtype = self.transOpers(classtype)
     classtype = syntax[0] == 'Bits' and 'MibScalar' or classtype # Bits hack #2
-    classtype = name in self._cols and 'MibTableColumn' or classtype
+    classtype = name in self.symbolTable[self.moduleName[0]]['_symtable_cols'] and 'MibTableColumn' or classtype
     defval = self.genDefVal(defval, objname=name)
     outStr = name + ' = ' + classtype  + '(' + oidStr  + ', ' + subtype + \
              (defval and defval or '') + ')' + label
@@ -882,7 +885,7 @@ class PySnmpCodeGen(AbstractCodeGen):
 
   def genRow(self, data, classmode=0):
     row = data[0]
-    return row in self._rows and ('MibTableRow', '') or self.genSimpleSyntax(data, classmode=classmode)
+    return row in self.symbolTable[self.moduleName[0]]['_symtable_rows'] and ('MibTableRow', '') or self.genSimpleSyntax(data, classmode=classmode)
 
   def genSequence(self, data, classmode=0):
     cols = data[0]
@@ -976,7 +979,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         clausetype = declr[0]
         classmode = clausetype == 'typeDeclaration'
         self.handlersTable[declr[0]](self, self.prepData(declr[1:], classmode), classmode)
-    for sym in self._symsOrder:
+    for sym in self.symbolTable[self.moduleName[0]]['_symtable_order']:
       if sym not in self._out:
         raise error.PySmiCodegenError('No generated code for symbol %s' % sym)
       out += self._out[sym] 

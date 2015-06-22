@@ -1,6 +1,5 @@
 #
-# This is a stub codegen copied over from pysnmp. It should be
-# reworked to build a internally used symbol table for each passed MIB.
+# Build an internally used symbol table for each passed MIB.
 # 
 import sys
 from time import strptime, strftime
@@ -34,7 +33,17 @@ class SymtableCodeGen(AbstractCodeGen):
 
   constImports = {
     'SNMPv2-SMI': ('iso',
+                   'Bits', # XXX
+                   'Integer32', # XXX
+                   'TimeTicks', # bug in some IETF MIBs
+                   'Counter32', # bug in some IETF MIBs (e.g. DSA-MIB)
+                   'Counter64', # bug in some MIBs (e.g.A3COM-HUAWEI-LswINF-MIB)
+                   'NotificationType', # bug in some MIBs (e.g. A3COM-HUAWEI-DHCPSNOOP-MIB)
+                   'Gauge32', # bug in some IETF MIBs (e.g. DSA-MIB)
+                   'ModuleIdentity', 'MibScalar', 'MibTable', 'MibTableRow', 'MibTableColumn', 'ObjectIdentity', 'Unsigned32', 'IpAddress', # XXX
                    'MibIdentifier'), # OBJECT IDENTIFIER
+    'SNMPv2-TC': ('DisplayString', 'TextualConvention',), # XXX
+    'SNMPv2-CONF': ('ModuleCompliance', 'NotificationGroup',), # XXX
   }
 
   baseTypes = [ 'Integer', 'Integer32', 'Bits', 'ObjectIdentifier', 'OctetString' ]
@@ -303,7 +312,8 @@ class SymtableCodeGen(AbstractCodeGen):
     self._rows = set()
     self._cols = {} # k, v = name, datatype
     self._exports = set()
-    self._presentedSyms = set()
+#    self._presentedSyms = set()
+    self._postponedSyms = {} # k, v = symbol, (parents, properties)
     self._parentOids = set()
     self._importMap = {} # k, v = symbol, MIB
     self._symsOrder = []
@@ -383,15 +393,43 @@ class SymtableCodeGen(AbstractCodeGen):
       for symbol in set(imports[module]):
         symbols += self.symTrans(symbol)
       if symbols:
-        self._presentedSyms = self._presentedSyms.union([self.transOpers(s) for s in symbols])
+#        self._presentedSyms = self._presentedSyms.union([self.transOpers(s) for s in symbols])
         self._importMap.update([(self.transOpers(s), module) for s in symbols]) 
     return {}, tuple(sorted(imports))
 
-  def regSym(self, symbol, symProps):
-    if symbol in self._out: # add ti strict mode - or symbol in self._importMap:
-      raise error.PySmiSemanticError('Duplicate symbol found: %s' % symbol)
-    self._out[symbol] = symProps
+  def allParentsExists(self, parents):
+    parentsExists = True
+    for parent in parents:
+      if not (parent in self._out or \
+              parent in self._importMap or \
+              parent in self.baseTypes or \
+              parent in ('MibTable', 'MibTableRow', 'MibTableColumn') or \
+              parent in self._rows):
+        parentsExists = False
+        break
+    return parentsExists
 
+  def regSym(self, symbol, symProps, parents=[]):
+    if symbol in self._out or symbol in self._postponedSyms: # add to strict mode - or symbol in self._importMap:
+      raise error.PySmiSemanticError('Duplicate symbol found: %s' % symbol)
+    if self.allParentsExists(parents):
+      self._out[symbol] = symProps
+      self._symsOrder.append(symbol)
+      self.regPostponedSyms()
+    else: 
+      self._postponedSyms[symbol] = (parents, symProps)
+
+  def regPostponedSyms(self):
+    regedSyms = []
+    for sym, val in self._postponedSyms.items():
+      parents, symProps = val
+      if self.allParentsExists(parents):
+        self._out[sym] = symProps
+        self._symsOrder.append(sym)
+        regedSyms.append(sym)
+    for sym in regedSyms:
+      self._postponedSyms.pop(sym)
+  
 ### Clause handlers
   def genAgentCapabilities(self, data, classmode=0):
     name, description, oid = data
@@ -454,11 +492,14 @@ class SymtableCodeGen(AbstractCodeGen):
     name = self.transOpers(name)
     symProps = {'type': 'ObjectType',
                 'oid': oid,
-                'syntax': syntax,
+                'syntax': syntax, # (type, module), subtype
     }
-    if defval:
+    parents = [syntax[0][0]]
+    if augmention:
+      parents.append(self.transOpers(augmention))
+    if defval: # XXX
       symProps['defval'] = defval
-    self.regSym(name, symProps)
+    self.regSym(name, symProps, parents)
 
   def genTrapType(self, data, classmode=0):
     name, enterprise, variables, description, value = data
@@ -471,10 +512,13 @@ class SymtableCodeGen(AbstractCodeGen):
   def genTypeDeclaration(self, data, classmode=0):
     name, declaration = data
     name = self.transOpers(name)
-    symProps = { 'type': 'TypeDeclaration',
-                 'syntax': declaration,
-    }
-    self.regSym(name, symProps)
+    if declaration:
+      parentType, attrs = declaration
+      if parentType: # skipping SEQUENCE case
+        symProps = { 'type': 'TypeDeclaration',
+                     'syntax': declaration, # (type, module), subtype
+        }
+        self.regSym(name, symProps, [declaration[0][0]])
     
   def genValueDeclaration(self, data, classmode=0):
     name, oid = data
@@ -508,8 +552,8 @@ class SymtableCodeGen(AbstractCodeGen):
 
   def genConceptualTable(self, data, classmode=0):
     row = data[0]
-    if row[0]:
-      self._rows.add(row)
+    if row[0] and row[0][0]:
+      self._rows.add(row[0][0])
     return ('MibTable', ''), ''
     # done
 
@@ -537,7 +581,7 @@ class SymtableCodeGen(AbstractCodeGen):
     elif defval[0] == defval[-1] and defval[0] == '"': # quoted strimg
       val = dorepr(defval[1:-1])
     else: # symbol (oid as defval) or name for enumeration member
-      if defval in self._presentedSyms:
+      if defval in self._out or defval in self._importMap:
         val = defval + '.getName()' 
       else:
         val = dorepr(defval)
@@ -748,6 +792,8 @@ class SymtableCodeGen(AbstractCodeGen):
     self._rows.clear()
     self._cols.clear()
     self._parentOids.clear()
+    self._symsOrder = []
+    self._postponedSyms.clear()
     self._importMap.clear()
     self._out = {} # should be new object, do not use `clear` method
     self.moduleName[0], moduleOid, imports, declarations = ast
@@ -757,9 +803,16 @@ class SymtableCodeGen(AbstractCodeGen):
         clausetype = declr[0]
         classmode = clausetype == 'typeDeclaration'
         self.handlersTable[declr[0]](self, self.prepData(declr[1:], classmode), classmode)
-#    print self._out
+#    print 'OUT ', sorted(self._out.keys())
+    if self._postponedSyms:
+#      print 'POSTPONED ', self._postponedSyms
+#      print self._rows
+      raise error.PySmiSemanticError('Unknown parents for symbols: %s' % ', '.join(self._postponedSyms))
     for sym in self._parentOids:
       if sym not in self._out and sym not in self._importMap:
         raise error.PySmiSemanticError('Unknown parent symbol: %s' % sym) 
+    self._out['_symtable_order'] = list(self._symsOrder)
+    self._out['_symtable_cols'] = list(self._cols)
+    self._out['_symtable_rows'] = list(self._rows)
     debug.logger & debug.flagCodegen and debug.logger('canonical MIB name %s (%s), imported MIB(s) %s, Symbol table size %s symbols' % (self.moduleName[0], moduleOid, ','.join(importedModules) or '<none>', len(self._out)))
     return MibInfo(oid=None, name=self.moduleName[0], imported=tuple([ x for x in importedModules ])), self._out
