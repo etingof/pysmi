@@ -8,8 +8,8 @@ if sys.version_info[0:2] < (2, 7) or \
 else:
     import unittest
 from pysmi.parser.smi import parserFactory
-from pysmi.codegen.symtable import SymtableCodeGen
 from pysmi.codegen.pysnmp import PySnmpCodeGen
+from pysmi.codegen.symtable import SymtableCodeGen
 from pysnmp.smi.builder import MibBuilder
 
 class ValueDeclarationTestCase(unittest.TestCase):
