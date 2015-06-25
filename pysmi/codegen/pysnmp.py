@@ -723,7 +723,10 @@ class PySnmpCodeGen(AbstractCodeGen):
       binval = defval[1:-2]
       hexval = binval and hex(int(binval, 2))[2:] or ''
       val = 'hexValue="' + hexval + '"'
-    elif defval[0] == defval[-1] and defval[0] == '"': # quoted strimg
+    elif defval[0] == defval[-1] and defval[0] == '"': # quoted string
+      if defval[1:-1] == '' and  defvalType != 'OctetString': # common bug
+        # a warning should be here
+        return False # we will set no default value
       val = dorepr(defval[1:-1])
     else: # symbol (oid as defval) or name for enumeration member
       if defvalType[0][0] == 'ObjectIdentifier' and \
