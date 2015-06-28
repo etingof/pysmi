@@ -39,6 +39,12 @@ baseMibs = fakeMibs + \
             'TRANSPORT-ADDRESS-MIB')
 
 class PySnmpCodeGen(AbstractCodeGen):
+  """Builds PySNMP-specific Python code representing MIB module supplied
+     in form of an Abstract Syntax Tree on input.
+
+     Instance of this class is supposed to be passed to *MibCompiler*,
+     the rest is internal to *MibCompiler*.
+  """
   symsTable = {
     'MODULE-IDENTITY': ('ModuleIdentity',),
     'OBJECT-TYPE': ('MibScalar', 'MibTable', 'MibTableRow', 'MibTableColumn'),

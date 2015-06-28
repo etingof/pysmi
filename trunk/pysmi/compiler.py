@@ -13,6 +13,21 @@ from pysmi import error
 from pysmi import debug
 
 class MibStatus(str):
+    """Indicate MIB transformation result.
+
+    *MibStatus* is a subclass of Python string type. Some additional
+    attributes may be set to indicate the details.
+
+    The following *MibStatus* class instances are defined:
+
+    * *compiled* - MIB is successfully transformed
+    * *untouched* - fresh transformed version of this MIB already exisits
+    * *failed* - MIB transformation failed. *error* attribute carries details.
+    * *unprocessed* - MIB transformation required but waived for some reason
+    * *missing* - ASN.1 MIB source can't be found
+    * *borrowed* - MIB transformation failed but pre-transformed version was used
+ 
+    """
     def setOptions(self, **kwargs):
         n = self.__class__(self)
         for k in kwargs:
@@ -27,8 +42,59 @@ statusMissing = MibStatus('missing')
 statusBorrowed = MibStatus('borrowed')
 
 class MibCompiler(object):
+    """Top-level, user-facing, composite MIB compiler object.
+
+    MibCompiler implements high-level MIB transformation processing logic.
+    It executes its actions by calling the following specialized objects:
+
+      * *readers* - to acquire ASN.1 MIB data
+      * *searchers* - to see if transformed MIB already exists and no processing is necessary
+      * *parser* - to parse ASN.1 MIB into AST
+      * *code generator* - to perform actual MIB transformation
+      * *borrowers* - to fetch pre-transformed MIB if transformation is impossible
+      * *writer* - to store transformed MIB data
+
+    Required components must be passed to MibCompiler on instantiation. Those
+    components are: *parser*, *codegenerator* and *writer*.
+
+    Optional components could be set or modified at later phases of MibCompiler
+    life. Unlike singular, required components, optional one can be present
+    in sequences to address many possible sources of data. They are 
+    *readers*, *searchers* and *borrowers*.
+
+    Examples: ::
+
+        from pysmi.reader.localfile import FileReader
+        from pysmi.searcher.pyfile import PyFileSearcher
+        from pysmi.searcher.pypackage import PyPackageSearcher
+        from pysmi.searcher.stub import StubSearcher
+        from pysmi.writer.pyfile import PyFileWriter
+        from pysmi.parser.smi import SmiV2Parser
+        from pysmi.codegen.pysnmp import PySnmpCodeGen, baseMibs
+
+        mibCompiler = MibCompiler(SmiV2Parser(),
+                                  PySnmpCodeGen(),
+                                  PyFileWriter('/tmp/pysnmp/mibs'))
+
+        mibCompiler.addSources(FileReader('/usr/share/snmp/mibs'))
+
+        mibCompiler.addSearchers(PyFileSearcher('/tmp/pysnmp/mibs'))
+        mibCompiler.addSearchers(PyPackageSearcher('pysnmp.mibs'))
+
+        mibCompiler.addSearchers(StubSearcher(*baseMibs))
+
+        results = mibCompiler.compile('IF-MIB', 'IP-MIB')
+
+    """
     indexFile = 'index'
     def __init__(self, parser, codegen, writer):
+        """Creates an instance of *MibCompiler* class.
+
+           Args:
+               parser: ASN.1 MIB parser object
+               codegen: MIB transformation object
+               writer: transformed MIB storing object
+        """
         self._parser = parser
         self._codegen = codegen
         self._symbolgen = SymtableCodeGen()
@@ -38,24 +104,89 @@ class MibCompiler(object):
         self._borrowers = []
 
     def addSources(self, *sources):
+        """Add more ASN.1 MIB source repositories.
+
+        MibCompiler.compile will invoke each of configured source objects
+        in order of their addition asking each to fetch MIB module specified
+        by name.
+
+        Args:
+            sources: reader object(s)
+
+        Returns:
+            reference to itself (can be used for call chaining)
+
+        """
         self._sources.extend(sources)
         debug.logger & debug.flagCompiler and debug.logger('current MIB source(s): %s' % ', '.join([str(x) for x in self._sources]))
         return self
 
     def addSearchers(self, *searchers):
+        """Add more transformed MIBs repositories.
+
+        MibCompiler.compile will invoke each of configured searcher objects
+        in order of their addition asking each if already transformed MIB
+        module already exists and is more recent than specified.
+
+        Args:
+            searchers: searcher object(s)
+
+        Returns:
+            reference to itself (can be used for call chaining)
+
+        """
         self._searchers.extend(searchers)
         debug.logger & debug.flagCompiler and debug.logger('current compiled MIBs location(s): %s' % ', '.join([str(x) for x in self._searchers]))
         return self
 
     def addBorrowers(self, *borrowers):
+        """Add more transformed MIBs repositories to borrow MIBs from.
+
+        Whenever MibCompiler.compile encounters MIB module which neither of
+        the *searchers* can find or fetched ASN.1 MIB module can not be
+        parsed (due to syntax errors), these *borrowers* objects will be
+        invoked in order of their addition asking each if already transformed
+        MIB can be fetched (borrowed).
+
+        Args:
+            borrowers: borrower object(s)
+
+        Returns:
+            reference to itself (can be used for call chaining)
+
+        """
         self._borrowers.extend(borrowers)
         debug.logger & debug.flagCompiler and debug.logger('current MIB borrower(s): %s' % ', '.join([str(x) for x in self._borrowers]))
         return self
 
-    def compile(self, *mibnames, **kwargs):
-        #
-        # Load and parse all requested and imported MIBs
-        #
+    def compile(self, *mibnames, **options):
+        """Transform requested and possibly referred MIBs.
+
+        The *compile* method should be invoked when *MibCompiler* object
+        is operational meaning at least *sources* are specified.
+        
+        Once called with a MIB module name, *compile* will:
+
+        * fetch ASN.1 MIB module with given name by calling *sources*
+        * make sure no such transformed MIB already exists (with *searchers*)
+        * parse ASN.1 MIB text with *parser*
+        * perform actual MIB transformation into target format with *code generator*
+        * may attempt to borrow pre-transformed MIB through *borrowers*
+        * write transformed MIB through *writer*
+
+        The above sequence will be performed for each MIB name given in
+        *mibnames* and may be performed for all MIBs referred to from
+        MIBs being processed.
+
+        Args:
+            mibnames: list of ASN.1 MIBs names
+            options: options that affect the way PySMI components work
+
+        Returns:
+            A dictionary of MIB module names processed (keys) and *MibStatus*
+            class instances (values)
+
+        """
         processed = {}
         parsedMibs = {}; failedMibs = {}; borrowedMibs = {}; builtMibs = {}
         symbolTableMap = {}
@@ -98,7 +229,7 @@ class MibCompiler(object):
                     exc.source = source
                     exc.mibname = mibname
                     exc.msg += ' at MIB %s' % mibname
-                    debug.logger & debug.flagCompiler and debug.logger('%serror %s from %s' % (kwargs.get('ignoreErrors') and 'ignoring ' or 'failing on ', exc, source))
+                    debug.logger & debug.flagCompiler and debug.logger('%serror %s from %s' % (options.get('ignoreErrors') and 'ignoring ' or 'failing on ', exc, source))
                     failedMibs[mibname] = exc
                     processed[mibname] = statusFailed.setOptions(error=exc)
             else:
@@ -121,7 +252,7 @@ class MibCompiler(object):
             debug.logger & debug.flagCompiler and debug.logger('checking if %s requires updating' % mibname)
             for searcher in self._searchers:
                 try:
-                    searcher.fileExists(mibname, fileInfo.mtime, rebuild=kwargs.get('rebuild'))
+                    searcher.fileExists(mibname, fileInfo.mtime, rebuild=options.get('rebuild'))
                 except error.PySmiFileNotFoundError:
                     debug.logger & debug.flagCompiler and debug.logger('no compiled MIB %s available through %s' % (mibname, searcher))
                     continue
@@ -142,7 +273,7 @@ class MibCompiler(object):
             else:
                 debug.logger & debug.flagCompiler and debug.logger('no suitable compiled MIB %s found anywhere' % mibname)
 
-                if kwargs.get('noDeps') and mibname not in mibnames:
+                if options.get('noDeps') and mibname not in mibnames:
                     debug.logger & debug.flagCompiler and debug.logger('excluding imported MIB %s from code generation' % mibname)
                     del parsedMibs[mibname]
                     processed[mibname] = statusUntouched
@@ -169,7 +300,7 @@ class MibCompiler(object):
                         mibTree,
                         symbolTableMap,
                         comments=comments,
-                        genTexts=kwargs.get('genTexts')
+                        genTexts=options.get('genTexts')
                     )
 
                 builtMibs[mibname] = fileInfo, mibInfo, mibData
@@ -194,7 +325,7 @@ class MibCompiler(object):
         #
 
         for mibname in failedMibs.copy():
-            if kwargs.get('noDeps') and mibname not in mibnames:
+            if options.get('noDeps') and mibname not in mibnames:
                 debug.logger & debug.flagCompiler and debug.logger('excluding imported MIB %s from borrowing' % mibname)
                 continue
 
@@ -203,7 +334,7 @@ class MibCompiler(object):
                 try:
                     fileInfo, fileData = borrower.getData(
                         mibname,
-                        genTexts=kwargs.get('genTexts')
+                        genTexts=options.get('genTexts')
                     )
 
                     borrowedMibs[mibname] = fileInfo, MibInfo(name=mibname, imported=[]), fileData
@@ -227,7 +358,7 @@ class MibCompiler(object):
             fileInfo, mibInfo, mibData = borrowedMibs[mibname]
             for searcher in self._searchers:
                 try:
-                    searcher.fileExists(mibname, fileInfo.mtime, rebuild=kwargs.get('rebuild'))
+                    searcher.fileExists(mibname, fileInfo.mtime, rebuild=options.get('rebuild'))
                 except error.PySmiFileNotFoundError:
                     debug.logger & debug.flagCompiler and debug.logger('no compiled MIB %s available through %s' % (mibname, searcher))
                     continue
@@ -248,7 +379,7 @@ class MibCompiler(object):
             else:
                 debug.logger & debug.flagCompiler and debug.logger('no suitable compiled MIB %s found anywhere' % mibname)
 
-                if kwargs.get('noDeps') and mibname not in mibnames:
+                if options.get('noDeps') and mibname not in mibnames:
                     debug.logger & debug.flagCompiler and debug.logger('excluding imported MIB %s from borrowing' % mibname)
                     processed[mibname] = statusUntouched
                 else:
@@ -268,7 +399,7 @@ class MibCompiler(object):
         # We could attempt to ignore missing/failed MIBs
         #
 
-        if failedMibs and not kwargs.get('ignoreErrors'):
+        if failedMibs and not options.get('ignoreErrors'):
             debug.logger & debug.flagCompiler and debug.logger('failing with problem MIBs %s' % ', '.join(failedMibs))
             for mibname in builtMibs:
                 processed[mibname] = statusUnprocessed
@@ -284,7 +415,7 @@ class MibCompiler(object):
             fileInfo, mibInfo, mibData = builtMibs[mibname]
             try:
                 created = self._writer.putData(
-                    mibname, mibData, dryRun=kwargs.get('dryRun')
+                    mibname, mibData, dryRun=options.get('dryRun')
                 )
 
                 debug.logger & debug.flagCompiler and debug.logger('%s stored by %s' % (mibname, self._writer))
@@ -311,7 +442,7 @@ class MibCompiler(object):
 
         return processed
 
-    def buildIndex(self, processedMibs, **kwargs):
+    def buildIndex(self, processedMibs, **options):
         comments = [
             'Produced by %s-%s at %s' % (packageName, packageVersion, time.asctime()),
             'On host %s platform %s version %s by user %s' % (hasattr(os, 'uname') and os.uname()[1] or '?', hasattr(os, 'uname') and os.uname()[0] or '?', hasattr(os, 'uname') and os.uname()[2] or '?', hasattr(os, 'getuid') and getpwuid(os.getuid())[0]) or '?',
@@ -324,13 +455,13 @@ class MibCompiler(object):
                     dict([(x, x.oid) for x in processedMibs if hasattr(x, 'oid')]),
                     comments=comments
                 ),
-                dryRun=kwargs.get('dryRun')
+                dryRun=options.get('dryRun')
             )
         except error.PySmiError:
             exc_class, exc, tb = sys.exc_info()
             exc.msg += ' at MIB index %s' % self.indexFile
             debug.logger & debug.flagCompiler and debug.logger('error %s when building %s' % (exc, self.indexFile))
-            if kwargs.get('ignoreErrors'):
+            if options.get('ignoreErrors'):
                 return
             if hasattr(exc, 'with_traceback'):
                 raise exc.with_traceback(tb)

@@ -10,6 +10,11 @@ from pysmi import debug
 from pysmi import error
 
 class PyPackageSearcher(AbstractSearcher):
+    """Figures out if given Python module (source or bytecode) exists in given
+       Python package.
+
+       Python package must be importable.
+    """
     suffixes = {}
     for sfx, mode, typ in imp.get_suffixes():
         if typ not in suffixes:
@@ -17,6 +22,13 @@ class PyPackageSearcher(AbstractSearcher):
         suffixes[typ].append((sfx, mode))
 
     def __init__(self, package):
+        """Create an instance of *PyPackageSearcher* bound to specific Python
+           package.
+
+           Args:
+               package (str): name of the Python package to look up Python
+                              modules at.
+        """
         self._package = package
 
     def __str__(self):

@@ -4,7 +4,15 @@ from pysmi import debug
 from pysmi import error
 
 class StubSearcher(AbstractSearcher):
+    """Figures out if given MIB module is present in a fixed list of modules.
+    """
     def __init__(self, *mibnames):
+        """Create an instance of *StubSearcher* initialized with a fixed list
+           or MIB modules names.
+
+           Args:
+               mibnames (str): blacklisted MIB names
+        """
         self._mibnames = mibnames
 
     def __str__(self): return '%s' % self.__class__.__name__
