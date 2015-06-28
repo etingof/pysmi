@@ -1,4 +1,4 @@
-Revision 0.0.2, 28-06-2015
+Revision 0.0.3, 28-06-2015
 --------------------------
 
 * Two-pass compiler design allows for much accurate code generation.

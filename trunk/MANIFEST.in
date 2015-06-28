@@ -1,4 +1,4 @@
 include *.txt
 recursive-include tests *.py
 recursive-include examples *.py
-recursive-include docs *.rst
+recursive-include docs *.rst *.py *txt
