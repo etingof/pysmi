@@ -9,6 +9,11 @@ from pysmi import debug
 from pysmi import error
 
 class PyFileWriter(AbstractWriter):
+    """Stores transformed MIB modules as Python files at specified location.
+
+       User is expected to pass *PyFileWriter* class instance to
+       *MibCompiler* on instantiation. The rest is internal to *MibCompiler*.
+    """
     pyCompile = True
     pyOptimizationLevel = -1
     suffixes = {}
@@ -18,6 +23,11 @@ class PyFileWriter(AbstractWriter):
         suffixes[typ].append((decode(sfx), mode))
 
     def __init__(self, path):
+        """Creates an instance of *PyFileWriter* class.
+
+           Args:
+               path: writable directory to store Python modules
+        """
         self._path = decode(os.path.normpath(path))
 
     def __str__(self): return '%s{"%s"}' % (self.__class__.__name__, self._path)

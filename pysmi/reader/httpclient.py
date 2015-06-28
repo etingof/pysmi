@@ -11,7 +11,22 @@ from pysmi import error
 from pysmi import debug
 
 class HttpReader(AbstractReader):
+    """Fetch ASN.1 MIB text by name from a web site.
+
+        *HttpReader* class instance tries to download ASN.1 MIB files
+        by name and return their contents to caller.
+    """
     def __init__(self, host, port, locationTemplate, timeout=5, ssl=False):
+        """Create an instance of *HttpReader* bound to specific URL.
+
+           Args:
+               host (str): domain name or IP address of web server
+               port (int): TCP port web server is listening
+               locationTemplate (str): location part of the URL containing @mib@ magic placeholder to be replaced with MIB name fetch.
+           Keyword Args:
+               timeout (int): response timeout
+               ssl (bool): access HTTPS web site
+        """
         self._schema = ssl and 'https' or 'http'
         self._host = host
         self._port = port

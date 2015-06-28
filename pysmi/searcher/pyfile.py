@@ -9,6 +9,9 @@ from pysmi import debug
 from pysmi import error
 
 class PyFileSearcher(AbstractSearcher):
+    """Figures out if given Python file (source or bytecode) exists at given
+       location.
+    """
     suffixes = {}
     for sfx, mode, typ in imp.get_suffixes():
         if typ not in suffixes:
@@ -16,6 +19,11 @@ class PyFileSearcher(AbstractSearcher):
         suffixes[typ].append((sfx, mode))
 
     def __init__(self, path):
+        """Create an instance of *PyFileSearcher* bound to specific directory.
+
+           Args:
+             path (str): path to local directory
+        """
         self._path = os.path.normpath(decode(path))
 
     def __str__(self): return '%s{"%s"}' % (self.__class__.__name__, self._path)

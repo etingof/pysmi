@@ -8,9 +8,22 @@ from pysmi import debug
 from pysmi import error
 
 class FileReader(AbstractReader):
+    """Fetch ASN.1 MIB text by name from local file.
+
+    *FileReader* class instance tries to locate ASN.1 MIB files
+    by name, fetch and return their contents to caller.
+    """
     useIndexFile = True       # optional .index file mapping MIB to file name
     indexFile = '.index'
     def __init__(self, path, recursive=True, ignoreErrors=True):
+        """Create an instance of *FileReader* serving a directory.
+
+           Args:
+               path (str): directory to search MIB files
+           Keyword Args:
+               recursive (bool): whether to include subdirectories
+               ignoreErrors (bool): ignore filesystem access errors
+        """
         self._path = os.path.normpath(path)
         self._recursive = recursive
         self._ignoreErrors = ignoreErrors

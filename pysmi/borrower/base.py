@@ -6,6 +6,14 @@ class AbstractBorrower(object):
     exts = []
 
     def __init__(self, reader, genTexts=None):
+        """Creates an instance of *Borrower* class.
+
+           Args:
+               reader: a *reader* object
+           Keyword Args:
+               genText: indicates whether this borrower should be looking
+                        for transformed MIBs that include human-oriented texts
+        """
         self._reader = reader.setOptions(exts=self.exts)
         if genTexts is not None:
             self.genTexts = genTexts

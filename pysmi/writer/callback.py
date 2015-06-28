@@ -4,7 +4,22 @@ from pysmi import debug
 from pysmi import error
 
 class CallbackWriter(AbstractWriter):
+    """Invokes user-specified callable and passes transformed
+       MIB module to it.
+
+       Note: user callable object signature must be as follows
+
+       .. function:: cbFun(mibname, contents, cbCtx)
+
+    """
     def __init__(self, cbFun, cbCtx=None):
+        """Creates an instance of *CallbackWriter* class.
+
+        Args:
+            cbFun (callable): user-supplied callable
+        Keyword Args:
+            cbCtx: user-supplied object passed intact to user callback
+        """
         self._cbFun = cbFun
         self._cbCtx = cbCtx
 

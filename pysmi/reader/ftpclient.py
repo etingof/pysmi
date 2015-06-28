@@ -8,8 +8,25 @@ from pysmi import error
 from pysmi import debug
 
 class FtpReader(AbstractReader):
+    """Fetch ASN.1 MIB text by name from FTP server.
+       *FtpReader* class instance tries to download ASN.1 MIB files
+       by name and return their contents to caller.
+    """
     def __init__(self, host, locationTemplate, timeout=5, ssl=False, port=21,
                  user='anonymous', password='anonymous@'):
+        """Create an instance of *FtpReader* bound to specific FTP server
+           directory.
+
+           Args:
+               host (str): domain name or IP address of web server
+               locationTemplate (str): location part of the directory containing @mib@ magic placeholder to be replaced with MIB name fetch.
+           Keyword Args:
+               timeout (int): response timeout
+               ssl (bool): access HTTPS web site
+               port (int): TCP port web server is listening
+               user (str): username at FTP server
+               password (str): password for *username* at FTP server
+        """
         self._host = host
         self._locationTemplate = locationTemplate
         self._timeout = timeout
