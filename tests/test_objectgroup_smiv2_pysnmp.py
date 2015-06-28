@@ -7,7 +7,8 @@ if sys.version_info[0:2] < (2, 7) or \
         import unittest
 else:
     import unittest
-from pysmi.parser.smiv2 import parserFactory
+from pysmi.parser.smi import parserFactory
+from pysmi.parser.dialect import smiV2
 from pysmi.codegen.pysnmp import PySnmpCodeGen
 from pysmi.codegen.symtable import SymtableCodeGen
 from pysnmp.smi.builder import MibBuilder
@@ -33,7 +34,7 @@ END
  """
 
     def setUp(self):
-        ast = parserFactory()().parse(self.__class__.__doc__)[0]
+        ast = parserFactory(**smiV2)().parse(self.__class__.__doc__)[0]
         mibInfo, symtable = SymtableCodeGen().genCode(ast, {}, genTexts=True)
         self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, { mibInfo.name: symtable }, genTexts=True)
         codeobj = compile(pycode, 'test', 'exec')
