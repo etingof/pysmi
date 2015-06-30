@@ -38,12 +38,12 @@ class SymtableCodeGen(AbstractCodeGen):
                    'TimeTicks', # bug in some IETF MIBs
                    'Counter32', # bug in some IETF MIBs (e.g. DSA-MIB)
                    'Counter64', # bug in some MIBs (e.g.A3COM-HUAWEI-LswINF-MIB)
-                   'NotificationType', # bug in some MIBs (e.g. A3COM-HUAWEI-DHCPSNOOP-MIB)
+                   'NOTIFICATION-TYPE', # bug in some MIBs (e.g. A3COM-HUAWEI-DHCPSNOOP-MIB)
                    'Gauge32', # bug in some IETF MIBs (e.g. DSA-MIB)
-                   'ModuleIdentity', 'MibScalar', 'MibTable', 'MibTableRow', 'MibTableColumn', 'ObjectIdentity', 'Unsigned32', 'IpAddress', # XXX
+                   'MODULE-IDENTITY', 'OBJECT-TYPE', 'OBJECT-IDENTITY', 'Unsigned32', 'IpAddress', # XXX
                    'MibIdentifier'), # OBJECT IDENTIFIER
-    'SNMPv2-TC': ('DisplayString', 'TextualConvention',), # XXX
-    'SNMPv2-CONF': ('ModuleCompliance', 'NotificationGroup',), # XXX
+    'SNMPv2-TC': ('DisplayString', 'TEXTUAL-CONVENTION',), # XXX
+    'SNMPv2-CONF': ('MODULE-COMPLIANCE', 'NOTIFICATION-GROUP',), # XXX
   }
 
   baseTypes = [ 'Integer', 'Integer32', 'Bits', 'ObjectIdentifier', 'OctetString' ]
