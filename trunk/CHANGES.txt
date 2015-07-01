@@ -1,3 +1,9 @@
+Revision 0.0.4, 01-07-2015
+--------------------------
+
+* Fix to MRO compliance for mixin classes generation at pysnmp backend
+* Fix to repeated imports in generated code at pysnmp backend
+
 Revision 0.0.3, 28-06-2015
 --------------------------
 
