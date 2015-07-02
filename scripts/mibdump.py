@@ -118,7 +118,7 @@ Software documentation and support at http://pysmi.sf.net
     if opt[0] == '--mib-stub':
         mibStubs.append(opt[1])
     if opt[0] == '--mib-borrower':
-        mibBorrowers.append(opt[1])
+        mibBorrowers.append((opt[1], genMibTextsFlag))
     if opt[0] == '--destination-format':
         dstFormat = opt[1]
     if opt[0] == '--destination-directory':
@@ -165,8 +165,8 @@ if not mibSources:
                    'http://mibs.snmplabs.com/asn1/@mib@' ]
 
 if not mibBorrowers:
-    mibBorrowers = [ 'http://mibs.snmplabs.com/pysnmp/notexts/@mib@',
-                     'http://mibs.snmplabs.com/pysnmp/fulltexts/@mib@' ]
+    mibBorrowers = [ ('http://mibs.snmplabs.com/pysnmp/notexts/@mib@', False),
+                     ('http://mibs.snmplabs.com/pysnmp/fulltexts/@mib@', True) ]
 
 if verboseFlag:
     sys.stderr.write("""Source MIB repositories: %s
@@ -186,7 +186,7 @@ Generate OID->MIB index: %s
 Generate texts in MIBs: %s
 Try various filenames while searching for MIB module: %s
 """ % (', '.join(sorted(mibSources)),
-       ', '.join(sorted(mibBorrowers)),
+       ', '.join(sorted([x[0] for x in mibBorrowers if x[1] == genMibTextsFlag])),
        ', '.join(mibSearchers),
        dstDirectory,
        ', '.join(sorted(mibStubs)),
@@ -226,7 +226,7 @@ try:
     mibCompiler.addSearchers(StubSearcher(*mibStubs))
 
     mibCompiler.addBorrowers(
-        *[ PyFileBorrower(x) for x in getReadersFromUrls(*mibBorrowers, originalMatching=False, lowcaseMatching=False) ]
+        *[ PyFileBorrower(x[1], genTexts=mibBorrowers[x[0]][1]) for x in enumerate(getReadersFromUrls(*[m[0] for m in mibBorrowers], originalMatching=False, lowcaseMatching=False)) ]
     )
 
     processed = mibCompiler.compile(*inputMibs,
