@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import imp
+import tempfile
 import py_compile
 from pysmi.writer.base import AbstractWriter
 from pysmi.compat import encode, decode
@@ -46,12 +47,19 @@ class PyFileWriter(AbstractWriter):
             data = '#\n' + ''.join(['# %s\n' % x for x in comments]) + '#\n' + data
 
         pyfile = os.path.join(self._path, decode(mibname)) + self.suffixes[imp.PY_SOURCE][0][0]
+
         try:
-            f = open(pyfile, 'wb')
-            f.write(encode(data))
-            f.close()
-        except (IOError, UnicodeEncodeError):
-            raise error.PySmiWriterError('failure writing file %s: %s' % (pyfile, sys.exc_info()[1]), file=pyfile, writer=self)
+            fd, tfile = tempfile.mkstemp(dir=self._path)
+            os.write(fd, encode(data))
+            os.close(fd)
+            os.rename(tfile, pyfile)
+        except (OSError, IOError, UnicodeEncodeError):
+            exc = sys.exc_info()
+            try:
+                os.unlink(tfile)
+            except OSError:
+                pass
+            raise error.PySmiWriterError('failure writing file %s: %s' % (pyfile, exc[1]), file=pyfile, writer=self)
 
         debug.logger & debug.flagWriter and debug.logger('created file %s' % pyfile)
 
