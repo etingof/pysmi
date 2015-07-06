@@ -347,7 +347,6 @@ class PySnmpCodeGen(AbstractCodeGen):
     self._exports = set()
     self._presentedSyms = set()
     self._importMap = {}
-    self._symsOrder = []
     self._out = {} # k, v = name, generated code
     self.moduleName = ['DUMMY']
     self.genRules = { 'text' : 1 }
@@ -456,7 +455,6 @@ class PySnmpCodeGen(AbstractCodeGen):
   def regSym(self, symbol, outStr, parentOid=None, moduleIdentity=0):
     if symbol in self._presentedSyms and symbol not in self._importMap:
       raise error.PySmiSemanticError('Duplicate symbol found: %s' % symbol)
-    self._symsOrder.append(symbol)
     self.addToExports(symbol, moduleIdentity)
     self._out[symbol] = outStr
 
@@ -979,7 +977,6 @@ class PySnmpCodeGen(AbstractCodeGen):
     self._exports.clear()
     self._presentedSyms.clear()
     self._importMap.clear()
-    self._symsOrder = []
     self._out.clear()
     self.moduleName[0], moduleOid, imports, declarations = ast
     out, importedModules = self.genImports(imports and imports or {})
