@@ -499,6 +499,15 @@ class SymtableCodeGen(AbstractCodeGen):
       parents.append(self.transOpers(augmention))
     if defval: # XXX
       symProps['defval'] = defval
+    if index and index[1]:
+      namepart, fakeIndexes, fakeSymSyntax = index
+      for fakeIdx, fakeSyntax in zip(fakeIndexes, fakeSymSyntax):
+        fakeName = namepart + str(fakeIdx)
+        fakeSymProps = {'type': 'fakeColumn', 
+                        'oid': oid + (fakeIdx,),
+                        'syntax': fakeSyntax,
+        }
+        self.regSym(fakeName, fakeSymProps)
     self.regSym(name, symProps, parents)
 
   def genTrapType(self, data, classmode=0):
@@ -596,28 +605,19 @@ class SymtableCodeGen(AbstractCodeGen):
     return self.genBits(data, classmode=classmode)[1]
 
   def genIndex(self, data, classmode=0):
-    return '' # XXX
-    def genFakeSyms(fakeidx, idxType):
-      fakeSymName = 'pysmiFakeCol%s' % fakeidx
-      objType = self.typeClasses.get(idxType, idxType)
-      objType = self.transOpers(objType)
-      return (fakeSymName + ' = MibTableColumn(%s + (' + str(fakeidx) + \
-             ', ), ' + objType + '())\n', # stub for parentOid
-             fakeSymName)
-   
     indexes = data[0]
-    idxStrlist, fakeSyms, fakeStrlist = [], [], [] 
+    fakeIdxName = 'pysmiFakeCol'
+    fakeIndexes, fakeSymsSyntax = [], []
     for idx in indexes:
       idxName = idx[1]
       if idxName in self.smiv1IdxTypes: # SMIv1 support
         idxType = idxName
-        fakeSymStr, idxName = genFakeSyms(self.fakeidx, idxType)
-        fakeStrlist.append(fakeSymStr)
-        fakeSyms.append(idxName)
+        objType = self.typeClasses.get(idxType, idxType)
+        objType = self.transOpers(objType)
+        fakeIndexes.append(self.fakeidx)
+        fakeSymsSyntax.append((('MibTableColumn', ''), objType))
         self.fakeidx += 1
-      idxStrlist.append('(' + str(idx[0]) + ', "' + self.moduleName[0] + \
-                        '", "' + idxName + '")')
-    return '.setIndexNames(' + ', '.join(idxStrlist)+ ')', fakeStrlist, fakeSyms
+    return fakeIdxName, fakeIndexes, fakeSymsSyntax
 
   def genIntegerSubType(self, data, classmode=0):
     return '' # XXX
@@ -805,8 +805,6 @@ class SymtableCodeGen(AbstractCodeGen):
         self.handlersTable[declr[0]](self, self.prepData(declr[1:], classmode), classmode)
 #    print 'OUT ', sorted(self._out.keys())
     if self._postponedSyms:
-#      print 'POSTPONED ', self._postponedSyms
-#      print self._rows
       raise error.PySmiSemanticError('Unknown parents for symbols: %s' % ', '.join(self._postponedSyms))
     for sym in self._parentOids:
       if sym not in self._out and sym not in self._importMap:
