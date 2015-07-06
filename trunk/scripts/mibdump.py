@@ -226,7 +226,7 @@ try:
     mibCompiler.addSearchers(StubSearcher(*mibStubs))
 
     mibCompiler.addBorrowers(
-        *[ PyFileBorrower(x[1], genTexts=mibBorrowers[x[0]][1]) for x in enumerate(getReadersFromUrls(*[m[0] for m in mibBorrowers], originalMatching=False, lowcaseMatching=False)) ]
+        *[ PyFileBorrower(x[1], genTexts=mibBorrowers[x[0]][1]) for x in enumerate(getReadersFromUrls(*[m[0] for m in mibBorrowers], lowcaseMatching=False)) ]
     )
 
     processed = mibCompiler.compile(*inputMibs,
