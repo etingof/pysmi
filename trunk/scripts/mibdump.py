@@ -100,12 +100,13 @@ Documentation:
 """ % helpMessage)
         sys.exit(-1)
     if opt[0] == '-v' or opt[0] == '--version':
+        from pysmi import __version__
         sys.stderr.write("""\
 SNMP SMI/MIB library version %s, written by Ilya Etingof <ilya@snmplabs.com>
 Python interpreter: %s
 Software documentation and support at http://pysmi.sf.net
 %s
-""" % (sys.version, helpMessage))
+""" % (__version__, sys.version, helpMessage))
         sys.exit(-1)
     if opt[0] == '--quiet':
         verboseFlag = False
