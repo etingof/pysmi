@@ -728,8 +728,11 @@ class PySnmpCodeGen(AbstractCodeGen):
         val = 'hexValue="' + defval[1:-2] + '"'
     elif self.isBinary(defval): # binary
       binval = defval[1:-2]
-      hexval = binval and hex(int(binval, 2))[2:] or ''
-      val = 'hexValue="' + hexval + '"'
+      if defvalType[0][0] in ('Integer32', 'Integer'): # common bug in MIBs
+        val = str(int(binval, 2))
+      else:
+        hexval = binval and hex(int(binval, 2))[2:] or ''
+        val = 'hexValue="' + hexval + '"'
     elif defval[0] == defval[-1] and defval[0] == '"': # quoted string
       if defval[1:-1] == '' and  defvalType != 'OctetString': # common bug
         # a warning should be here

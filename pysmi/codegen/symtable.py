@@ -590,7 +590,7 @@ class SymtableCodeGen(AbstractCodeGen):
     return '' # XXX
     return self.indent + 'displayHint = ' + dorepr(data[0]) + '\n'
    
-  def genDefVal(self, data, classmode=0):
+  def genDefVal(self, data, classmode=0): # XXX should be fixed, see pysnmp.py
     defval = data[0]
     if isinstance(defval, (int, long)): # number
       val = str(defval)
