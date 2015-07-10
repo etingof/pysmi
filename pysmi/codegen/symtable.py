@@ -3,6 +3,7 @@
 # 
 import sys
 from time import strptime, strftime
+from keyword import iskeyword
 from pysmi.mibinfo import MibInfo
 from pysmi.codegen.base import AbstractCodeGen
 from pysmi import error
@@ -327,6 +328,8 @@ class SymtableCodeGen(AbstractCodeGen):
     return symbol,
 
   def transOpers(self, symbol):
+    if iskeyword(symbol):
+      symbol = 'pysmi_' + symbol
     return symbol.replace('-', '_')
 
   def isBinary(self, s):
@@ -432,67 +435,75 @@ class SymtableCodeGen(AbstractCodeGen):
   
 ### Clause handlers
   def genAgentCapabilities(self, data, classmode=0):
-    name, description, oid = data
-    name = self.transOpers(name)
+    origName, description, oid = data
+    pysmiName = self.transOpers(origName)
     symProps = {'type': 'AgentCapabilities',
-                'oid': oid, 
+                'oid': oid,
+                'origName': origName, 
     }
-    self.regSym(name, symProps)
+    self.regSym(pysmiName, symProps)
 
   def genModuleIdentity(self, data, classmode=0):
-    name, organization, contactInfo, description, revisions, oid  = data
-    name = self.transOpers(name)
+    origName, organization, contactInfo, description, revisions, oid  = data
+    pysmiName = self.transOpers(origName)
     symProps = {'type': 'ModuleIdentity',
                 'oid': oid,
+                'origName': origName, 
     }
-    self.regSym(name, symProps)
+    self.regSym(pysmiName, symProps)
 
   def genModuleCompliance(self, data, classmode=0):
-    name, description, compliances, oid = data
-    name = self.transOpers(name)
+    origName, description, compliances, oid = data
+    pysmiName = self.transOpers(origName)
     symProps = {'type': 'ModuleCompliance',
-                 'oid': oid,
+                'oid': oid,
+                'origName': origName, 
     }
-    self.regSym(name, symProps)
+    self.regSym(pysmiName, symProps)
 
   def genNotificationGroup(self, data, classmode=0):
-    name, objects, description, oid = data
-    name = self.transOpers(name)
+    origName, objects, description, oid = data
+    pysmiName = self.transOpers(origName)
     symProps = {'type': 'NotificationGroup',
                 'oid': oid,
+                'origName': origName, 
     }
-    self.regSym(name, symProps)
+    self.regSym(pysmiName, symProps)
 
   def genNotificationType(self, data, classmode=0):
-    name, objects, description, oid = data
-    name = self.transOpers(name)
+    origName, objects, description, oid = data
+    pysmiName = self.transOpers(origName)
     symProps = {'type': 'NotificationType',
                 'oid': oid,
+                'origName': origName, 
     }
-    self.regSym(name, symProps)
+    self.regSym(pysmiName, symProps)
 
   def genObjectGroup(self, data, classmode=0):
-    name, objects, description, oid = data
-    name = self.transOpers(name)
+    origName, objects, description, oid = data
+    pysmiName = self.transOpers(origName)
     symProps = {'type': 'ObjectGroup',
                 'oid': oid,
+                'origName': origName, 
     }
-    self.regSym(name, symProps)
+    self.regSym(pysmiName, symProps)
 
   def genObjectIdentity(self, data, classmode=0):
-    name, description, oid = data
-    name = self.transOpers(name)
+    origName, description, oid = data
+    pysmiName = self.transOpers(origName)
     symProps = {'type': 'ObjectIdentity',
                 'oid': oid,
+                'origName': origName, 
     }
-    self.regSym(name, symProps)
+    self.regSym(pysmiName, symProps)
 
   def genObjectType(self, data, classmode=0):
-    name, syntax, units, maxaccess, description, augmention, index, defval, oid = data
-    name = self.transOpers(name)
+    origName, syntax, units, maxaccess, description, augmention, index, defval, oid = data
+    pysmiName = self.transOpers(origName)
     symProps = {'type': 'ObjectType',
                 'oid': oid,
                 'syntax': syntax, # (type, module), subtype
+                'origName': origName,
     }
     parents = [syntax[0][0]]
     if augmention:
@@ -506,36 +517,40 @@ class SymtableCodeGen(AbstractCodeGen):
         fakeSymProps = {'type': 'fakeColumn', 
                         'oid': oid + (fakeIdx,),
                         'syntax': fakeSyntax,
+                        'origName': fakeName,
         }
         self.regSym(fakeName, fakeSymProps)
-    self.regSym(name, symProps, parents)
+    self.regSym(pysmiName, symProps, parents)
 
   def genTrapType(self, data, classmode=0):
-    name, enterprise, variables, description, value = data
-    name = self.transOpers(name)
+    origName, enterprise, variables, description, value = data
+    pysmiName = self.transOpers(origName)
     symProps = { 'type': 'NotificationType',
                  'oid': enterprise + (0, value),
+                 'origName': origName, 
     }
-    self.regSym(name, symProps)
+    self.regSym(pysmiName, symProps)
 
   def genTypeDeclaration(self, data, classmode=0):
-    name, declaration = data
-    name = self.transOpers(name)
+    origName, declaration = data
+    pysmiName = self.transOpers(origName)
     if declaration:
       parentType, attrs = declaration
       if parentType: # skipping SEQUENCE case
         symProps = { 'type': 'TypeDeclaration',
                      'syntax': declaration, # (type, module), subtype
+                     'origName': origName, 
         }
-        self.regSym(name, symProps, [declaration[0][0]])
+        self.regSym(pysmiName, symProps, [declaration[0][0]])
     
   def genValueDeclaration(self, data, classmode=0):
-    name, oid = data
-    name = self.transOpers(name)
+    origName, oid = data
+    pysmiName = self.transOpers(origName)
     symProps = { 'type': 'MibIdentifier',
                  'oid': oid,
+                 'origName': origName, 
     }
-    self.regSym(name, symProps)
+    self.regSym(pysmiName, symProps)
 
 ### Subparts generation functions
   def genBitNames(self, data, classmode=0):
@@ -803,7 +818,6 @@ class SymtableCodeGen(AbstractCodeGen):
         clausetype = declr[0]
         classmode = clausetype == 'typeDeclaration'
         self.handlersTable[declr[0]](self, self.prepData(declr[1:], classmode), classmode)
-#    print 'OUT ', sorted(self._out.keys())
     if self._postponedSyms:
       raise error.PySmiSemanticError('Unknown parents for symbols: %s' % ', '.join(self._postponedSyms))
     for sym in self._parentOids:

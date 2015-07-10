@@ -1,5 +1,6 @@
 import sys
 from time import strptime, strftime
+from keyword import iskeyword
 from pysmi.mibinfo import MibInfo
 from pysmi.codegen.base import AbstractCodeGen
 from pysmi import error
@@ -357,6 +358,8 @@ class PySnmpCodeGen(AbstractCodeGen):
     return symbol,
 
   def transOpers(self, symbol):
+    if iskeyword(symbol):
+      symbol = 'pysmi_' + symbol
     return symbol.replace('-', '_')
 
   def isBinary(self, s):
@@ -441,7 +444,7 @@ class PySnmpCodeGen(AbstractCodeGen):
     return self._exports and outStr or ''
 
   def genLabel(self, symbol, classmode=0):
-    if symbol.find('-') != -1:
+    if symbol.find('-') != -1 or iskeyword(symbol):
       return classmode and 'label = "' + symbol + '"\n' or \
                            '.setLabel("' + symbol + '")'
     return ''
