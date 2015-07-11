@@ -444,7 +444,7 @@ class SymtableCodeGen(AbstractCodeGen):
     self.regSym(pysmiName, symProps)
 
   def genModuleIdentity(self, data, classmode=0):
-    origName, organization, contactInfo, description, revisions, oid  = data
+    origName, lastUpdated, organization, contactInfo, description, revisions, oid  = data
     pysmiName = self.transOpers(origName)
     symProps = {'type': 'ModuleIdentity',
                 'oid': oid,
@@ -715,6 +715,11 @@ class SymtableCodeGen(AbstractCodeGen):
         times.append(strftime('%Y-%m-%d %H:%M', strptime(t, '%Y%m%d%H%MZ')))
     return times
 
+  def genLastUpdated(self, data, classmode=0):
+    return '' # XXX
+    text = data[0]
+    return '.setLastUpdated(' + dorepr(text) + ')'
+
   def genOrganization(self, data, classmode=0):
     return '' # XXX
     text = data[0]
@@ -792,6 +797,7 @@ class SymtableCodeGen(AbstractCodeGen):
     'octetStringSubType': genOctetStringSubType,
     'objectIdentifier': genOid,
     'Objects': genObjects,
+    'LAST-UPDATED': genLastUpdated,
     'ORGANIZATION': genOrganization,
     'Revisions' : genRevisions,
     'row': genRow,

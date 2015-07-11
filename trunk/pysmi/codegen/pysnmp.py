@@ -512,13 +512,15 @@ class PySnmpCodeGen(AbstractCodeGen):
     return outStr
 
   def genModuleIdentity(self, data, classmode=0):
-    name, organization, contactInfo, description, revisions, oid  = data
+    name, lastUpdated, organization, contactInfo, \
+        description, revisions, oid  = data
     label = self.genLabel(name)
     name = self.transOpers(name)
     oidStr, parentOid = oid
     revisions = revisions and revisions or ''
     outStr = name + ' = ModuleIdentity(' + oidStr + ')' + label + revisions + '\n'
     if self.genRules['text']:
+      outStr += self.ifTextStr + name + lastUpdated + '\n' 
       outStr += self.ifTextStr + name + organization + '\n' 
       outStr += self.ifTextStr + name + contactInfo + '\n' 
       outStr += self.ifTextStr + name + description + '\n' 
@@ -888,6 +890,10 @@ class PySnmpCodeGen(AbstractCodeGen):
         times.append(strftime('%Y-%m-%d %H:%M', strptime(t, '%Y%m%d%H%MZ')))
     return times
 
+  def genLastUpdated(self, data, classmode=0):
+    text = data[0]
+    return '.setLastUpdated(' + dorepr(text) + ')'
+
   def genOrganization(self, data, classmode=0):
     text = data[0]
     return '.setOrganization(' + dorepr(text) + ')'
@@ -962,6 +968,7 @@ class PySnmpCodeGen(AbstractCodeGen):
     'octetStringSubType': genOctetStringSubType,
     'objectIdentifier': genOid,
     'Objects': genObjects,
+    'LAST-UPDATED': genLastUpdated,
     'ORGANIZATION': genOrganization,
     'Revisions' : genRevisions,
     'row': genRow,
