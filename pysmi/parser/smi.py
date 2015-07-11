@@ -426,7 +426,7 @@ class SmiV2Parser(AbstractParser):
                                       p[3], # NotificationObjectsPart
                                     #  p[5], # status
                                       (p[6], p[7]), # description
-                                    #  p[8], # ReferPart
+                                    #  p[8], # reference
                                       p[11]) # NoficationName aka objectIdentifier
 
   def p_moduleIdentityClause(self, p): 
@@ -434,7 +434,7 @@ class SmiV2Parser(AbstractParser):
     p[0] = ('moduleIdentityClause', p[1], # id
                                   #  p[2], # MODULE_IDENTITY
                                   # XXX  p[3], # SubjectCategoriesPart
-                                  #  (p[4], p[5]), # last updated
+                                    (p[4], p[5]), # last updated
                                     (p[6], p[7]), # organization
                                     (p[8], p[9]), # contact info
                                     (p[10], p[11]), # description
@@ -762,8 +762,8 @@ class SmiV2Parser(AbstractParser):
   def p_ReferPart(self, p):
     """ReferPart : REFERENCE Text
                  | empty"""
-    #if p[1]:
-    #  p[0] = (p[1], p[2])
+#    if p[1]:
+#      p[0] = (p[1], p[2])
     pass
 
   def p_RevisionPart(self, p):

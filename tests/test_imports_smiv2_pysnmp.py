@@ -37,7 +37,7 @@ END
     def testModuleImportsRequiredMibs(self):
         self.assertTupleEqual(
             self.mibInfo.imported,
-            ('SNMP-FRAMEWORK-MIB', 'SNMPv2-SMI'),
+            ('SNMP-FRAMEWORK-MIB', 'SNMPv2-CONF', 'SNMPv2-SMI', 'SNMPv2-TC'),
             'imported MIBs not reported'
         )
 

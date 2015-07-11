@@ -1,3 +1,10 @@
+Revision 0.0.5, 10-07-2015
+--------------------------
+
+* Handle the case of MIB symbols conflict with Python reserved words.
+* Handle binary DEFVAL initializer for INTEGER's.
+* Generate LAST-UPDATED at pysnmp code generator.
+
 Revision 0.0.4, 01-07-2015
 --------------------------
 
