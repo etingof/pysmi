@@ -281,6 +281,15 @@ class SymtableCodeGen(AbstractCodeGen):
     )),
     'RFC-1215': { 'TRAP-TYPE': [('SNMPv2-SMI', 'TRAP-TYPE'), ],
     },
+    ### known bugs
+    'BRIDGE-MIB': { 'MacAddress': [('SNMPv2-TC', 'MacAddress'), ],
+    }, 
+    'CISCO-TC': { 'Unsigned32': [('SNMPv2-SMI', 'Unsigned32'), ],
+    },
+    'SNMPv2-TC': { 'IpAddress': [('SNMPv2-SMI', 'IpAddress'), ],
+    },
+    'SNMPv2-SMI': { 'TextualConvention': [('SNMPv2-TC', 'TextualConvention'), ],
+    },
   }
 
   typeClasses = {
@@ -577,7 +586,7 @@ class SymtableCodeGen(AbstractCodeGen):
   def genConceptualTable(self, data, classmode=0):
     row = data[0]
     if row[0] and row[0][0]:
-      self._rows.add(row[0][0])
+      self._rows.add(self.transOpers(row[0][0]))
     return ('MibTable', ''), ''
     # done
 
@@ -732,6 +741,7 @@ class SymtableCodeGen(AbstractCodeGen):
 
   def genRow(self, data, classmode=0):
     row = data[0]
+    row = self.transOpers(row)
     return row in self._rows and (('MibTableRow', ''), '') or self.genSimpleSyntax(data, classmode=classmode)
     # done
 

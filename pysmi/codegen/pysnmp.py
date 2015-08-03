@@ -731,7 +731,7 @@ class PySnmpCodeGen(AbstractCodeGen):
     elif self.isBinary(defval): # binary
       binval = defval[1:-2]
       if defvalType[0][0] in ('Integer32', 'Integer'): # common bug in MIBs
-        val = str(int(binval, 2))
+        val = str(int(binval and binval or '0', 2))
       else:
         hexval = binval and hex(int(binval, 2))[2:] or ''
         val = 'hexValue="' + hexval + '"'
@@ -904,6 +904,7 @@ class PySnmpCodeGen(AbstractCodeGen):
 
   def genRow(self, data, classmode=0):
     row = data[0]
+    row = self.transOpers(row)
     return row in self.symbolTable[self.moduleName[0]]['_symtable_rows'] and ('MibTableRow', '') or self.genSimpleSyntax(data, classmode=classmode)
 
   def genSequence(self, data, classmode=0):
