@@ -810,7 +810,8 @@ class PySnmpCodeGen(AbstractCodeGen):
         fakeStrlist.append(fakeSymStr)
         fakeSyms.append(idxName)
         self.fakeidx += 1
-      idxStrlist.append('(' + str(idx[0]) + ', "' + self.moduleName[0] + \
+      idxStrlist.append('(' + str(idx[0]) + ', "' + \
+                        self._importMap.get(idxName, self.moduleName[0]) + \
                         '", "' + idxName + '")')
     return '.setIndexNames(' + ', '.join(idxStrlist)+ ')', fakeStrlist, fakeSyms
 
