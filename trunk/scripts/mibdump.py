@@ -216,7 +216,9 @@ mibCompiler = MibCompiler(
 
 try:
     mibCompiler.addSources(
-        *getReadersFromUrls(*mibSources, fuzzyMatching=doFuzzyMatchingFlag)
+        *getReadersFromUrls(
+            *mibSources, **dict(fuzzyMatching=doFuzzyMatchingFlag)
+        )
     )
 
     mibCompiler.addSearchers(PyFileSearcher(dstDirectory))
@@ -227,7 +229,7 @@ try:
     mibCompiler.addSearchers(StubSearcher(*mibStubs))
 
     mibCompiler.addBorrowers(
-        *[ PyFileBorrower(x[1], genTexts=mibBorrowers[x[0]][1]) for x in enumerate(getReadersFromUrls(*[m[0] for m in mibBorrowers], lowcaseMatching=False)) ]
+        *[ PyFileBorrower(x[1], genTexts=mibBorrowers[x[0]][1]) for x in enumerate(getReadersFromUrls(*[m[0] for m in mibBorrowers], **dict(lowcaseMatching=False))) ]
     )
 
     processed = mibCompiler.compile(*inputMibs,
