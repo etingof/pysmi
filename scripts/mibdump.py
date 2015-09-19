@@ -149,12 +149,6 @@ Software documentation and support at http://pysmi.sf.net
     if opt[0] == '--disable-fuzzy-source':
         doFuzzyMatchingFlag = False
 
-if inputMibs:
-    inputMibs = [ os.path.basename(os.path.splitext(x)[0]) for x in inputMibs ]
-else:
-    sys.stderr.write('ERROR: MIB modules names not specified\r\n%s\r\n' % helpMessage)
-    sys.exit(-1)
-
 if not mibSearchers:
     mibSearchers = defaultMibPackages
 
@@ -168,6 +162,15 @@ if not mibSources:
 if not mibBorrowers:
     mibBorrowers = [ ('http://mibs.snmplabs.com/pysnmp/notexts/@mib@', False),
                      ('http://mibs.snmplabs.com/pysnmp/fulltexts/@mib@', True) ]
+
+if inputMibs:
+    mibSources.extend(list(set(['file://' + os.path.abspath(os.path.dirname(x))
+                                for x in inputMibs
+                                if os.path.sep in x])))
+    inputMibs = [os.path.basename(os.path.splitext(x)[0]) for x in inputMibs]
+else:
+    sys.stderr.write('ERROR: MIB modules names not specified\r\n%s\r\n' % helpMessage)
+    sys.exit(-1)
 
 if verboseFlag:
     sys.stderr.write("""Source MIB repositories: %s
