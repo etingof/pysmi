@@ -1,4 +1,4 @@
-Revision 0.0.5, 10-07-2015
+Revision 0.0.5, 28-09-2015
 --------------------------
 
 * Wheel distribution format now supported.
