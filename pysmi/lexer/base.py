@@ -1,4 +1,3 @@
- 
 class AbstractLexer(object):
-  def reset(self):
+    def reset(self):
         raise NotImplementedError()

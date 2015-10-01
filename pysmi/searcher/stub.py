@@ -1,4 +1,3 @@
-import time
 from pysmi.searcher.base import AbstractSearcher
 from pysmi import debug
 from pysmi import error

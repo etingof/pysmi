@@ -1,6 +1,5 @@
 import os
 import sys
-import time
 import imp
 import tempfile
 import py_compile
@@ -74,7 +73,7 @@ class PyFileWriter(AbstractWriter):
             except:
                 try:
                     os.unlink(pyfile)
-                except:
+                except Exception:
                     pass
                 raise error.PySmiWriterError('failure compiling %s: %s' % (pyfile, sys.exc_info()[1]), file=mibname, writer=self)
 

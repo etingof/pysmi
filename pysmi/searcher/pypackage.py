@@ -1,5 +1,4 @@
 import os
-import sys
 import time
 import imp
 import struct
@@ -64,13 +63,13 @@ class PyPackageSearcher(AbstractSearcher):
         except ImportError:
             raise error.PySmiFileNotFoundError('%s is not importable, trying as a path' % self._package, searcher=self)
 
-        for format in imp.PY_COMPILED, imp.PY_SOURCE:
-            for pySfx, pyMode in self.suffixes[format]:
+        for fmt in imp.PY_COMPILED, imp.PY_SOURCE:
+            for pySfx, pyMode in self.suffixes[fmt]:
                 f = os.path.join(self._package, mibname.upper()) + pySfx
                 if f not in self.__loader._files:
                     debug.logger & debug.flagSearcher and debug.logger('%s is not in %s' % (f, self._package))
                     continue
-                if format == imp.PY_COMPILED:
+                if fmt == imp.PY_COMPILED:
                     pyData = self.__loader.get_data(f)
                     if pyData[:4] == imp.get_magic():
                         pyData = pyData[4:]

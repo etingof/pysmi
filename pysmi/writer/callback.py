@@ -26,7 +26,7 @@ class CallbackWriter(AbstractWriter):
     def __str__(self):
         return '%s{"%s"}' % (self.__class__.__name__, self._cbFun)
 
-    def putData(self, mibname, data, dryRun=False):
+    def putData(self, mibname, data, comments=[], dryRun=False):
         if dryRun:
             debug.logger & debug.flagWriter and debug.logger('dry run mode')
             return

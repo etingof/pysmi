@@ -32,6 +32,7 @@ class PySmiFileNotModifiedError(PySmiSearcherError): pass
 class PySmiFileNotFoundError(PySmiSearcherError): pass
 
 class PySmiReaderError(PySmiError): pass
+class PySmiReaderFileNotModifiedError(PySmiReaderError): pass
 class PySmiReaderFileNotFoundError(PySmiReaderError): pass
 
 class PySmiCodegenError(PySmiError): pass

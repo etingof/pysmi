@@ -66,7 +66,7 @@ class HttpReader(AbstractReader):
             if response.status == 200:
                 try:
                     mtime = time.mktime(time.strptime(response.getheader('Last-Modified'), "%a, %d %b %Y %H:%M:%S %Z"))
-                except:
+                except Exception:
                     debug.logger & debug.flagReader and debug.logger('malformed HTTP headers: %s' % sys.exc_info()[1])
                     mtime = time.time()
 

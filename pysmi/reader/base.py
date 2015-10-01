@@ -1,5 +1,4 @@
 import os
-from pysmi import debug
 
 class AbstractReader(object):
     maxMibSize = 10000000     # MIBs can't be that large
@@ -9,7 +8,7 @@ class AbstractReader(object):
             os.path.extsep + 'txt',
             os.path.extsep + 'mib',
             os.path.extsep + 'my']
-    exts.extend([ x.upper() for x in exts if x ])
+    exts.extend([x.upper() for x in exts if x])
 
     def setOptions(self, **kwargs):
         for k in kwargs:
@@ -28,7 +27,7 @@ class AbstractReader(object):
             part = filenames[-1].find('-mib')
             if part != -1:
                 filenames.extend(
-                    [ x[:part] for x in filenames ]
+                    [x[:part] for x in filenames]
                 )
             else:
                 suffixed = mibname + '-mib'

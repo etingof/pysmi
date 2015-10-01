@@ -1,4 +1,3 @@
-import time
 import logging
 from pysmi import error
 from pysmi import __version__
@@ -28,7 +27,7 @@ flagMap = {
     'all': flagAll
 }
 
-class Printer:
+class Printer(object):
     def __init__(self, logger=None, handler=None, formatter=None):
         if logger is None:
             logger = logging.getLogger('pysmi')
@@ -55,7 +54,7 @@ else:
         def emit(self, record):
             pass
 
-class Debug:
+class Debug(object):
     defaultPrinter = None
     def __init__(self, *flags, **options):
         self._flags = flagNone

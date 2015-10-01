@@ -34,13 +34,13 @@ class PyFileSearcher(AbstractSearcher):
             return
         mibname = decode(mibname)
         pyfile = os.path.join(self._path, mibname)
-        for format in imp.PY_COMPILED, imp.PY_SOURCE:
-            for pySfx, pyMode in self.suffixes[format]:
+        for fmt in imp.PY_COMPILED, imp.PY_SOURCE:
+            for pySfx, pyMode in self.suffixes[fmt]:
                 f = pyfile + pySfx
                 if not os.path.exists(f) or not os.path.isfile(f):
                     debug.logger & debug.flagSearcher and debug.logger('%s not present or not a file' % f)
                     continue
-                if format == imp.PY_COMPILED:
+                if fmt == imp.PY_COMPILED:
                     try:
                         pyData = open(f, pyMode).read(8)
                     except IOError:
@@ -52,7 +52,7 @@ class PyFileSearcher(AbstractSearcher):
                         if pyTime >= mtime:
                             raise error.PySmiFileNotModifiedError()
                         else:
-                            raise error.PySmiFileNotFoundError('older file exists' % mibname, searcher=self)
+                            raise error.PySmiFileNotFoundError('older file %s exists %s' % mibname, searcher=self)
                     else:
                         debug.logger & debug.flagSearcher and debug.logger('bad magic in %s' % f)
                         continue

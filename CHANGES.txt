@@ -1,3 +1,9 @@
+Revision 0.0.6, 01-10-2015
+--------------------------
+
+* Several typos fixed, source code linted again.
+* Some dead code cleaned up.
+
 Revision 0.0.5, 28-09-2015
 --------------------------
 
