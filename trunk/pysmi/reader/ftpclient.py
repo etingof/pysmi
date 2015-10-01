@@ -71,7 +71,6 @@ class FtpReader(AbstractReader):
                     response = conn.sendcmd('MDTM %s' % location)
                 except ftplib.all_errors:
                     debug.logger & debug.flagReader and debug.logger('server %s:%s does not support MDTM command, fetching file %s' % (self._host, self._port, location))
-                    mtime = timestamp+1
                 else:
                     debug.logger & debug.flagReader and debug.logger('server %s:%s MDTM response is %s' % (self._host, self._port, response))
                     if response[:3] == 213:
@@ -87,7 +86,7 @@ class FtpReader(AbstractReader):
             debug.logger & debug.flagReader and debug.logger('fetched %s bytes in %s' % (len(data), location))
 
             conn.close()
-            return MibInfo(path='ftp://%s%s' % (self._host,location), file=mibfile, name=mibalias, mtime=mtime), data
+            return MibInfo(path='ftp://%s%s' % (self._host, location), file=mibfile, name=mibalias, mtime=mtime), data
 
         conn.close()
 

@@ -15,9 +15,9 @@ def getReadersFromUrls(*sourceUrls, **options):
         if sys.version_info[0:2] < (2, 5):
             class ParseResult(tuple): pass
             mibSource = ParseResult(mibSource)
-            for k,v in zip(('scheme', 'netloc', 'path', 'params',
-                            'query', 'fragment', 'username', 'password',
-                            'hostname', 'port'), mibSource + ('','','',None)):
+            for k, v in zip(('scheme', 'netloc', 'path', 'params',
+                             'query', 'fragment', 'username', 'password',
+                             'hostname', 'port'), mibSource + ('', '', '',None)):
                 setattr(mibSource, k, v)
         if not mibSource.scheme or mibSource.scheme == 'file':
             readers.append(FileReader(mibSource.path).setOptions(**options))

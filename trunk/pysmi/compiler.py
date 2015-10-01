@@ -26,7 +26,6 @@ class MibStatus(str):
     * *unprocessed* - MIB transformation required but waived for some reason
     * *missing* - ASN.1 MIB source can't be found
     * *borrowed* - MIB transformation failed but pre-transformed version was used
- 
     """
     def setOptions(self, **kwargs):
         n = self.__class__(self)
@@ -190,7 +189,7 @@ class MibCompiler(object):
         processed = {}
         parsedMibs = {}; failedMibs = {}; borrowedMibs = {}; builtMibs = {}
         symbolTableMap = {}
-        mibsToParse = [ x for x in mibnames ]
+        mibsToParse = [x for x in mibnames]
         while mibsToParse:
             mibname = mibsToParse.pop(0)
             if mibname in parsedMibs:
@@ -278,8 +277,8 @@ class MibCompiler(object):
                     del parsedMibs[mibname]
                     processed[mibname] = statusUntouched
                     continue
-        else:
-            debug.logger & debug.flagCompiler and debug.logger('MIBs parsed %s, MIBs failed %s' % (len(parsedMibs), len(failedMibs)))
+
+        debug.logger & debug.flagCompiler and debug.logger('MIBs parsed %s, MIBs failed %s' % (len(parsedMibs), len(failedMibs)))
 
         #
         # Generate code for parsed MIBs
@@ -317,8 +316,8 @@ class MibCompiler(object):
                 processed[mibname] = statusFailed.setOptions(error=exc)
                 failedMibs[mibname] = exc
                 del parsedMibs[mibname]
-        else:
-            debug.logger & debug.flagCompiler and debug.logger('MIBs built %s, MIBs failed %s' % (len(parsedMibs), len(failedMibs)))
+
+        debug.logger & debug.flagCompiler and debug.logger('MIBs built %s, MIBs failed %s' % (len(parsedMibs), len(failedMibs)))
 
         #
         # Try to borrow pre-compiled MIBs for failed ones
@@ -346,8 +345,8 @@ class MibCompiler(object):
 
                 except error.PySmiError:
                     debug.logger & debug.flagCompiler and debug.logger('error from %s: %s' % (borrower, exc))
-        else:
-            debug.logger & debug.flagCompiler and debug.logger('MIBs available for borrowing %s, MIBs failed %s' % (len(borrowedMibs), len(failedMibs)))
+
+        debug.logger & debug.flagCompiler and debug.logger('MIBs available for borrowing %s, MIBs failed %s' % (len(borrowedMibs), len(failedMibs)))
 
         #
         # See what MIBs need borrowing
@@ -392,8 +391,8 @@ class MibCompiler(object):
                     )
 
                 del borrowedMibs[mibname]
-        else:
-            debug.logger & debug.flagCompiler and debug.logger('MIBs built %s, MIBs failed %s' % (len(builtMibs), len(failedMibs)))
+
+        debug.logger & debug.flagCompiler and debug.logger('MIBs built %s, MIBs failed %s' % (len(builtMibs), len(failedMibs)))
 
         #
         # We could attempt to ignore missing/failed MIBs
@@ -414,7 +413,7 @@ class MibCompiler(object):
         for mibname in builtMibs.copy():
             fileInfo, mibInfo, mibData = builtMibs[mibname]
             try:
-                created = self._writer.putData(
+                self._writer.putData(
                     mibname, mibData, dryRun=options.get('dryRun')
                 )
 
@@ -437,8 +436,8 @@ class MibCompiler(object):
                 processed[mibname] = statusFailed.setOptions(error=exc)
                 failedMibs[mibname] = exc
                 del builtMibs[mibname]
-        else:
-            debug.logger & debug.flagCompiler and debug.logger('MIBs modifed: %s' % ', '.join([x for x in processed if processed[x] in ('compiled', 'borrowed')]))
+
+        debug.logger & debug.flagCompiler and debug.logger('MIBs modifed: %s' % ', '.join([x for x in processed if processed[x] in ('compiled', 'borrowed')]))
 
         return processed
 
