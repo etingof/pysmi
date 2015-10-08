@@ -52,7 +52,7 @@ class PyFileSearcher(AbstractSearcher):
                         if pyTime >= mtime:
                             raise error.PySmiFileNotModifiedError()
                         else:
-                            raise error.PySmiFileNotFoundError('older file %s exists %s' % mibname, searcher=self)
+                            raise error.PySmiFileNotFoundError('older file %s exists' % mibname, searcher=self)
                     else:
                         debug.logger & debug.flagSearcher and debug.logger('bad magic in %s' % f)
                         continue
