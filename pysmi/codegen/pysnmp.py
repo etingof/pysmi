@@ -301,7 +301,7 @@ class PySnmpCodeGen(AbstractCodeGen):
                         ('snmpEnableAuthTraps', [('SNMPv2-MIB', 'snmpEnableAuthenTraps')]))),
         'RFC-1212': {'OBJECT-TYPE': [('SNMPv2-SMI', 'OBJECT-TYPE')]},
                     # XXX 'IndexSyntax': ???
-        'RFC1213-MIB': updateDict(dict(commonSyms['RFC1158-MIB/RFC1213-MIB']), (('PhysAddress', [('SNMPv2-TC', 'PhysAddress')]))),
+        'RFC1213-MIB': updateDict(dict(commonSyms['RFC1158-MIB/RFC1213-MIB']), (('PhysAddress', [('SNMPv2-TC', 'PhysAddress')]),)),
         'RFC-1215': {'TRAP-TYPE': [('SNMPv2-SMI', 'TRAP-TYPE')]}
     }
 
