@@ -3,7 +3,7 @@
 # compile them into pysnmp form if not done yet and save Python
 # modules as plain-text files in a local directory.
 #
-# Try to support both SMIv1 and SMIv2 flavors of SMI as well as 
+# Try to support both SMIv1 and SMIv2 flavors of SMI as well as
 # popular deviations from official syntax found in the wild.
 #
 # When figuring out if compilation is needed, check all known
@@ -27,10 +27,10 @@ from pysmi.codegen.pysnmp import PySnmpCodeGen, defaultMibPackages, baseMibs
 from pysmi.compiler import MibCompiler
 from pysmi import debug
 
-#debug.setLogger(debug.Debug('reader', 'compiler'))
+# debug.setLogger(debug.Debug('reader', 'compiler'))
 
-inputMibs = [ 'IF-MIB', 'IP-MIB' ]
-srcDirectories = [ '/usr/share/snmp/mibs' ]
+inputMibs = ['IF-MIB', 'IP-MIB']
+srcDirectories = ['/usr/share/snmp/mibs']
 dstDirectory = '.pysnmp-mibs'
 
 # Initialize compiler infrastructure
@@ -40,12 +40,12 @@ mibCompiler = MibCompiler(parserFactory(**smiV1Relaxed)(),
                           PyFileWriter(dstDirectory))
 
 # search for source MIBs here
-mibCompiler.addSources(*[ FileReader(x) for x in srcDirectories ])
+mibCompiler.addSources(*[FileReader(x) for x in srcDirectories])
 
 # check compiled MIBs in our own productions
 mibCompiler.addSearchers(PyFileSearcher(dstDirectory))
 # ...and at default PySNMP MIBs packages
-mibCompiler.addSearchers(*[ PyPackageSearcher(x) for x in defaultMibPackages ])
+mibCompiler.addSearchers(*[PyPackageSearcher(x) for x in defaultMibPackages])
 
 # never recompile MIBs with MACROs
 mibCompiler.addSearchers(StubSearcher(*baseMibs))
