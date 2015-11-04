@@ -44,10 +44,7 @@ if sys.version_info[:2] < (2, 4):
 
 try:
     from setuptools import setup, Command
-    params = {
-        'install_requires': [ 'ply' ],
-        'zip_safe': True
-    }
+    params = {'install_requires': ['ply'], 'zip_safe': True}
 
 except ImportError:
     for arg in sys.argv:
@@ -57,13 +54,13 @@ except ImportError:
     from distutils.core import setup, Command
     params = {}
     if sys.version_info[:2] > (2, 4):
-        params['requires'] = [ 'ply' ]
+        params['requires'] = ['ply']
 
-doclines = [ x.strip() for x in __doc__.split('\n') if x ]
+doclines = [x.strip() for x in (__doc__ or '').split('\n') if x]
 
-params.update( {
+params.update({
     'name': 'pysmi',
-    'version': open(os.path.join('pysmi','__init__.py')).read().split('\'')[1],
+    'version': open(os.path.join('pysmi', '__init__.py')).read().split('\'')[1],
     'description': doclines[0],
     'long_description': ' '.join(doclines[1:]),
     'maintainer': 'Ilya Etingof <ilya@glas.net>',
@@ -71,22 +68,22 @@ params.update( {
     'author_email': 'ilya@glas.net',
     'url': 'http://sourceforge.net/projects/pysmi/',
     'platforms': ['any'],
-    'classifiers': [ x for x in classifiers.split('\n') if x ],
+    'classifiers': [x for x in classifiers.split('\n') if x],
     'license': 'BSD',
-    'packages': [ 'pysmi',
-                  'pysmi.reader',
-                  'pysmi.searcher',
-                  'pysmi.lexer',
-                  'pysmi.parser',
-                  'pysmi.codegen',
-                  'pysmi.borrower',
-                  'pysmi.writer' ],
-    'scripts': [ os.path.join('scripts','mibdump.py') ]
-} )
+    'packages': ['pysmi',
+                 'pysmi.reader',
+                 'pysmi.searcher',
+                 'pysmi.lexer',
+                 'pysmi.parser',
+                 'pysmi.codegen',
+                 'pysmi.borrower',
+                 'pysmi.writer'],
+    'scripts': [os.path.join('scripts', 'mibdump.py')]
+})
 
 # handle unittest discovery feature
 if sys.version_info[0:2] < (2, 7) or \
-   sys.version_info[0:2] in ( (3, 0), (3, 1) ):
+   sys.version_info[0:2] in ((3, 0), (3, 1)):
     try:
         import unittest2 as unittest
     except ImportError:
@@ -105,6 +102,6 @@ if unittest:
             suite = unittest.defaultTestLoader.discover('tests')
             unittest.TextTestRunner(verbosity=2).run(suite)
 
-    params['cmdclass'] = { 'test': PyTest }
+    params['cmdclass'] = {'test': PyTest}
 
 setup(**params)

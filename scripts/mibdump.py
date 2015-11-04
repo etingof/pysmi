@@ -156,8 +156,8 @@ if not mibStubs:
     mibStubs = [ x for x in baseMibs if x not in fakeMibs ]
 
 if not mibSources:
-    mibSources = [ 'file:///usr/share/snmp/mibs',
-                   'http://mibs.snmplabs.com/asn1/@mib@' ]
+    mibSources = ['file:///usr/share/snmp/mibs',
+                  'http://mibs.snmplabs.com/asn1/@mib@']
 
 if not mibBorrowers:
     mibBorrowers = [ ('http://mibs.snmplabs.com/pysnmp/notexts/@mib@', False),

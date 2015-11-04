@@ -3,7 +3,7 @@
 # compile them into pysnmp form and save Python modules as plain-text
 # files in a local directory.
 #
-# Try to support both SMIv1 and SMIv2 flavors of SMI as well as 
+# Try to support both SMIv1 and SMIv2 flavors of SMI as well as
 # popular deviations from official syntax found in the wild.
 #
 # In this example we disable automatic dependency checking on MIB
@@ -22,10 +22,10 @@ from pysmi.codegen.pysnmp import PySnmpCodeGen, baseMibs
 from pysmi.compiler import MibCompiler
 from pysmi import debug
 
-#debug.setLogger(debug.Debug('all'))
+# debug.setLogger(debug.Debug('all'))
 
-inputMibs = [ 'IF-MIB', 'IP-MIB' ]
-httpSources = [ 
+inputMibs = ['IF-MIB', 'IP-MIB']
+httpSources = [
     ('mibs.snmplabs.com', 80, '/asn1/@mib@')
 ]
 ftpSources = [
@@ -40,8 +40,8 @@ mibCompiler = MibCompiler(
 )
 
 # search for source MIBs at Web and FTP sites
-mibCompiler.addSources(*[ HttpReader(*x) for x in httpSources ])
-mibCompiler.addSources(*[ FtpReader(*x) for x in ftpSources ])
+mibCompiler.addSources(*[HttpReader(*x) for x in httpSources])
+mibCompiler.addSources(*[FtpReader(*x) for x in ftpSources])
 
 # never recompile MIBs with MACROs
 mibCompiler.addSearchers(StubSearcher(*baseMibs))

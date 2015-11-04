@@ -99,7 +99,7 @@ class PySnmpCodeGen(AbstractCodeGen):
                       'Gauge': [('SNMPv2-SMI', 'Gauge32')],
                       'TimeTicks': [('SNMPv2-SMI', 'TimeTicks')],
                       'Opaque': [('SNMPv2-SMI', 'Opaque')]},
-                   'RFC1158-MIB/RFC1213-MIB':
+                  'RFC1158-MIB/RFC1213-MIB':
                      {'mib-2': [('SNMPv2-SMI', 'mib-2')],
                       'DisplayString': [('SNMPv2-TC', 'DisplayString')],
                       'system': [('SNMPv2-MIB', 'system')],
@@ -256,13 +256,12 @@ class PySnmpCodeGen(AbstractCodeGen):
                       'snmpOutSetRequests': [('SNMPv2-MIB', 'snmpOutSetRequests')],
                       'snmpOutGetResponses': [('SNMPv2-MIB', 'snmpOutGetResponses')],
                       'snmpOutTraps': [('SNMPv2-MIB', 'snmpOutTraps')],
-                      'snmpEnableAuthenTraps': [('SNMPv2-MIB', 'snmpEnableAuthenTraps')]}
-    }
+                      'snmpEnableAuthenTraps': [('SNMPv2-MIB', 'snmpEnableAuthenTraps')]}}
 
     convertImportv2 = {
-      'RFC1065-SMI': commonSyms['RFC1155-SMI/RFC1065-SMI'],
-      'RFC1155-SMI': commonSyms['RFC1155-SMI/RFC1065-SMI'],
-      'RFC1158-MIB': updateDict(dict(commonSyms['RFC1155-SMI/RFC1065-SMI']),
+        'RFC1065-SMI': commonSyms['RFC1155-SMI/RFC1065-SMI'],
+        'RFC1155-SMI': commonSyms['RFC1155-SMI/RFC1065-SMI'],
+        'RFC1158-MIB': updateDict(dict(commonSyms['RFC1155-SMI/RFC1065-SMI']),
                        (('nullSpecific', [('SNMPv2-SMI', 'zeroDotZero')]),
                         ('ipRoutingTable', [('RFC1213-MIB', 'ipRouteTable')]),
                         ('ipRouteEntry', [('RFC1213-MIB', 'ipRouteEntry')]),
@@ -299,23 +298,18 @@ class PySnmpCodeGen(AbstractCodeGen):
                         ('egpNeighMode', [('RFC1213-MIB', 'egpNeighMode')]),
                         ('egpNeighEventTrigger', [('RFC1213-MIB', 'egpNeighEventTrigger')]),
                         ('egpAs', [('RFC1213-MIB', 'egpAs')]),
-                        ('snmpEnableAuthTraps', [('SNMPv2-MIB', 'snmpEnableAuthenTraps')]),
-      )),
-      'RFC-1212': {'OBJECT-TYPE': [('SNMPv2-SMI', 'OBJECT-TYPE')],
+                        ('snmpEnableAuthTraps', [('SNMPv2-MIB', 'snmpEnableAuthenTraps')]))),
+        'RFC-1212': {'OBJECT-TYPE': [('SNMPv2-SMI', 'OBJECT-TYPE')]},
                     # XXX 'IndexSyntax': ???
-      },
-      'RFC1213-MIB': updateDict( dict(commonSyms['RFC1158-MIB/RFC1213-MIB']),
-                        (('PhysAddress', [('SNMPv2-TC', 'PhysAddress')]),
-      )),
-      'RFC-1215': {'TRAP-TYPE': [('SNMPv2-SMI', 'TRAP-TYPE')],
-      }
+        'RFC1213-MIB': updateDict(dict(commonSyms['RFC1158-MIB/RFC1213-MIB']), (('PhysAddress', [('SNMPv2-TC', 'PhysAddress')]))),
+        'RFC-1215': {'TRAP-TYPE': [('SNMPv2-SMI', 'TRAP-TYPE')]}
     }
 
     typeClasses = {
       'COUNTER32': 'Counter32',
       'COUNTER64': 'Counter64',
       'GAUGE32': 'Gauge32',
-      'INTEGER': 'Integer32', # XXX
+      'INTEGER': 'Integer32',  # XXX
       'INTEGER32': 'Integer32',
       'IPADDRESS': 'IpAddress',
       'NETWORKADDRESS': 'IpAddress',
@@ -326,9 +320,9 @@ class PySnmpCodeGen(AbstractCodeGen):
       'UNSIGNED32': 'Unsigned32',
       'Counter': 'Counter32',
       'Gauge': 'Gauge32',
-      'NetworkAddress': 'IpAddress', # RFC1065-SMI, RFC1155-SMI -> SNMPv2-SMI
-      'nullSpecific': 'zeroDotZero', # RFC1158-MIB -> SNMPv2-SMI
-      'ipRoutingTable': 'ipRouteTable', # RFC1158-MIB -> RFC1213-MIB
+      'NetworkAddress': 'IpAddress',  # RFC1065-SMI, RFC1155-SMI -> SNMPv2-SMI
+      'nullSpecific': 'zeroDotZero',  # RFC1158-MIB -> SNMPv2-SMI
+      'ipRoutingTable': 'ipRouteTable',  # RFC1158-MIB -> RFC1213-MIB
       'snmpEnableAuthTraps': 'snmpEnableAuthenTraps'  # RFC1158-MIB -> SNMPv2-MIB
     }
 
@@ -389,8 +383,7 @@ class PySnmpCodeGen(AbstractCodeGen):
             elif len(el) == 1:
                 data.append(el[0])
             else:
-                data.append(self.handlersTable[el[0]](self, self.prepData(el[1:], classmode=classmode), classmode=classmode)
-                )
+                data.append(self.handlersTable[el[0]](self, self.prepData(el[1:], classmode=classmode), classmode=classmode))
         return data
 
     def genImports(self, imports):
@@ -424,9 +417,7 @@ class PySnmpCodeGen(AbstractCodeGen):
             if symbols:
                 self._presentedSyms = self._presentedSyms.union([self.transOpers(s) for s in symbols])
                 self._importMap.update([(self.transOpers(s), module) for s in symbols])
-                outStr += '( %s, ) = mibBuilder.importSymbols("%s")\n' % \
-                  (', '.join([self.transOpers(s) for s in symbols]),
-                    '", "'.join((module,) + symbols))
+                outStr += '( %s, ) = mibBuilder.importSymbols("%s")\n' % (', '.join([self.transOpers(s) for s in symbols]), '", "'.join((module,) + symbols))
         return outStr, tuple(sorted(imports))
 
     def genExports(self, ):

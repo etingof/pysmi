@@ -24,18 +24,35 @@ class PySmiLexerError(PySmiError):
     def __str__(self):
         return self.msg + ', line %s' % self.lineno
 
-class PySmiParserError(PySmiLexerError): pass
-class PySmiSyntaxError(PySmiParserError): pass
+class PySmiParserError(PySmiLexerError):
+    pass
 
-class PySmiSearcherError(PySmiError): pass
-class PySmiFileNotModifiedError(PySmiSearcherError): pass
-class PySmiFileNotFoundError(PySmiSearcherError): pass
+class PySmiSyntaxError(PySmiParserError):
+    pass
 
-class PySmiReaderError(PySmiError): pass
-class PySmiReaderFileNotModifiedError(PySmiReaderError): pass
-class PySmiReaderFileNotFoundError(PySmiReaderError): pass
+class PySmiSearcherError(PySmiError):
+    pass
 
-class PySmiCodegenError(PySmiError): pass
-class PySmiSemanticError(PySmiCodegenError): pass
+class PySmiFileNotModifiedError(PySmiSearcherError):
+    pass
 
-class PySmiWriterError(PySmiError): pass
+class PySmiFileNotFoundError(PySmiSearcherError):
+    pass
+
+class PySmiReaderError(PySmiError):
+    pass
+
+class PySmiReaderFileNotModifiedError(PySmiReaderError):
+    pass
+
+class PySmiReaderFileNotFoundError(PySmiReaderError):
+    pass
+
+class PySmiCodegenError(PySmiError):
+    pass
+
+class PySmiSemanticError(PySmiCodegenError):
+    pass
+
+class PySmiWriterError(PySmiError):
+    pass

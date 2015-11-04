@@ -58,7 +58,7 @@ class MibCompiler(object):
 
     Optional components could be set or modified at later phases of MibCompiler
     life. Unlike singular, required components, optional one can be present
-    in sequences to address many possible sources of data. They are 
+    in sequences to address many possible sources of data. They are
     *readers*, *searchers* and *borrowers*.
 
     Examples: ::
@@ -163,7 +163,7 @@ class MibCompiler(object):
 
         The *compile* method should be invoked when *MibCompiler* object
         is operational meaning at least *sources* are specified.
-        
+
         Once called with a MIB module name, *compile* will:
 
         * fetch ASN.1 MIB module with given name by calling *sources*
@@ -187,7 +187,10 @@ class MibCompiler(object):
 
         """
         processed = {}
-        parsedMibs = {}; failedMibs = {}; borrowedMibs = {}; builtMibs = {}
+        parsedMibs = {}
+        failedMibs = {}
+        borrowedMibs = {}
+        builtMibs = {}
         symbolTableMap = {}
         mibsToParse = [x for x in mibnames]
         while mibsToParse:
