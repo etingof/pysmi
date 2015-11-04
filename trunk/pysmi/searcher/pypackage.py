@@ -56,9 +56,11 @@ class PyPackageSearcher(AbstractSearcher):
                 self.__loader = p.__loader__
                 self._package = self._package.replace('.', os.sep)
                 debug.logger & debug.flagSearcher and debug.logger('%s is an importable egg at %s' % (self._package, os.path.split(p.__file__)[0]))
-            else:
+            elif hasattr(p, '__file__'):
                 debug.logger & debug.flagSearcher and debug.logger('%s is not an egg, trying it as a package directory' % self._package)
                 return PyFileSearcher(os.path.split(p.__file__)[0]).fileExists(mibname, mtime, rebuild=rebuild)
+            else:
+                raise error.PySmiFileNotFoundError('%s is neither importable nor a file' % self._package, searcher=self)
 
         except ImportError:
             raise error.PySmiFileNotFoundError('%s is not importable, trying as a path' % self._package, searcher=self)
