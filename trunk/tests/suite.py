@@ -1,3 +1,9 @@
+#
+# This file is part of pysmi software.
+#
+# Copyright (c) 2015-2016, Ilya Etingof <ilya@glas.net>
+# License: http://pysmi.sf.net/license.html
+#
 import test_moduleidentity_smiv2_pysnmp
 import test_imports_smiv2_pysnmp
 import test_agentcapabilities_smiv2_pysnmp

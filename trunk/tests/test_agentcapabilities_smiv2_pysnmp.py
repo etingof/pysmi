@@ -1,3 +1,9 @@
+#
+# This file is part of pysmi software.
+#
+# Copyright (c) 2015-2016, Ilya Etingof <ilya@glas.net>
+# License: http://pysmi.sf.net/license.html
+#
 import sys
 if sys.version_info[0:2] < (2, 7) or \
    sys.version_info[0:2] in ( (3, 0), (3, 1) ):
