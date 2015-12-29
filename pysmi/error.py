@@ -1,3 +1,9 @@
+#
+# This file is part of pysmi software.
+#
+# Copyright (c) 2015-2016, Ilya Etingof <ilya@glas.net>
+# License: http://pysmi.sf.net/license.html
+#
 # Package exception model:
 # Here we subclass base Python exception overriding its constructor to
 # accomodate error message string as its first parameter and an open
@@ -5,7 +11,7 @@
 # While exception object is bubbling up the call stack, intermediate
 # exception handlers may insert their own attributes into exception
 # object.
-
+#
 class PySmiError(Exception):
     def __init__(self, *args, **kwargs):
         Exception.__init__(self, *args)

@@ -1,3 +1,9 @@
+#
+# This file is part of pysmi software.
+#
+# Copyright (c) 2015-2016, Ilya Etingof <ilya@glas.net>
+# License: http://pysmi.sf.net/license.html
+#
 import os
 import sys
 import time

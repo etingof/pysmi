@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+#
+# This file is part of pysmi software.
+#
+# Copyright (c) 2015-2016, Ilya Etingof <ilya@glas.net>
+# License: http://pysmi.sf.net/license.html
+#
 """SNMP SMI/MIB Parser
 
    A pure-Python implementation of SNMP/SMI MIB parsing and conversion library.

@@ -1,5 +1,12 @@
+#
+# This file is part of pysmi software.
+#
+# Copyright (c) 2015-2016, Ilya Etingof <ilya@glas.net>
+# License: http://pysmi.sf.net/license.html
+#
 
-# known attributes:
+#
+# Known attributes:
 # name   -- actual MIB name
 # alias  -- possible alternative to MIB name
 # path   -- URL to MIB file

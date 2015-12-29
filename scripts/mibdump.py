@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 #
-# SNMP SMI/MIB data management tool
+# This file is part of pysmi software.
 #
-# Written by Ilya Etingof <ilya@glas.net>, 2015
+# Copyright (c) 2015-2016, Ilya Etingof <ilya@glas.net>
+# License: http://pysmi.sf.net/license.html
+#
+# SNMP SMI/MIB data management tool
 #
 import os
 import sys
