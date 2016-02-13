@@ -1,4 +1,4 @@
-Revision 0.0.7, XX-XX-2015
+Revision 0.0.7, 12-02-2016
 --------------------------
 
 * Crash on existing .py file handling fixed.
