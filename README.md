@@ -38,7 +38,7 @@ download and compilation automatically.
 If you want to compile ASN.1 MIB into PySNMP module by hand, use *mibdump.py* tool
 like this:
 
-```bash
+```
 $ mibdump.py CISCO-MIB
 Source MIB repositories: file:///usr/share/snmp/mibs, http://mibs.snmplabs.com/asn1/@mib@
 Borrow missing/failed MIBs from: http://mibs.snmplabs.com/pysnmp/notexts/@mib@
@@ -66,7 +66,7 @@ Failed MIBs:
 
 The pysmi library can automatically fetch required MIBs from HTTP, FTP sites
 or local directories. You could configure any MIB source available to you (including
-[this one](http://mibs.snmplabs.com/asn1/)) for that purpose.
+[http://mibs.snmplabs.com/asn1/](http://mibs.snmplabs.com/asn1/)) for that purpose.
 
 Documentation
 -------------
