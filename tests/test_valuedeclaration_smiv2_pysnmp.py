@@ -4,15 +4,12 @@
 # Copyright (c) 2015-2016, Ilya Etingof <ilya@glas.net>
 # License: http://pysmi.sf.net/license.html
 #
-import sys
-if sys.version_info[0:2] < (2, 7) or \
-   sys.version_info[0:2] in ( (3, 0), (3, 1) ):
-    try:
-        import unittest2 as unittest
-    except ImportError:
-        import unittest
-else:
+try:
+    import unittest2 as unittest
+
+except ImportError:
     import unittest
+
 from pysmi.parser.smi import parserFactory
 from pysmi.codegen.pysnmp import PySnmpCodeGen
 from pysmi.codegen.symtable import SymtableCodeGen
@@ -95,4 +92,5 @@ END
             'bad value'
         )
 
-if __name__ == '__main__': unittest.main()
+if __name__ == '__main__':
+    unittest.main()
