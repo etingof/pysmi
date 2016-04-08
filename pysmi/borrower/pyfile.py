@@ -7,6 +7,7 @@
 import imp
 from pysmi.borrower.base import AbstractBorrower
 
+
 class PyFileBorrower(AbstractBorrower):
     """Transformed MIB modules borrower.
     """

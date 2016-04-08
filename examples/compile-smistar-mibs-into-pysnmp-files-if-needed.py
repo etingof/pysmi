@@ -25,7 +25,6 @@ from pysmi.parser.smi import parserFactory
 from pysmi.parser.dialect import smiV1Relaxed
 from pysmi.codegen.pysnmp import PySnmpCodeGen, defaultMibPackages, baseMibs
 from pysmi.compiler import MibCompiler
-from pysmi import debug
 
 # debug.setLogger(debug.Debug('reader', 'compiler'))
 

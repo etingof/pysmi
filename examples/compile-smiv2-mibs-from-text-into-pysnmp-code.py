@@ -15,7 +15,6 @@ from pysmi.writer.callback import CallbackWriter
 from pysmi.parser.smi import parserFactory
 from pysmi.codegen.pysnmp import PySnmpCodeGen, baseMibs
 from pysmi.compiler import MibCompiler
-from pysmi import debug
 
 # debug.setLogger(debug.Debug('compiler'))
 

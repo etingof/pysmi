@@ -13,7 +13,6 @@ from pysmi.writer.pyfile import PyFileWriter
 from pysmi.parser.null import NullParser
 from pysmi.codegen.null import NullCodeGen
 from pysmi.compiler import MibCompiler
-from pysmi import debug
 
 # debug.setLogger(debug.Debug('compiler'))
 
