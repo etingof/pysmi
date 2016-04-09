@@ -13,7 +13,9 @@ from pysmi import error
 from pysmi import debug
 
 if sys.version_info[0] > 2:
+    # noinspection PyShadowingBuiltins
     unicode = str
+    # noinspection PyShadowingBuiltins
     long = int
 
 
@@ -50,6 +52,11 @@ baseMibs = fakeMibs + \
             'TRANSPORT-ADDRESS-MIB')
 
 
+def updateDict(d1, d2):
+    d1.update(d2)
+    return d1
+
+
 class PySnmpCodeGen(AbstractCodeGen):
     """Builds PySNMP-specific Python code representing MIB module supplied
        in form of an Abstract Syntax Tree on input.
@@ -74,9 +81,8 @@ class PySnmpCodeGen(AbstractCodeGen):
     constImports = {
         'ASN1': ('Integer', 'OctetString', 'ObjectIdentifier'),
         'ASN1-ENUMERATION': ('NamedValues',),
-        'ASN1-REFINEMENT': (
-        'ConstraintsUnion', 'ConstraintsIntersection', 'SingleValueConstraint', 'ValueRangeConstraint',
-        'ValueSizeConstraint'),
+        'ASN1-REFINEMENT': ('ConstraintsUnion', 'ConstraintsIntersection', 'SingleValueConstraint',
+                            'ValueRangeConstraint', 'ValueSizeConstraint'),
         'SNMPv2-SMI': ('iso',
                        'Bits',  # XXX
                        'Integer32',  # XXX
@@ -92,7 +98,6 @@ class PySnmpCodeGen(AbstractCodeGen):
     }
 
     baseTypes = ['Integer', 'Integer32', 'Bits', 'ObjectIdentifier', 'OctetString']
-    updateDict = lambda x, newitems: x.update(newitems) or x
 
     commonSyms = {'RFC1155-SMI/RFC1065-SMI':
                       {'internet': [('SNMPv2-SMI', 'internet')],
@@ -274,44 +279,46 @@ class PySnmpCodeGen(AbstractCodeGen):
     convertImportv2 = {
         'RFC1065-SMI': commonSyms['RFC1155-SMI/RFC1065-SMI'],
         'RFC1155-SMI': commonSyms['RFC1155-SMI/RFC1065-SMI'],
-        'RFC1158-MIB': updateDict(dict(commonSyms['RFC1155-SMI/RFC1065-SMI']),
-                                  (('nullSpecific', [('SNMPv2-SMI', 'zeroDotZero')]),
-                                   ('ipRoutingTable', [('RFC1213-MIB', 'ipRouteTable')]),
-                                   ('ipRouteEntry', [('RFC1213-MIB', 'ipRouteEntry')]),
-                                   ('ipRouteDest', [('RFC1213-MIB', 'ipRouteDest')]),
-                                   ('ipRouteIfIndex', [('RFC1213-MIB', 'ipRouteIfIndex')]),
-                                   ('ipRouteMetric1', [('RFC1213-MIB', 'ipRouteMetric1')]),
-                                   ('ipRouteMetric2', [('RFC1213-MIB', 'ipRouteMetric2')]),
-                                   ('ipRouteMetric3', [('RFC1213-MIB', 'ipRouteMetric3')]),
-                                   ('ipRouteMetric4', [('RFC1213-MIB', 'ipRouteMetric4')]),
-                                   ('ipRouteNextHop', [('RFC1213-MIB', 'ipRouteNextHop')]),
-                                   ('ipRouteType', [('RFC1213-MIB', 'ipRouteType')]),
-                                   ('ipRouteProto', [('RFC1213-MIB', 'ipRouteProto')]),
-                                   ('ipRouteAge', [('RFC1213-MIB', 'ipRouteAge')]),
-                                   ('ipRouteMask', [('RFC1213-MIB', 'ipRouteMask')]),
-                                   ('egpInMsgs', [('RFC1213-MIB', 'egpInMsgs')]),
-                                   ('egpInErrors', [('RFC1213-MIB', 'egpInErrors')]),
-                                   ('egpOutMsgs', [('RFC1213-MIB', 'egpOutMsgs')]),
-                                   ('egpOutErrors', [('RFC1213-MIB', 'egpOutErrors')]),
-                                   ('egpNeighTable', [('RFC1213-MIB', 'egpNeighTable')]),
-                                   ('egpNeighEntry', [('RFC1213-MIB', 'egpNeighEntry')]),
-                                   ('egpNeighState', [('RFC1213-MIB', 'egpNeighState')]),
-                                   ('egpNeighAddr', [('RFC1213-MIB', 'egpNeighAddr')]),
-                                   ('egpNeighAs', [('RFC1213-MIB', 'egpNeighAs')]),
-                                   ('egpNeighInMsgs', [('RFC1213-MIB', 'egpNeighInMsgs')]),
-                                   ('egpNeighInErrs', [('RFC1213-MIB', 'egpNeighInErrs')]),
-                                   ('egpNeighOutMsgs', [('RFC1213-MIB', 'egpNeighOutMsgs')]),
-                                   ('egpNeighOutErrs', [('RFC1213-MIB', 'egpNeighOutErrs')]),
-                                   ('egpNeighInErrMsgs', [('RFC1213-MIB', 'egpNeighInErrMsgs')]),
-                                   ('egpNeighOutErrMsgs', [('RFC1213-MIB', 'egpNeighOutErrMsgs')]),
-                                   ('egpNeighStateUps', [('RFC1213-MIB', 'egpNeighStateUps')]),
-                                   ('egpNeighStateDowns', [('RFC1213-MIB', 'egpNeighStateDowns')]),
-                                   ('egpNeighIntervalHello', [('RFC1213-MIB', 'egpNeighIntervalHello')]),
-                                   ('egpNeighIntervalPoll', [('RFC1213-MIB', 'egpNeighIntervalPoll')]),
-                                   ('egpNeighMode', [('RFC1213-MIB', 'egpNeighMode')]),
-                                   ('egpNeighEventTrigger', [('RFC1213-MIB', 'egpNeighEventTrigger')]),
-                                   ('egpAs', [('RFC1213-MIB', 'egpAs')]),
-                                   ('snmpEnableAuthTraps', [('SNMPv2-MIB', 'snmpEnableAuthenTraps')]))),
+        'RFC1158-MIB': updateDict(
+            dict(commonSyms['RFC1155-SMI/RFC1065-SMI']),
+                 (('nullSpecific', [('SNMPv2-SMI', 'zeroDotZero')]),
+                  ('ipRoutingTable', [('RFC1213-MIB', 'ipRouteTable')]),
+                  ('ipRouteEntry', [('RFC1213-MIB', 'ipRouteEntry')]),
+                  ('ipRouteDest', [('RFC1213-MIB', 'ipRouteDest')]),
+                  ('ipRouteIfIndex', [('RFC1213-MIB', 'ipRouteIfIndex')]),
+                  ('ipRouteMetric1', [('RFC1213-MIB', 'ipRouteMetric1')]),
+                  ('ipRouteMetric2', [('RFC1213-MIB', 'ipRouteMetric2')]),
+                  ('ipRouteMetric3', [('RFC1213-MIB', 'ipRouteMetric3')]),
+                  ('ipRouteMetric4', [('RFC1213-MIB', 'ipRouteMetric4')]),
+                  ('ipRouteNextHop', [('RFC1213-MIB', 'ipRouteNextHop')]),
+                  ('ipRouteType', [('RFC1213-MIB', 'ipRouteType')]),
+                  ('ipRouteProto', [('RFC1213-MIB', 'ipRouteProto')]),
+                  ('ipRouteAge', [('RFC1213-MIB', 'ipRouteAge')]),
+                  ('ipRouteMask', [('RFC1213-MIB', 'ipRouteMask')]),
+                  ('egpInMsgs', [('RFC1213-MIB', 'egpInMsgs')]),
+                  ('egpInErrors', [('RFC1213-MIB', 'egpInErrors')]),
+                  ('egpOutMsgs', [('RFC1213-MIB', 'egpOutMsgs')]),
+                  ('egpOutErrors', [('RFC1213-MIB', 'egpOutErrors')]),
+                  ('egpNeighTable', [('RFC1213-MIB', 'egpNeighTable')]),
+                  ('egpNeighEntry', [('RFC1213-MIB', 'egpNeighEntry')]),
+                  ('egpNeighState', [('RFC1213-MIB', 'egpNeighState')]),
+                  ('egpNeighAddr', [('RFC1213-MIB', 'egpNeighAddr')]),
+                  ('egpNeighAs', [('RFC1213-MIB', 'egpNeighAs')]),
+                  ('egpNeighInMsgs', [('RFC1213-MIB', 'egpNeighInMsgs')]),
+                  ('egpNeighInErrs', [('RFC1213-MIB', 'egpNeighInErrs')]),
+                  ('egpNeighOutMsgs', [('RFC1213-MIB', 'egpNeighOutMsgs')]),
+                  ('egpNeighOutErrs', [('RFC1213-MIB', 'egpNeighOutErrs')]),
+                  ('egpNeighInErrMsgs', [('RFC1213-MIB', 'egpNeighInErrMsgs')]),
+                  ('egpNeighOutErrMsgs', [('RFC1213-MIB', 'egpNeighOutErrMsgs')]),
+                  ('egpNeighStateUps', [('RFC1213-MIB', 'egpNeighStateUps')]),
+                  ('egpNeighStateDowns', [('RFC1213-MIB', 'egpNeighStateDowns')]),
+                  ('egpNeighIntervalHello', [('RFC1213-MIB', 'egpNeighIntervalHello')]),
+                  ('egpNeighIntervalPoll', [('RFC1213-MIB', 'egpNeighIntervalPoll')]),
+                  ('egpNeighMode', [('RFC1213-MIB', 'egpNeighMode')]),
+                  ('egpNeighEventTrigger', [('RFC1213-MIB', 'egpNeighEventTrigger')]),
+                  ('egpAs', [('RFC1213-MIB', 'egpAs')]),
+                  ('snmpEnableAuthTraps', [('SNMPv2-MIB', 'snmpEnableAuthenTraps')]))
+        ),
         'RFC-1212': {'OBJECT-TYPE': [('SNMPv2-SMI', 'OBJECT-TYPE')]},
         # XXX 'IndexSyntax': ???
         'RFC1213-MIB': updateDict(dict(commonSyms['RFC1158-MIB/RFC1213-MIB']),
@@ -355,6 +362,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         self._out = {}  # k, v = name, generated code
         self.moduleName = ['DUMMY']
         self.genRules = {'text': 1}
+        self.symbolTable = {}
 
     def symTrans(self, symbol):
         if symbol in self.symsTable:
@@ -436,7 +444,7 @@ class PySnmpCodeGen(AbstractCodeGen):
                 self._presentedSyms = self._presentedSyms.union([self.transOpers(s) for s in symbols])
                 self._importMap.update([(self.transOpers(s), module) for s in symbols])
                 outStr += '( %s, ) = mibBuilder.importSymbols("%s")\n' % (
-                ', '.join([self.transOpers(s) for s in symbols]), '", "'.join((module,) + symbols))
+                    ', '.join([self.transOpers(s) for s in symbols]), '", "'.join((module,) + symbols))
         return outStr, tuple(sorted(imports))
 
     def genExports(self, ):
@@ -449,8 +457,8 @@ class PySnmpCodeGen(AbstractCodeGen):
             outStr += ', '.join(exports[254 * i:254 * (i + 1)]) + ')\n'
         return self._exports and outStr or ''
 
-    @staticmethod
-    def genLabel(symbol, classmode=0):
+    # noinspection PyMethodMayBeStatic
+    def genLabel(self, symbol, classmode=0):
         if symbol.find('-') != -1 or iskeyword(symbol):
             return classmode and 'label = "' + symbol + '"\n' or \
                    '.setLabel("' + symbol + '")'
@@ -462,6 +470,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         self._exports.add('%s=%s' % (symbol, symbol))
         self._presentedSyms.add(symbol)
 
+    # noinspection PyUnusedLocal
     def regSym(self, symbol, outStr, parentOid=None, moduleIdentity=0):
         if symbol in self._presentedSyms and symbol not in self._importMap:
             raise error.PySmiSemanticError('Duplicate symbol found: %s' % symbol)
@@ -505,8 +514,9 @@ class PySnmpCodeGen(AbstractCodeGen):
                     symSubtype = baseSymSubtype
             return baseSymType, symSubtype
 
-        ### Clause generation functions
+    # Clause generation functions
 
+    # noinspection PyUnusedLocal
     def genAgentCapabilities(self, data, classmode=0):
         name, description, oid = data
         label = self.genLabel(name)
@@ -518,9 +528,9 @@ class PySnmpCodeGen(AbstractCodeGen):
         self.regSym(name, outStr, parentOid)
         return outStr
 
+    # noinspection PyUnusedLocal
     def genModuleIdentity(self, data, classmode=0):
-        name, lastUpdated, organization, contactInfo, \
-        description, revisions, oid = data
+        name, lastUpdated, organization, contactInfo, description, revisions, oid = data
         label = self.genLabel(name)
         name = self.transOpers(name)
         oidStr, parentOid = oid
@@ -534,6 +544,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         self.regSym(name, outStr, parentOid, moduleIdentity=1)
         return outStr
 
+    # noinspection PyUnusedLocal
     def genModuleCompliance(self, data, classmode=0):
         name, description, compliances, oid = data
         label = self.genLabel(name)
@@ -546,6 +557,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         self.regSym(name, outStr, parentOid)
         return outStr
 
+    # noinspection PyUnusedLocal
     def genNotificationGroup(self, data, classmode=0):
         name, objects, description, oid = data
         label = self.genLabel(name)
@@ -561,6 +573,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         self.regSym(name, outStr, parentOid)
         return outStr
 
+    # noinspection PyUnusedLocal
     def genNotificationType(self, data, classmode=0):
         name, objects, description, oid = data
         label = self.genLabel(name)
@@ -576,6 +589,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         self.regSym(name, outStr, parentOid)
         return outStr
 
+    # noinspection PyUnusedLocal
     def genObjectGroup(self, data, classmode=0):
         name, objects, description, oid = data
         label = self.genLabel(name)
@@ -591,6 +605,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         self.regSym(name, outStr, parentOid)
         return outStr
 
+    # noinspection PyUnusedLocal
     def genObjectIdentity(self, data, classmode=0):
         name, description, oid = data
         label = self.genLabel(name)
@@ -602,29 +617,27 @@ class PySnmpCodeGen(AbstractCodeGen):
         self.regSym(name, outStr, parentOid)
         return outStr
 
+    # noinspection PyUnusedLocal
     def genObjectType(self, data, classmode=0):
         name, syntax, units, maxaccess, description, augmention, index, defval, oid = data
         label = self.genLabel(name)
         name = self.transOpers(name)
         oidStr, parentOid = oid
         indexStr, fakeStrlist, fakeSyms = index and index or ('', '', [])
-        subtype = syntax[0] == 'Bits' and 'Bits()' + syntax[1] or \
-                  syntax[1]  # Bits hack #1
+        subtype = syntax[0] == 'Bits' and 'Bits()' + syntax[1] or syntax[1]  # Bits hack #1
         classtype = self.typeClasses.get(syntax[0], syntax[0])
         classtype = self.transOpers(classtype)
         classtype = syntax[0] == 'Bits' and 'MibScalar' or classtype  # Bits hack #2
         classtype = name in self.symbolTable[self.moduleName[0]]['_symtable_cols'] and 'MibTableColumn' or classtype
         defval = self.genDefVal(defval, objname=name)
-        outStr = name + ' = ' + classtype + '(' + oidStr + ', ' + subtype + \
-                 (defval and defval or '') + ')' + label
+        outStr = name + ' = ' + classtype + '(' + oidStr + ', ' + subtype + (defval and defval or '') + ')' + label
         outStr += (units and units) or ''
         outStr += (maxaccess and maxaccess) or ''
         outStr += (indexStr and indexStr) or ''
         outStr += '\n'
         if augmention:
             augmention = self.transOpers(augmention)
-            outStr += augmention + '.registerAugmentions(("' + self.moduleName[0] + \
-                      '", "' + name + '"))\n'
+            outStr += augmention + '.registerAugmentions(("' + self.moduleName[0] + '", "' + name + '"))\n'
             outStr += name + '.setIndexNames(*' + augmention + '.getIndexNames())\n'
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
@@ -635,6 +648,7 @@ class PySnmpCodeGen(AbstractCodeGen):
                 self.regSym(fakeSyms[i], fakeOutStr, name)
         return outStr
 
+    # noinspection PyUnusedLocal
     def genTrapType(self, data, classmode=0):
         name, enterprise, variables, description, value = data
         label = self.genLabel(name)
@@ -643,14 +657,14 @@ class PySnmpCodeGen(AbstractCodeGen):
         if variables:
             variables = ['("' + self.moduleName[0] + '", "' + self.transOpers(var) + '"),' for var in variables]
         varStr = ' '.join(variables)
-        outStr = name + ' = NotificationType(' + enterpriseStr + \
-                 ' + (0,' + str(value) + '))' + label
+        outStr = name + ' = NotificationType(' + enterpriseStr + ' + (0,' + str(value) + '))' + label
         outStr += '.setObjects(*(' + varStr + '))\n'
         if self.genRules['text']:
             outStr += self.ifTextStr + name + description + '\n'
         self.regSym(name, outStr, parentOid)
         return outStr
 
+    # noinspection PyUnusedLocal
     def genTypeDeclaration(self, data, classmode=0):
         outStr = ''
         name, declaration = data
@@ -662,6 +676,7 @@ class PySnmpCodeGen(AbstractCodeGen):
                 self.regSym(name, outStr)
         return outStr
 
+    # noinspection PyUnusedLocal
     def genValueDeclaration(self, data, classmode=0):
         name, oid = data
         label = self.genLabel(name)
@@ -671,9 +686,10 @@ class PySnmpCodeGen(AbstractCodeGen):
         self.regSym(name, outStr, parentOid)
         return outStr
 
-    ### Subparts generation functions
-    @staticmethod
-    def genBitNames(data, classmode=0):
+    # Subparts generation functions
+
+    # noinspection PyMethodMayBeStatic,PyUnusedLocal
+    def genBitNames(self, data, classmode=0):
         names = data[0]
         return names
 
@@ -685,11 +701,10 @@ class PySnmpCodeGen(AbstractCodeGen):
         for i in range(int(numFuncCalls)):
             funcCalls += 'NamedValues(' + ' '.join(namedval[255 * i:255 * (i + 1)]) + ') + '
         funcCalls = funcCalls[:-3]
-        outStr = classmode and \
-                 self.indent + 'namedValues = ' + funcCalls + '\n' or \
-                 '.clone(namedValues=' + funcCalls + ')'
+        outStr = classmode and self.indent + 'namedValues = ' + funcCalls + '\n' or '.clone(namedValues=' + funcCalls + ')'
         return 'Bits', outStr
 
+    # noinspection PyUnusedLocal
     def genCompliances(self, data, classmode=0):
         compliances = []
         for complianceModule in data[0]:
@@ -698,6 +713,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         complStr = ' '.join(compliances)
         return '.setObjects(*(' + complStr + '))'
 
+    # noinspection PyUnusedLocal
     def genConceptualTable(self, data, classmode=0):
         row = data[0]
         if row[1] and row[1][-2:] == '()':
@@ -705,14 +721,16 @@ class PySnmpCodeGen(AbstractCodeGen):
             self._rows.add(row)
         return 'MibTable', ''
 
-    @staticmethod
-    def genContactInfo(data, classmode=0):
+    # noinspection PyMethodMayBeStatic,PyUnusedLocal
+    def genContactInfo(self, data, classmode=0):
         text = data[0]
         return '.setContactInfo(' + dorepr(text) + ')'
 
+    # noinspection PyUnusedLocal
     def genDisplayHint(self, data, classmode=0):
         return self.indent + 'displayHint = ' + dorepr(data[0]) + '\n'
 
+    # noinspection PyUnusedLocal
     def genDefVal(self, data, classmode=0, objname=None):
         if not data:
             return ''
@@ -741,17 +759,16 @@ class PySnmpCodeGen(AbstractCodeGen):
             val = dorepr(defval[1:-1])
         else:  # symbol (oid as defval) or name for enumeration member
             if defvalType[0][0] == 'ObjectIdentifier' and \
-                    (defval in self.symbolTable[self.moduleName[0]] or
-                                 defval in self._importMap):  # oid
+                    (defval in self.symbolTable[self.moduleName[0]] or defval in self._importMap):  # oid
                 module = self._importMap.get(defval, self.moduleName[0])
                 try:
                     val = str(self.genNumericOid(self.symbolTable[module][defval]['oid']))
                 except:
-                    raise error.PySmiSemanticError('no symbol "%s" in module "%s"' % (
-                    defval, module))  ### or no module if it will be borrowed later
+                    # or no module if it will be borrowed later
+                    raise error.PySmiSemanticError('no symbol "%s" in module "%s"' % (defval, module))
+            # enumeration
             elif defvalType[0][0] in ('Integer32', 'Integer') and \
-                    isinstance(defvalType[1], list) and \
-                            defval in dict(defvalType[1]):  # enumeration
+                    isinstance(defvalType[1], list) and defval in dict(defvalType[1]):
                 val = dorepr(defval)
             elif defvalType[0][0] == 'Bits':
                 defvalBits = []
@@ -768,8 +785,8 @@ class PySnmpCodeGen(AbstractCodeGen):
                     'unknown type "%s" for defval "%s" of symbol "%s"' % (defvalType, defval, objname))
         return '.clone(' + val + ')'
 
-    @staticmethod
-    def genDescription(data, classmode=0):
+    # noinspection PyMethodMayBeStatic,PyUnusedLocal
+    def genDescription(self, data, classmode=0):
         text = data[0]
         return '.setDescription(' + dorepr(text) + ')'
 
@@ -786,18 +803,17 @@ class PySnmpCodeGen(AbstractCodeGen):
                          ' '.join(singleval[255 * i:255 * (i + 1)]) + '), '
         funcCalls = funcCalls[:-2]
         outStr += funcCalls
-        outStr += not singleCall and \
-                  (classmode and ')\n' or '))') or \
-                  (not classmode and ')' or '\n')
+        outStr += not singleCall and (classmode and ')\n' or '))') or (not classmode and ')' or '\n')
         outStr += self.genBits(data, classmode=classmode)[1]
         return outStr
 
+    # noinspection PyUnusedLocal
     def genTableIndex(self, data, classmode=0):
         def genFakeSyms(fakeidx, idxType):
             fakeSymName = 'pysmiFakeCol%s' % fakeidx
             objType = self.typeClasses.get(idxType, idxType)
             objType = self.transOpers(objType)
-            return (fakeSymName + ' = MibTableColumn(%s + (' + str(fakeidx) + \
+            return (fakeSymName + ' = MibTableColumn(%s + (' + str(fakeidx) +
                     ', ), ' + objType + '())\n',  # stub for parentOid
                     fakeSymName)
 
@@ -811,49 +827,46 @@ class PySnmpCodeGen(AbstractCodeGen):
                 fakeStrlist.append(fakeSymStr)
                 fakeSyms.append(idxName)
                 self.fakeidx += 1
-            idxStrlist.append('(' + str(idx[0]) + ', "' + \
-                              self._importMap.get(idxName, self.moduleName[0]) + \
+            idxStrlist.append('(' + str(idx[0]) + ', "' +
+                              self._importMap.get(idxName, self.moduleName[0]) +
                               '", "' + idxName + '")')
         return '.setIndexNames(' + ', '.join(idxStrlist) + ')', fakeStrlist, fakeSyms
 
     def genIntegerSubType(self, data, classmode=0):
         singleRange = len(data[0]) == 1 or False
-        outStr = classmode and self.indent + 'subtypeSpec = %s.subtypeSpec+' or \
-                 '.subtype(subtypeSpec='
+        outStr = classmode and self.indent + 'subtypeSpec = %s.subtypeSpec+' or '.subtype(subtypeSpec='
         outStr += not singleRange and 'ConstraintsUnion(' or ''
         for rng in data[0]:
             vmin, vmax = len(rng) == 1 and (rng[0], rng[0]) or rng
             vmin, vmax = str(self.str2int(vmin)), str(self.str2int(vmax))
-            outStr += 'ValueRangeConstraint(' + vmin + ',' + vmax + ')' + \
-                      (not singleRange and ',' or '')
-        outStr += not singleRange and \
-                  (classmode and ')' or '))') or \
-                  (not classmode and ')' or '\n')
+            outStr += 'ValueRangeConstraint(' + vmin + ',' + vmax + ')' + (not singleRange and ',' or '')
+        outStr += not singleRange and (classmode and ')' or '))') or (not classmode and ')' or '\n')
         return outStr
 
-    @staticmethod
-    def genMaxAccess(data, classmode=0):
+    # noinspection PyMethodMayBeStatic,PyUnusedLocal
+    def genMaxAccess(self, data, classmode=0):
         access = data[0].replace('-', '')
         return access != 'notaccessible' and '.setMaxAccess("' + access + '")' or ''
 
     def genOctetStringSubType(self, data, classmode=0):
         singleRange = len(data[0]) == 1 or False
-        outStr = classmode and self.indent + 'subtypeSpec = %s.subtypeSpec+' or \
-                 '.subtype(subtypeSpec='
+        outStr = classmode and self.indent + 'subtypeSpec = %s.subtypeSpec+' or '.subtype(subtypeSpec='
         outStr += not singleRange and 'ConstraintsUnion(' or ''
         for rng in data[0]:
             vmin, vmax = len(rng) == 1 and (rng[0], rng[0]) or rng
             vmin, vmax = str(self.str2int(vmin)), str(self.str2int(vmax))
             outStr += 'ValueSizeConstraint(' + vmin + ',' + vmax + ')' + \
                       (not singleRange and ',' or '')
-        outStr += not singleRange and \
-                  (classmode and ')' or '))') or \
-                  (not classmode and ')' or '\n')
-        outStr += singleRange and vmin == vmax and \
-                  (classmode and self.indent + 'fixedLength = ' + vmin + '\n' or '.setFixedLength(' + vmin + ')'
-                   ) or ''
+        outStr += not singleRange and (classmode and ')' or '))') or (not classmode and ')' or '\n')
+        if data[0]:
+            # noinspection PyUnboundLocalVariable
+            outStr += singleRange and \
+                      vmin == vmax and \
+                      (classmode and self.indent + 'fixedLength = ' + vmin + '\n' or
+                       '.setFixedLength(' + vmin + ')') or ''
         return outStr
 
+    # noinspection PyUnusedLocal
     def genOid(self, data, classmode=0):
         out = ()
         parent = ''
@@ -869,13 +882,14 @@ class PySnmpCodeGen(AbstractCodeGen):
                 raise error.PySmiSemanticError('unknown datatype for OID: %s' % el)
         return str(self.genNumericOid(out)), parent
 
+    # noinspection PyUnusedLocal
     def genObjects(self, data, classmode=0):
         if data[0]:
             return [self.transOpers(obj) for obj in data[0]]  # XXX self.transOpers or not??
         return []
 
-    @staticmethod
-    def genTime(data, classmode=0):
+    # noinspection PyMethodMayBeStatic,PyUnusedLocal
+    def genTime(self, data, classmode=0):
         times = []
         for t in data:
             lenTimeStr = len(t)
@@ -893,16 +907,17 @@ class PySnmpCodeGen(AbstractCodeGen):
                 times.append(strftime('%Y-%m-%d %H:%M', strptime(t, '%Y%m%d%H%MZ')))
         return times
 
-    @staticmethod
-    def genLastUpdated(data, classmode=0):
+    # noinspection PyMethodMayBeStatic,PyUnusedLocal
+    def genLastUpdated(self, data, classmode=0):
         text = data[0]
         return '.setLastUpdated(' + dorepr(text) + ')'
 
-    @staticmethod
-    def genOrganization(data, classmode=0):
+    # noinspection PyMethodMayBeStatic,PyUnusedLocal
+    def genOrganization(self, data, classmode=0):
         text = data[0]
         return '.setOrganization(' + dorepr(text) + ')'
 
+    # noinspection PyUnusedLocal
     def genRevisions(self, data, classmode=0):
         times = self.genTime(data[0])
         return '.setRevisions(("' + '", "'.join(times) + '",))'
@@ -911,8 +926,9 @@ class PySnmpCodeGen(AbstractCodeGen):
         row = data[0]
         row = self.transOpers(row)
         return row in self.symbolTable[self.moduleName[0]]['_symtable_rows'] and (
-        'MibTableRow', '') or self.genSimpleSyntax(data, classmode=classmode)
+             'MibTableRow', '') or self.genSimpleSyntax(data, classmode=classmode)
 
+    # noinspection PyUnusedLocal
     def genSequence(self, data, classmode=0):
         cols = data[0]
         self._cols.update(cols)
@@ -929,6 +945,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         outStr = objType + '()' + subtype
         return 'MibScalar', outStr
 
+    # noinspection PyUnusedLocal
     def genTypeDeclarationRHS(self, data, classmode=0):
         if len(data) == 1:
             parentType, attrs = data[0]  # just syntax
@@ -941,8 +958,8 @@ class PySnmpCodeGen(AbstractCodeGen):
         attrs = attrs or self.indent + 'pass\n'
         return parentType, attrs
 
-    @staticmethod
-    def genUnits(data, classmode=0):
+    # noinspection PyMethodMayBeStatic,PyUnusedLocal
+    def genUnits(self, data, classmode=0):
         text = data[0]
         return '.setUnits(' + dorepr(text) + ')'
 
@@ -1014,7 +1031,7 @@ class PySnmpCodeGen(AbstractCodeGen):
             out = '#\n# PySNMP MIB module %s (http://pysnmp.sf.net)\n' % self.moduleName[0] + out
         debug.logger & debug.flagCodegen and debug.logger(
             'canonical MIB name %s (%s), imported MIB(s) %s, Python code size %s bytes' % (
-            self.moduleName[0], moduleOid, ','.join(importedModules) or '<none>', len(out)))
+                self.moduleName[0], moduleOid, ','.join(importedModules) or '<none>', len(out)))
         return MibInfo(oid=None, name=self.moduleName[0],
                        imported=tuple([x for x in importedModules if x not in fakeMibs])), out
 
