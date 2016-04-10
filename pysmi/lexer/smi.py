@@ -14,25 +14,27 @@ from pysmi import debug
 UNSIGNED32_MAX = 4294967295
 UNSIGNED64_MAX = 18446744073709551615
 
-### Do not overload single lexer methods - overload all or none of them!
+
+# Do not overload single lexer methods - overload all or none of them!
+# noinspection PySingleQuotedDocstring,PyMethodMayBeStatic,PyIncorrectDocstring
 class SmiV2Lexer(AbstractLexer):
     reserved_words = [
-      'ACCESS', 'AGENT-CAPABILITIES', 'APPLICATION', 'AUGMENTS', 'BEGIN', 'BITS',
-      'CONTACT-INFO', 'CREATION-REQUIRES', 'Counter', 'Counter32', 'Counter64',
-      'DEFINITIONS', 'DEFVAL', 'DESCRIPTION', 'DISPLAY-HINT', 'END', 'ENTERPRISE',
-      'EXTENDS', 'FROM', 'GROUP', 'Gauge', 'Gauge32', 'IDENTIFIER', 'IMPLICIT',
-      'IMPLIED', 'IMPORTS', 'INCLUDES', 'INDEX', 'INSTALL-ERRORS', 'INTEGER',
-      'Integer32', 'IpAddress', 'LAST-UPDATED', 'MANDATORY-GROUPS',
-      'MAX-ACCESS', 'MIN-ACCESS', 'MODULE', 'MODULE-COMPLIANCE',
-      'MODULE-IDENTITY', 'NOTIFICATION-GROUP', 'NOTIFICATION-TYPE',
-      'NOTIFICATIONS', 'OBJECT', 'OBJECT-GROUP', 'OBJECT-IDENTITY', 'OBJECT-TYPE',
-      'OBJECTS', 'OCTET', 'OF', 'ORGANIZATION', 'Opaque', 'PIB-ACCESS',
-      'PIB-DEFINITIONS', 'PIB-INDEX', 'PIB-MIN-ACCESS', 'PIB-REFERENCES',
-      'PIB-TAG', 'POLICY-ACCESS', 'PRODUCT-RELEASE', 'REFERENCE', 'REVISION',
-      'SEQUENCE', 'SIZE', 'STATUS', 'STRING', 'SUBJECT-CATEGORIES', 'SUPPORTS',
-      'SYNTAX', 'TEXTUAL-CONVENTION', 'TimeTicks', 'TRAP-TYPE', 'UNIQUENESS',
-      'UNITS', 'UNIVERSAL', 'Unsigned32', 'VALUE', 'VARIABLES',
-      'VARIATION', 'WRITE-SYNTAX'
+        'ACCESS', 'AGENT-CAPABILITIES', 'APPLICATION', 'AUGMENTS', 'BEGIN', 'BITS',
+        'CONTACT-INFO', 'CREATION-REQUIRES', 'Counter', 'Counter32', 'Counter64',
+        'DEFINITIONS', 'DEFVAL', 'DESCRIPTION', 'DISPLAY-HINT', 'END', 'ENTERPRISE',
+        'EXTENDS', 'FROM', 'GROUP', 'Gauge', 'Gauge32', 'IDENTIFIER', 'IMPLICIT',
+        'IMPLIED', 'IMPORTS', 'INCLUDES', 'INDEX', 'INSTALL-ERRORS', 'INTEGER',
+        'Integer32', 'IpAddress', 'LAST-UPDATED', 'MANDATORY-GROUPS',
+        'MAX-ACCESS', 'MIN-ACCESS', 'MODULE', 'MODULE-COMPLIANCE',
+        'MODULE-IDENTITY', 'NOTIFICATION-GROUP', 'NOTIFICATION-TYPE',
+        'NOTIFICATIONS', 'OBJECT', 'OBJECT-GROUP', 'OBJECT-IDENTITY', 'OBJECT-TYPE',
+        'OBJECTS', 'OCTET', 'OF', 'ORGANIZATION', 'Opaque', 'PIB-ACCESS',
+        'PIB-DEFINITIONS', 'PIB-INDEX', 'PIB-MIN-ACCESS', 'PIB-REFERENCES',
+        'PIB-TAG', 'POLICY-ACCESS', 'PRODUCT-RELEASE', 'REFERENCE', 'REVISION',
+        'SEQUENCE', 'SIZE', 'STATUS', 'STRING', 'SUBJECT-CATEGORIES', 'SUPPORTS',
+        'SYNTAX', 'TEXTUAL-CONVENTION', 'TimeTicks', 'TRAP-TYPE', 'UNIQUENESS',
+        'UNITS', 'UNIVERSAL', 'Unsigned32', 'VALUE', 'VARIABLES',
+        'VARIATION', 'WRITE-SYNTAX'
     ]
 
     reserved = {}
@@ -45,36 +47,36 @@ class SmiV2Lexer(AbstractLexer):
             reserved[w] = 'GAUGE32'
 
     forbidden_words = [
-      'ABSENT', 'ANY', 'BIT', 'BOOLEAN', 'BY', 'COMPONENT', 'COMPONENTS',
-      'DEFAULT', 'DEFINED', 'ENUMERATED', 'EXPLICIT', 'EXTERNAL', 'FALSE', 'MAX',
-      'MIN', 'MINUS-INFINITY', 'NULL', 'OPTIONAL', 'PLUS-INFINITY', 'PRESENT',
-      'PRIVATE', 'REAL', 'SET', 'TAGS', 'TRUE', 'WITH'
+        'ABSENT', 'ANY', 'BIT', 'BOOLEAN', 'BY', 'COMPONENT', 'COMPONENTS',
+        'DEFAULT', 'DEFINED', 'ENUMERATED', 'EXPLICIT', 'EXTERNAL', 'FALSE', 'MAX',
+        'MIN', 'MINUS-INFINITY', 'NULL', 'OPTIONAL', 'PLUS-INFINITY', 'PRESENT',
+        'PRIVATE', 'REAL', 'SET', 'TAGS', 'TRUE', 'WITH'
     ]
 
     # Token names required!
     tokens = list(set([
-      'BIN_STRING',
-      'CHOICE',
-      'COLON_COLON_EQUAL',
-      'DOT_DOT',
-      'EXPORTS',
-      'HEX_STRING',
-      'LOWERCASE_IDENTIFIER',
-      'MACRO',
-      'NEGATIVENUMBER',
-      'NEGATIVENUMBER64',
-      'NUMBER',
-      'NUMBER64',
-      'QUOTED_STRING',
-      'UPPERCASE_IDENTIFIER',
-    ] + list(reserved.values())
-    ))
+                          'BIN_STRING',
+                          'CHOICE',
+                          'COLON_COLON_EQUAL',
+                          'DOT_DOT',
+                          'EXPORTS',
+                          'HEX_STRING',
+                          'LOWERCASE_IDENTIFIER',
+                          'MACRO',
+                          'NEGATIVENUMBER',
+                          'NEGATIVENUMBER64',
+                          'NUMBER',
+                          'NUMBER64',
+                          'QUOTED_STRING',
+                          'UPPERCASE_IDENTIFIER',
+                      ] + list(reserved.values())
+                      ))
 
     states = (
-      ('macro', 'exclusive'),
-      ('choice', 'exclusive'),
-      ('exports', 'exclusive'),
-      ('comment', 'exclusive'),
+        ('macro', 'exclusive'),
+        ('choice', 'exclusive'),
+        ('exports', 'exclusive'),
+        ('comment', 'exclusive'),
     )
 
     literals = '[]{}():;,-.|'
@@ -86,13 +88,14 @@ class SmiV2Lexer(AbstractLexer):
 
     def __init__(self, tempdir=''):
         self._tempdir = tempdir
+        self.lexer = None
         self.reset()
 
     def reset(self):
         if debug.logger & debug.flagLexer:
-            logger=debug.logger.getCurrentLogger()
+            logger = debug.logger.getCurrentLogger()
         else:
-            logger=lex.NullLogger()
+            logger = lex.NullLogger()
 
         if debug.logger & debug.flagGrammar:
             debuglogger = debug.logger.getCurrentLogger()
@@ -174,9 +177,9 @@ class SmiV2Lexer(AbstractLexer):
         t.lexer.lineno += 1
         t.lexer.begin('INITIAL')
 
-#  def t_comment_end(self, t):
-#    r'--'
-#    t.lexer.begin('INITIAL')
+    #  def t_comment_end(self, t):
+    #    r'--'
+    #    t.lexer.begin('INITIAL')
 
     def t_comment_body(self, t):
         r'[^\r\n]+'
@@ -221,9 +224,9 @@ class SmiV2Lexer(AbstractLexer):
         value = t.value[1:-2]
         while value and value[0] == '0' and len(value) % 8:
             value = value[1:]
-# XXX raise in strict mode
-#    if len(value) % 8:
-#      raise error.PySmiLexerError("Number of 0s and 1s have to divide by 8 in binary string %s" % t.value, lineno=t.lineno)
+        # XXX raise in strict mode
+        #    if len(value) % 8:
+        #      raise error.PySmiLexerError("Number of 0s and 1s have to divide by 8 in binary string %s" % t.value, lineno=t.lineno)
         return t
 
     def t_HEX_STRING(self, t):
@@ -231,9 +234,9 @@ class SmiV2Lexer(AbstractLexer):
         value = t.value[1:-2]
         while value and value[0] == '0' and len(value) % 2:
             value = value[1:]
-# XXX raise in strict mode
-#    if len(value) % 2:
-#      raise error.PySmiLexerError("Number of symbols have to be even in hex string %s" % t.value, lineno=t.lineno)
+        # XXX raise in strict mode
+        #    if len(value) % 2:
+        #      raise error.PySmiLexerError("Number of symbols have to be even in hex string %s" % t.value, lineno=t.lineno)
         return t
 
     def t_QUOTED_STRING(self, t):
@@ -242,29 +245,32 @@ class SmiV2Lexer(AbstractLexer):
         return t
 
     def t_error(self, t):
-        raise error.PySmiLexerError("Illegal character '%s', %s characters left unparsed at this stage" % (t.value[0], len(t.value)-1), lineno=t.lineno)
-        #t.lexer.skip(1)
+        raise error.PySmiLexerError(
+            "Illegal character '%s', %s characters left unparsed at this stage" % (t.value[0], len(t.value) - 1),
+            lineno=t.lineno)
+        # t.lexer.skip(1)
+
 
 class SupportSmiV1Keywords(object):
     @staticmethod
     def reserved():
         reserved_words = [
-        'ACCESS', 'AGENT-CAPABILITIES', 'APPLICATION', 'AUGMENTS', 'BEGIN', 'BITS',
-        'CONTACT-INFO', 'CREATION-REQUIRES', 'Counter', 'Counter32', 'Counter64',
-        'DEFINITIONS', 'DEFVAL', 'DESCRIPTION', 'DISPLAY-HINT', 'END', 'ENTERPRISE',
-        'EXTENDS', 'FROM', 'GROUP', 'Gauge', 'Gauge32', 'IDENTIFIER', 'IMPLICIT',
-        'IMPLIED', 'IMPORTS', 'INCLUDES', 'INDEX', 'INSTALL-ERRORS', 'INTEGER',
-        'Integer32', 'IpAddress', 'LAST-UPDATED', 'MANDATORY-GROUPS',
-        'MAX-ACCESS', 'MIN-ACCESS', 'MODULE', 'MODULE-COMPLIANCE', 'MAX',
-        'MODULE-IDENTITY', 'NetworkAddress', 'NOTIFICATION-GROUP',
-        'NOTIFICATION-TYPE', 'NOTIFICATIONS', 'OBJECT', 'OBJECT-GROUP',
-        'OBJECT-IDENTITY', 'OBJECT-TYPE', 'OBJECTS', 'OCTET', 'OF', 'ORGANIZATION',
-        'Opaque', 'PIB-ACCESS', 'PIB-DEFINITIONS', 'PIB-INDEX', 'PIB-MIN-ACCESS',
-        'PIB-REFERENCES', 'PIB-TAG', 'POLICY-ACCESS', 'PRODUCT-RELEASE',
-        'REFERENCE', 'REVISION', 'SEQUENCE', 'SIZE', 'STATUS', 'STRING',
-        'SUBJECT-CATEGORIES', 'SUPPORTS', 'SYNTAX', 'TEXTUAL-CONVENTION',
-        'TimeTicks', 'TRAP-TYPE', 'UNIQUENESS', 'UNITS', 'UNIVERSAL', 'Unsigned32',
-        'VALUE', 'VARIABLES', 'VARIATION', 'WRITE-SYNTAX'
+            'ACCESS', 'AGENT-CAPABILITIES', 'APPLICATION', 'AUGMENTS', 'BEGIN', 'BITS',
+            'CONTACT-INFO', 'CREATION-REQUIRES', 'Counter', 'Counter32', 'Counter64',
+            'DEFINITIONS', 'DEFVAL', 'DESCRIPTION', 'DISPLAY-HINT', 'END', 'ENTERPRISE',
+            'EXTENDS', 'FROM', 'GROUP', 'Gauge', 'Gauge32', 'IDENTIFIER', 'IMPLICIT',
+            'IMPLIED', 'IMPORTS', 'INCLUDES', 'INDEX', 'INSTALL-ERRORS', 'INTEGER',
+            'Integer32', 'IpAddress', 'LAST-UPDATED', 'MANDATORY-GROUPS',
+            'MAX-ACCESS', 'MIN-ACCESS', 'MODULE', 'MODULE-COMPLIANCE', 'MAX',
+            'MODULE-IDENTITY', 'NetworkAddress', 'NOTIFICATION-GROUP',
+            'NOTIFICATION-TYPE', 'NOTIFICATIONS', 'OBJECT', 'OBJECT-GROUP',
+            'OBJECT-IDENTITY', 'OBJECT-TYPE', 'OBJECTS', 'OCTET', 'OF', 'ORGANIZATION',
+            'Opaque', 'PIB-ACCESS', 'PIB-DEFINITIONS', 'PIB-INDEX', 'PIB-MIN-ACCESS',
+            'PIB-REFERENCES', 'PIB-TAG', 'POLICY-ACCESS', 'PRODUCT-RELEASE',
+            'REFERENCE', 'REVISION', 'SEQUENCE', 'SIZE', 'STATUS', 'STRING',
+            'SUBJECT-CATEGORIES', 'SUPPORTS', 'SYNTAX', 'TEXTUAL-CONVENTION',
+            'TimeTicks', 'TRAP-TYPE', 'UNIQUENESS', 'UNITS', 'UNIVERSAL', 'Unsigned32',
+            'VALUE', 'VARIABLES', 'VARIATION', 'WRITE-SYNTAX'
         ]
 
         reserved = {}
@@ -281,38 +287,39 @@ class SupportSmiV1Keywords(object):
     @staticmethod
     def forbidden_words():
         return [
-        'ABSENT', 'ANY', 'BIT', 'BOOLEAN', 'BY', 'COMPONENT', 'COMPONENTS',
-        'DEFAULT', 'DEFINED', 'ENUMERATED', 'EXPLICIT', 'EXTERNAL', 'FALSE',
-        'MIN', 'MINUS-INFINITY', 'NULL', 'OPTIONAL', 'PLUS-INFINITY', 'PRESENT',
-        'PRIVATE', 'REAL', 'SET', 'TAGS', 'TRUE', 'WITH'
+            'ABSENT', 'ANY', 'BIT', 'BOOLEAN', 'BY', 'COMPONENT', 'COMPONENTS',
+            'DEFAULT', 'DEFINED', 'ENUMERATED', 'EXPLICIT', 'EXTERNAL', 'FALSE',
+            'MIN', 'MINUS-INFINITY', 'NULL', 'OPTIONAL', 'PLUS-INFINITY', 'PRESENT',
+            'PRIVATE', 'REAL', 'SET', 'TAGS', 'TRUE', 'WITH'
         ]
 
     @staticmethod
     def tokens():
         # Token names required!
         return list(set([
-        'BIN_STRING',
-        'CHOICE',
-        'COLON_COLON_EQUAL',
-        'DOT_DOT',
-        'EXPORTS',
-        'HEX_STRING',
-        'LOWERCASE_IDENTIFIER',
-        'MACRO',
-        'NEGATIVENUMBER',
-        'NEGATIVENUMBER64',
-        'NUMBER',
-        'NUMBER64',
-        'QUOTED_STRING',
-        'UPPERCASE_IDENTIFIER',
-        ] + list(SupportSmiV1Keywords.reserved().values())
-        ))
+                            'BIN_STRING',
+                            'CHOICE',
+                            'COLON_COLON_EQUAL',
+                            'DOT_DOT',
+                            'EXPORTS',
+                            'HEX_STRING',
+                            'LOWERCASE_IDENTIFIER',
+                            'MACRO',
+                            'NEGATIVENUMBER',
+                            'NEGATIVENUMBER64',
+                            'NUMBER',
+                            'NUMBER64',
+                            'QUOTED_STRING',
+                            'UPPERCASE_IDENTIFIER',
+                        ] + list(SupportSmiV1Keywords.reserved().values())
+                        ))
+
 
 relaxedGrammar = {
     'supportSmiV1Keywords': [
-      SupportSmiV1Keywords.reserved,
-      SupportSmiV1Keywords.forbidden_words,
-      SupportSmiV1Keywords.tokens
+        SupportSmiV1Keywords.reserved,
+        SupportSmiV1Keywords.forbidden_words,
+        SupportSmiV1Keywords.tokens
     ],
     'supportIndex': [],
     'commaAtTheEndOfImport': [],
@@ -324,12 +331,13 @@ relaxedGrammar = {
     'noCells': []
 }
 
+
 def lexerFactory(**grammarOptions):
     classAttr = {}
     for option in grammarOptions:
         if grammarOptions[option]:
             if option not in relaxedGrammar:
-                raise error.PySmiError('Unknown lexer relaxation option: %s' %  option)
+                raise error.PySmiError('Unknown lexer relaxation option: %s' % option)
 
             for func in relaxedGrammar[option]:
                 if sys.version_info[0] > 2:

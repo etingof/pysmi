@@ -10,6 +10,7 @@ from pysmi.mibinfo import MibInfo
 from pysmi import error
 from pysmi import debug
 
+
 class CallbackReader(AbstractReader):
     def __init__(self, cbFun, cbCtx=None):
         self._cbFun = cbFun

@@ -12,6 +12,8 @@
 # exception handlers may insert their own attributes into exception
 # object.
 #
+
+
 class PySmiError(Exception):
     def __init__(self, *args, **kwargs):
         Exception.__init__(self, *args)
@@ -20,45 +22,59 @@ class PySmiError(Exception):
             setattr(self, k, kwargs[k])
 
     def __repr__(self):
-        return '%s(%s)' % (self.__class__.__name__, ', '.join(['%s=%r' % (k, getattr(self, k)) for k in dir(self) if k[0] != '_' and k != 'args']))
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(
+            ['%s=%r' % (k, getattr(self, k)) for k in dir(self) if k[0] != '_' and k != 'args']))
 
     def __str__(self):
         return self.msg
 
+
 class PySmiLexerError(PySmiError):
     lineno = '?'
+
     def __str__(self):
         return self.msg + ', line %s' % self.lineno
+
 
 class PySmiParserError(PySmiLexerError):
     pass
 
+
 class PySmiSyntaxError(PySmiParserError):
     pass
+
 
 class PySmiSearcherError(PySmiError):
     pass
 
+
 class PySmiFileNotModifiedError(PySmiSearcherError):
     pass
+
 
 class PySmiFileNotFoundError(PySmiSearcherError):
     pass
 
+
 class PySmiReaderError(PySmiError):
     pass
+
 
 class PySmiReaderFileNotModifiedError(PySmiReaderError):
     pass
 
+
 class PySmiReaderFileNotFoundError(PySmiReaderError):
     pass
+
 
 class PySmiCodegenError(PySmiError):
     pass
 
+
 class PySmiSemanticError(PySmiCodegenError):
     pass
+
 
 class PySmiWriterError(PySmiError):
     pass

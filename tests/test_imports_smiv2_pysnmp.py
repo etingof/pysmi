@@ -15,6 +15,7 @@ from pysmi.codegen.pysnmp import PySnmpCodeGen
 from pysmi.codegen.symtable import SymtableCodeGen
 from pysnmp.smi.builder import MibBuilder
 
+
 class ImportClauseTestCase(unittest.TestCase):
     """
 TEST-MIB DEFINITIONS ::= BEGIN
@@ -27,15 +28,16 @@ IMPORTS
 
 END
  """
+
     def setUp(self):
         ast = parserFactory()().parse(self.__class__.__doc__)[0]
         mibInfo, symtable = SymtableCodeGen().genCode(ast, {}, genTexts=True)
-        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, { mibInfo.name: symtable }, genTexts=True)
+        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, {mibInfo.name: symtable}, genTexts=True)
         codeobj = compile(pycode, 'test', 'exec')
 
-        self.ctx = { 'mibBuilder': MibBuilder() }
+        self.ctx = {'mibBuilder': MibBuilder()}
 
-        exec(codeobj, self.ctx, self.ctx)
+        exec (codeobj, self.ctx, self.ctx)
 
     def testModuleImportsRequiredMibs(self):
         self.assertTupleEqual(
@@ -49,6 +51,7 @@ END
             'SnmpAdminString' in self.ctx,
             'imported symbol not present'
         )
+
 
 if __name__ == '__main__':
     unittest.main()

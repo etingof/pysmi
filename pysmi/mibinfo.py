@@ -14,6 +14,7 @@
 # mtime  -- MIB file modification time
 # oid    -- top-level OID defined in this MIB
 
+
 class MibInfo(object):
     def __init__(self, **kwargs):
         for k in kwargs:

@@ -6,9 +6,10 @@
 #
 import os
 
+
 class AbstractReader(object):
-    maxMibSize = 10000000     # MIBs can't be that large
-    fuzzyMatching = True      # try different file names while searching for MIB
+    maxMibSize = 10000000  # MIBs can't be that large
+    fuzzyMatching = True  # try different file names while searching for MIB
     originalMatching = uppercaseMatching = lowcaseMatching = True
     exts = ['',
             os.path.extsep + 'txt',
@@ -40,7 +41,7 @@ class AbstractReader(object):
                 filenames.append(suffixed.upper())
                 filenames.append(suffixed.lower())
 
-        return ((x, x+y) for x in filenames for y in self.exts)
+        return ((x, x + y) for x in filenames for y in self.exts)
 
     def getData(self, filename):
         raise NotImplementedError()

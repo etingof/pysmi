@@ -32,6 +32,7 @@ Topic :: Security :: Cryptography
 Topic :: Software Development :: Libraries :: Python Modules
 """
 
+
 def howto_install_setuptools():
     print("""
    Error: You need setuptools Python package!
@@ -44,12 +45,14 @@ def howto_install_setuptools():
    Then you could make eggs from this package.
 """)
 
+
 if sys.version_info[:2] < (2, 4):
     print("ERROR: this package requires Python 2.4 or later!")
     sys.exit(1)
 
 try:
     from setuptools import setup, Command
+
     params = {'install_requires': ['ply'], 'zip_safe': True}
 
 except ImportError:
@@ -58,6 +61,7 @@ except ImportError:
             howto_install_setuptools()
             sys.exit(1)
     from distutils.core import setup, Command
+
     params = {}
     if sys.version_info[:2] > (2, 4):
         params['requires'] = ['ply']
@@ -89,7 +93,7 @@ params.update({
 
 # handle unittest discovery feature
 if sys.version_info[0:2] < (2, 7) or \
-   sys.version_info[0:2] in ((3, 0), (3, 1)):
+                sys.version_info[0:2] in ((3, 0), (3, 1)):
     try:
         import unittest2 as unittest
     except ImportError:
@@ -102,11 +106,13 @@ if unittest:
         user_options = []
 
         def initialize_options(self): pass
+
         def finalize_options(self): pass
 
         def run(self):
             suite = unittest.defaultTestLoader.discover('tests')
             unittest.TextTestRunner(verbosity=2).run(suite)
+
 
     params['cmdclass'] = {'test': PyTest}
 

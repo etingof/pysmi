@@ -15,6 +15,7 @@ from pysmi.codegen.pysnmp import PySnmpCodeGen
 from pysmi.codegen.symtable import SymtableCodeGen
 from pysnmp.smi.builder import MibBuilder
 
+
 class ObjectTypeBasicTestCase(unittest.TestCase):
     """
 TEST-MIB DEFINITIONS ::= BEGIN
@@ -37,15 +38,15 @@ END
     def setUp(self):
         ast = parserFactory()().parse(self.__class__.__doc__)[0]
         mibInfo, symtable = SymtableCodeGen().genCode(ast, {}, genTexts=True)
-        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, { mibInfo.name: symtable }, genTexts=True)
+        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, {mibInfo.name: symtable}, genTexts=True)
         codeobj = compile(pycode, 'test', 'exec')
 
         mibBuilder = MibBuilder()
         mibBuilder.loadTexts = True
 
-        self.ctx = { 'mibBuilder': mibBuilder }
+        self.ctx = {'mibBuilder': mibBuilder}
 
-        exec(codeobj, self.ctx, self.ctx)
+        exec (codeobj, self.ctx, self.ctx)
 
     def testObjectTypeSymbol(self):
         self.assertTrue(
@@ -109,6 +110,7 @@ END
             'bad SYNTAX'
         )
 
+
 class ObjectTypeIntegerDefaultTestCase(unittest.TestCase):
     """
 TEST-MIB DEFINITIONS ::= BEGIN
@@ -131,12 +133,12 @@ END
     def setUp(self):
         ast = parserFactory()().parse(self.__class__.__doc__)[0]
         mibInfo, symtable = SymtableCodeGen().genCode(ast, {}, genTexts=True)
-        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, { mibInfo.name: symtable }, genTexts=True)
+        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, {mibInfo.name: symtable}, genTexts=True)
         codeobj = compile(pycode, 'test', 'exec')
 
-        self.ctx = { 'mibBuilder': MibBuilder() }
+        self.ctx = {'mibBuilder': MibBuilder()}
 
-        exec(codeobj, self.ctx, self.ctx)
+        exec (codeobj, self.ctx, self.ctx)
 
     def testObjectTypeSyntax(self):
         self.assertEqual(
@@ -144,6 +146,7 @@ END
             123456,
             'bad DEFVAL'
         )
+
 
 class ObjectTypeEnumDefaultTestCase(unittest.TestCase):
     """
@@ -169,12 +172,12 @@ END
     def setUp(self):
         ast = parserFactory()().parse(self.__class__.__doc__)[0]
         mibInfo, symtable = SymtableCodeGen().genCode(ast, {}, genTexts=True)
-        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, { mibInfo.name: symtable }, genTexts=True)
+        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, {mibInfo.name: symtable}, genTexts=True)
         codeobj = compile(pycode, 'test', 'exec')
 
-        self.ctx = { 'mibBuilder': MibBuilder() }
+        self.ctx = {'mibBuilder': MibBuilder()}
 
-        exec(codeobj, self.ctx, self.ctx)
+        exec (codeobj, self.ctx, self.ctx)
 
     def testObjectTypeSyntax(self):
         self.assertEqual(
@@ -182,6 +185,7 @@ END
             1,
             'bad DEFVAL'
         )
+
 
 class ObjectTypeStringDefaultTestCase(unittest.TestCase):
     """
@@ -204,12 +208,12 @@ END
     def setUp(self):
         ast = parserFactory()().parse(self.__class__.__doc__)[0]
         mibInfo, symtable = SymtableCodeGen().genCode(ast, {}, genTexts=True)
-        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, { mibInfo.name: symtable }, genTexts=True)
+        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, {mibInfo.name: symtable}, genTexts=True)
         codeobj = compile(pycode, 'test', 'exec')
 
-        self.ctx = { 'mibBuilder': MibBuilder() }
+        self.ctx = {'mibBuilder': MibBuilder()}
 
-        exec(codeobj, self.ctx, self.ctx)
+        exec (codeobj, self.ctx, self.ctx)
 
     def testObjectTypeSyntax(self):
         self.assertEqual(
@@ -217,6 +221,7 @@ END
             'test value',
             'bad DEFVAL'
         )
+
 
 class ObjectTypeWithIntegerConstraintTestCase(unittest.TestCase):
     """
@@ -240,12 +245,12 @@ END
     def setUp(self):
         ast = parserFactory()().parse(self.__class__.__doc__)[0]
         mibInfo, symtable = SymtableCodeGen().genCode(ast, {}, genTexts=True)
-        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, { mibInfo.name: symtable }, genTexts=True)
+        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, {mibInfo.name: symtable}, genTexts=True)
         codeobj = compile(pycode, 'test', 'exec')
 
-        self.ctx = { 'mibBuilder': MibBuilder() }
+        self.ctx = {'mibBuilder': MibBuilder()}
 
-        exec(codeobj, self.ctx, self.ctx)
+        exec (codeobj, self.ctx, self.ctx)
 
     def testObjectTypeSyntax(self):
         self.assertEqual(
@@ -253,6 +258,7 @@ END
             123,
             'bad integer range constrained SYNTAX'
         )
+
 
 class ObjectTypeWithIntegerSetConstraintTestCase(unittest.TestCase):
     """
@@ -275,12 +281,12 @@ END
     def setUp(self):
         ast = parserFactory()().parse(self.__class__.__doc__)[0]
         mibInfo, symtable = SymtableCodeGen().genCode(ast, {}, genTexts=True)
-        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, { mibInfo.name: symtable }, genTexts=True)
+        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, {mibInfo.name: symtable}, genTexts=True)
         codeobj = compile(pycode, 'test', 'exec')
 
-        self.ctx = { 'mibBuilder': MibBuilder() }
+        self.ctx = {'mibBuilder': MibBuilder()}
 
-        exec(codeobj, self.ctx, self.ctx)
+        exec (codeobj, self.ctx, self.ctx)
 
     def testObjectTypeSyntax(self):
         self.assertEqual(
@@ -288,6 +294,7 @@ END
             44,
             'bad multiple integer constrained SYNTAX'
         )
+
 
 class ObjectTypeWithStringSizeConstraintTestCase(unittest.TestCase):
     """
@@ -310,12 +317,12 @@ END
     def setUp(self):
         ast = parserFactory()().parse(self.__class__.__doc__)[0]
         mibInfo, symtable = SymtableCodeGen().genCode(ast, {}, genTexts=True)
-        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, { mibInfo.name: symtable }, genTexts=True)
+        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, {mibInfo.name: symtable}, genTexts=True)
         codeobj = compile(pycode, 'test', 'exec')
 
-        self.ctx = { 'mibBuilder': MibBuilder() }
+        self.ctx = {'mibBuilder': MibBuilder()}
 
-        exec(codeobj, self.ctx, self.ctx)
+        exec (codeobj, self.ctx, self.ctx)
 
     def testObjectTypeSyntax(self):
         self.assertEqual(
@@ -323,6 +330,7 @@ END
             '',
             'bad size constrained SYNTAX'
         )
+
 
 class ObjectTypeBitsTestCase(unittest.TestCase):
     """
@@ -345,12 +353,12 @@ END
     def setUp(self):
         ast = parserFactory()().parse(self.__class__.__doc__)[0]
         mibInfo, symtable = SymtableCodeGen().genCode(ast, {}, genTexts=True)
-        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, { mibInfo.name: symtable }, genTexts=True)
+        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, {mibInfo.name: symtable}, genTexts=True)
         codeobj = compile(pycode, 'test', 'exec')
 
-        self.ctx = { 'mibBuilder': MibBuilder() }
+        self.ctx = {'mibBuilder': MibBuilder()}
 
-        exec(codeobj, self.ctx, self.ctx)
+        exec (codeobj, self.ctx, self.ctx)
 
     def testObjectTypeSyntax(self):
         self.assertEqual(
@@ -358,6 +366,7 @@ END
             '@',
             'bad BITS SYNTAX'
         )
+
 
 class ObjectTypeMibTableTestCase(unittest.TestCase):
     """
@@ -406,12 +415,12 @@ END
     def setUp(self):
         ast = parserFactory()().parse(self.__class__.__doc__)[0]
         mibInfo, symtable = SymtableCodeGen().genCode(ast, {}, genTexts=True)
-        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, { mibInfo.name: symtable }, genTexts=True)
+        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, {mibInfo.name: symtable}, genTexts=True)
         codeobj = compile(pycode, 'test', 'exec')
 
-        self.ctx = { 'mibBuilder': MibBuilder() }
+        self.ctx = {'mibBuilder': MibBuilder()}
 
-        exec(codeobj, self.ctx, self.ctx)
+        exec (codeobj, self.ctx, self.ctx)
 
     def testObjectTypeTableClass(self):
         self.assertEqual(
@@ -440,6 +449,7 @@ END
             ((0, 'TEST-MIB', 'testIndex'),),
             'bad table index'
         )
+
 
 class ObjectTypeMibTableImpliedIndexTestCase(unittest.TestCase):
     """
@@ -480,12 +490,12 @@ END
     def setUp(self):
         ast = parserFactory()().parse(self.__class__.__doc__)[0]
         mibInfo, symtable = SymtableCodeGen().genCode(ast, {}, genTexts=True)
-        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, { mibInfo.name: symtable }, genTexts=True)
+        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, {mibInfo.name: symtable}, genTexts=True)
         codeobj = compile(pycode, 'test', 'exec')
 
-        self.ctx = { 'mibBuilder': MibBuilder() }
+        self.ctx = {'mibBuilder': MibBuilder()}
 
-        exec(codeobj, self.ctx, self.ctx)
+        exec (codeobj, self.ctx, self.ctx)
 
     def testObjectTypeTableRowIndex(self):
         self.assertTupleEqual(
@@ -493,6 +503,7 @@ END
             ((1, 'TEST-MIB', 'testIndex'),),
             'bad IMPLIED table index'
         )
+
 
 class ObjectTypeMibTableMultipleIndicesTestCase(unittest.TestCase):
     """
@@ -541,12 +552,12 @@ END
     def setUp(self):
         ast = parserFactory()().parse(self.__class__.__doc__)[0]
         mibInfo, symtable = SymtableCodeGen().genCode(ast, {}, genTexts=True)
-        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, { mibInfo.name: symtable }, genTexts=True)
+        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, {mibInfo.name: symtable}, genTexts=True)
         codeobj = compile(pycode, 'test', 'exec')
 
-        self.ctx = { 'mibBuilder': MibBuilder() }
+        self.ctx = {'mibBuilder': MibBuilder()}
 
-        exec(codeobj, self.ctx, self.ctx)
+        exec (codeobj, self.ctx, self.ctx)
 
     def testObjectTypeTableRowIndex(self):
         self.assertTupleEqual(
@@ -554,6 +565,7 @@ END
             ((0, 'TEST-MIB', 'testIndex'), (0, 'TEST-MIB', 'testValue')),
             'bad multiple table indices'
         )
+
 
 class ObjectTypeAurmentingMibTableTestCase(unittest.TestCase):
     """
@@ -620,15 +632,14 @@ END
     def setUp(self):
         ast = parserFactory()().parse(self.__class__.__doc__)[0]
         mibInfo, symtable = SymtableCodeGen().genCode(ast, {}, genTexts=True)
-        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, { mibInfo.name: symtable }, genTexts=True)
+        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, {mibInfo.name: symtable}, genTexts=True)
         codeobj = compile(pycode, 'test', 'exec')
 
-        self.ctx = { 'mibBuilder': MibBuilder() }
+        self.ctx = {'mibBuilder': MibBuilder()}
 
-        exec(codeobj, self.ctx, self.ctx)
+        exec (codeobj, self.ctx, self.ctx)
 
     def testObjectTypeTableRowAugmention(self):
-
         # XXX provide getAugmentation() method
         self.assertTupleEqual(
             self.ctx['testEntry'].augmentingRows.keys()[0],

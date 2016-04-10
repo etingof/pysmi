@@ -15,6 +15,7 @@ from pysmi.codegen.pysnmp import PySnmpCodeGen
 from pysmi.codegen.symtable import SymtableCodeGen
 from pysnmp.smi.builder import MibBuilder
 
+
 class TrapTypeTestCase(unittest.TestCase):
     """
 TEST-MIB DEFINITIONS ::= BEGIN
@@ -47,15 +48,15 @@ END
     def setUp(self):
         ast = parserFactory()().parse(self.__class__.__doc__)[0]
         mibInfo, symtable = SymtableCodeGen().genCode(ast, {}, genTexts=True)
-        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, { mibInfo.name: symtable }, genTexts=True)
+        self.mibInfo, pycode = PySnmpCodeGen().genCode(ast, {mibInfo.name: symtable}, genTexts=True)
         codeobj = compile(pycode, 'test', 'exec')
 
         mibBuilder = MibBuilder()
         mibBuilder.loadTexts = True
 
-        self.ctx = { 'mibBuilder': mibBuilder }
+        self.ctx = {'mibBuilder': mibBuilder}
 
-        exec(codeobj, self.ctx, self.ctx)
+        exec (codeobj, self.ctx, self.ctx)
 
     def testTrapTypeSymbol(self):
         self.assertTrue(
@@ -83,6 +84,7 @@ END
             'NotificationType',
             'bad SYNTAX class'
         )
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -14,6 +14,7 @@ from pysmi.compat import decode
 from pysmi import debug
 from pysmi import error
 
+
 class PyPackageSearcher(AbstractSearcher):
     """Figures out if given Python module (source or bytecode) exists in given
        Python package.
@@ -35,20 +36,22 @@ class PyPackageSearcher(AbstractSearcher):
                               modules at.
         """
         self._package = package
+        self.__loader = None
 
     def __str__(self):
         return '%s{"%s"}' % (self.__class__.__name__, self._package)
 
-    def _parseDosTime(self, dosdate, dostime):
-        t = (((dosdate >> 9) & 0x7f) + 1980,   # year
-             ((dosdate >> 5) & 0x0f),          # month
-             dosdate & 0x1f,                   # mday
-             (dostime >> 11) & 0x1f,           # hour
-             (dostime >> 5) & 0x3f,            # min
-             (dostime & 0x1f) * 2,             # sec
-             -1,                               # wday
-             -1,                               # yday
-             -1)                               # dst
+    @staticmethod
+    def _parseDosTime(dosdate, dostime):
+        t = (((dosdate >> 9) & 0x7f) + 1980,  # year
+             ((dosdate >> 5) & 0x0f),  # month
+             dosdate & 0x1f,  # mday
+             (dostime >> 11) & 0x1f,  # hour
+             (dostime >> 5) & 0x3f,  # min
+             (dostime & 0x1f) * 2,  # sec
+             -1,  # wday
+             -1,  # yday
+             -1)  # dst
         return time.mktime(t)
 
     def fileExists(self, mibname, mtime, rebuild=False):
@@ -61,9 +64,11 @@ class PyPackageSearcher(AbstractSearcher):
             if hasattr(p, '__loader__') and hasattr(p.__loader__, '_files'):
                 self.__loader = p.__loader__
                 self._package = self._package.replace('.', os.sep)
-                debug.logger & debug.flagSearcher and debug.logger('%s is an importable egg at %s' % (self._package, os.path.split(p.__file__)[0]))
+                debug.logger & debug.flagSearcher and debug.logger(
+                    '%s is an importable egg at %s' % (self._package, os.path.split(p.__file__)[0]))
             elif hasattr(p, '__file__'):
-                debug.logger & debug.flagSearcher and debug.logger('%s is not an egg, trying it as a package directory' % self._package)
+                debug.logger & debug.flagSearcher and debug.logger(
+                    '%s is not an egg, trying it as a package directory' % self._package)
                 return PyFileSearcher(os.path.split(p.__file__)[0]).fileExists(mibname, mtime, rebuild=rebuild)
             else:
                 raise error.PySmiFileNotFoundError('%s is neither importable nor a file' % self._package, searcher=self)
@@ -82,7 +87,8 @@ class PyPackageSearcher(AbstractSearcher):
                     if pyData[:4] == imp.get_magic():
                         pyData = pyData[4:]
                         pyTime = struct.unpack('<L', pyData[:4])[0]
-                        debug.logger & debug.flagSearcher and debug.logger('found %s, mtime %s' % (f, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(pyTime))))
+                        debug.logger & debug.flagSearcher and debug.logger(
+                            'found %s, mtime %s' % (f, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(pyTime))))
                         if pyTime >= mtime:
                             raise error.PySmiFileNotModifiedError()
                         else:
@@ -96,7 +102,8 @@ class PyPackageSearcher(AbstractSearcher):
                         self.__loader._files[f][5]
                     )
 
-                    debug.logger & debug.flagSearcher and debug.logger('found %s, mtime %s' % (f, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(pyTime))))
+                    debug.logger & debug.flagSearcher and debug.logger(
+                        'found %s, mtime %s' % (f, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(pyTime))))
                     if pyTime >= mtime:
                         raise error.PySmiFileNotModifiedError()
                     else:

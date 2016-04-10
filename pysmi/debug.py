@@ -33,6 +33,7 @@ flagMap = {
     'all': flagAll
 }
 
+
 class Printer(object):
     def __init__(self, logger=None, handler=None, formatter=None):
         if logger is None:
@@ -47,10 +48,15 @@ class Printer(object):
         logger.addHandler(handler)
         self.__logger = logger
 
-    def __call__(self, msg): self.__logger.debug(msg)
-    def __str__(self): return '<python built-in logging>'
+    def __call__(self, msg):
+        self.__logger.debug(msg)
 
-    def getCurrentLogger(self): return self.__logger
+    def __str__(self):
+        return '<python built-in logging>'
+
+    def getCurrentLogger(self):
+        return self.__logger
+
 
 if hasattr(logging, 'NullHandler'):
     NullHandler = logging.NullHandler
@@ -60,8 +66,10 @@ else:
         def emit(self, record):
             pass
 
+
 class Debug(object):
     defaultPrinter = None
+
     def __init__(self, *flags, **options):
         self._flags = flagNone
         if options.get('printer') is not None:
@@ -110,9 +118,11 @@ class Debug(object):
     def getCurrentLogger(self):
         return self._printer and self._printer.getCurrentLogger() or None
 
+
 # This will yield false from bitwise and with a flag, and save
 # on unnecessary calls
 logger = 0
+
 
 def setLogger(l):
     global logger

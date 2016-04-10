@@ -31,7 +31,6 @@ mibSearchers = []
 mibStubs = []
 mibBorrowers = []
 dstFormat = 'pysnmp'
-dstDirectory = os.path.join(os.path.expanduser("~"), '.pysnmp', 'mibs')
 dstDirectory = os.path.expanduser("~")
 if sys.platform[:3] == 'win':
     dstDirectory = os.path.join(dstDirectory, 'PySNMP Configuration', 'mibs')
@@ -74,20 +73,20 @@ Where:
                Use @mib@ placeholder token in URL location to refer
                to MIB module name requested.
     format   - pysnmp format is only supported.""" % (
-          sys.argv[0],
-          '|'.join([ x for x in sorted(debug.flagMap) ])
-      )
+    sys.argv[0],
+    '|'.join([x for x in sorted(debug.flagMap)])
+)
 
 try:
     opts, inputMibs = getopt.getopt(sys.argv[1:], 'hv',
-        ['help', 'version', 'quiet', 'debug=',
-         'mib-source=', 'mib-searcher=', 'mib-stub=', 'mib-borrower=',
-         'destination-format=', 'destination-directory=', 'cache-directory=',
-         'no-dependencies', 'no-python-compile', 'python-optimization-level=',
-         'ignore-errors', 'build-index', 'rebuild', 'dry-run',
-         'generate-mib-texts', 'disable-fuzzy-source' ]
-    )
-except Exception:
+                                    ['help', 'version', 'quiet', 'debug=',
+                                     'mib-source=', 'mib-searcher=', 'mib-stub=', 'mib-borrower=',
+                                     'destination-format=', 'destination-directory=', 'cache-directory=',
+                                     'no-dependencies', 'no-python-compile', 'python-optimization-level=',
+                                     'ignore-errors', 'build-index', 'rebuild', 'dry-run',
+                                     'generate-mib-texts', 'disable-fuzzy-source']
+                                    )
+except getopt.GetoptError:
     if verboseFlag:
         sys.stderr.write('ERROR: %s\r\n%s\r\n' % (sys.exc_info()[1], helpMessage))
     sys.exit(-1)
@@ -104,6 +103,7 @@ Documentation:
         sys.exit(-1)
     if opt[0] == '-v' or opt[0] == '--version':
         from pysmi import __version__
+
         sys.stderr.write("""\
 SNMP SMI/MIB library version %s, written by Ilya Etingof <ilya@snmplabs.com>
 Python interpreter: %s
@@ -136,7 +136,7 @@ Software documentation and support at http://pysmi.sf.net
     if opt[0] == '--python-optimization-level':
         try:
             pyOptimizationLevel = int(opt[1])
-        except:
+        except ValueError:
             sys.stderr.write('ERROR: known Python optimization levels: -1, 0, 1, 2\r\n%s\r\n' % helpMessage)
             sys.exit(-1)
     if opt[0] == '--ignore-errors':
@@ -156,15 +156,15 @@ if not mibSearchers:
     mibSearchers = defaultMibPackages
 
 if not mibStubs:
-    mibStubs = [ x for x in baseMibs if x not in fakeMibs ]
+    mibStubs = [x for x in baseMibs if x not in fakeMibs]
 
 if not mibSources:
     mibSources = ['file:///usr/share/snmp/mibs',
                   'http://mibs.snmplabs.com/asn1/@mib@']
 
 if not mibBorrowers:
-    mibBorrowers = [ ('http://mibs.snmplabs.com/pysnmp/notexts/@mib@', False),
-                     ('http://mibs.snmplabs.com/pysnmp/fulltexts/@mib@', True) ]
+    mibBorrowers = [('http://mibs.snmplabs.com/pysnmp/notexts/@mib@', False),
+                    ('http://mibs.snmplabs.com/pysnmp/fulltexts/@mib@', True)]
 
 if inputMibs:
     mibSources.extend(list(set(['file://' + os.path.abspath(os.path.dirname(x))
@@ -213,7 +213,7 @@ Try various filenames while searching for MIB module: %s
 # Initialize compiler infrastructure
 
 mibCompiler = MibCompiler(
-    parserFactory(**smiV1Relaxed)(tempdir=cacheDirectory), 
+    parserFactory(**smiV1Relaxed)(tempdir=cacheDirectory),
     PySnmpCodeGen(),
     PyFileWriter(dstDirectory).setOptions(
         pyCompile=pyCompileFlag, pyOptimizationLevel=pyOptimizationLevel
@@ -235,7 +235,8 @@ try:
     mibCompiler.addSearchers(StubSearcher(*mibStubs))
 
     mibCompiler.addBorrowers(
-        *[ PyFileBorrower(x[1], genTexts=mibBorrowers[x[0]][1]) for x in enumerate(getReadersFromUrls(*[m[0] for m in mibBorrowers], **dict(lowcaseMatching=False))) ]
+        *[PyFileBorrower(x[1], genTexts=mibBorrowers[x[0]][1]) for x in
+          enumerate(getReadersFromUrls(*[m[0] for m in mibBorrowers], **dict(lowcaseMatching=False)))]
     )
 
     processed = mibCompiler.compile(*inputMibs,
@@ -258,11 +259,18 @@ except error.PySmiError:
 
 else:
     if verboseFlag:
-        sys.stderr.write('%sreated/updated MIBs: %s\r\n' % (dryrunFlag and 'Would be c' or 'C', ', '.join(['%s%s' % (x,x != processed[x].alias and ' (%s)' % processed[x].alias or '') for x in sorted(processed) if processed[x] == 'compiled'])))
-        sys.stderr.write('Pre-compiled MIBs %sborrowed: %s\r\n' % (dryrunFlag and 'Would be ' or '', ', '.join(['%s (%s)' % (x,processed[x].path) for x in sorted(processed) if processed[x] == 'borrowed'])))
-        sys.stderr.write('Up to date MIBs: %s\r\n' % ', '.join(['%s' % x for x in sorted(processed) if processed[x] == 'untouched']))
-        sys.stderr.write('Missing source MIBs: %s\r\n' % ', '.join(['%s' % x for x in sorted(processed) if processed[x] == 'missing']))
-        sys.stderr.write('Ignored MIBs: %s\r\n' % ', '.join(['%s' % x for x in sorted(processed) if processed[x] == 'unprocessed']))
-        sys.stderr.write('Failed MIBs: %s\r\n' % ', '.join(['%s (%s)' % (x,processed[x].error) for x in sorted(processed) if processed[x] == 'failed']))
+        sys.stderr.write('%sreated/updated MIBs: %s\r\n' % (dryrunFlag and 'Would be c' or 'C', ', '.join(
+            ['%s%s' % (x, x != processed[x].alias and ' (%s)' % processed[x].alias or '') for x in sorted(processed) if
+             processed[x] == 'compiled'])))
+        sys.stderr.write('Pre-compiled MIBs %sborrowed: %s\r\n' % (dryrunFlag and 'Would be ' or '', ', '.join(
+            ['%s (%s)' % (x, processed[x].path) for x in sorted(processed) if processed[x] == 'borrowed'])))
+        sys.stderr.write(
+            'Up to date MIBs: %s\r\n' % ', '.join(['%s' % x for x in sorted(processed) if processed[x] == 'untouched']))
+        sys.stderr.write('Missing source MIBs: %s\r\n' % ', '.join(
+            ['%s' % x for x in sorted(processed) if processed[x] == 'missing']))
+        sys.stderr.write(
+            'Ignored MIBs: %s\r\n' % ', '.join(['%s' % x for x in sorted(processed) if processed[x] == 'unprocessed']))
+        sys.stderr.write('Failed MIBs: %s\r\n' % ', '.join(
+            ['%s (%s)' % (x, processed[x].error) for x in sorted(processed) if processed[x] == 'failed']))
 
     sys.exit(0)

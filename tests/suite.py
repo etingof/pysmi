@@ -31,6 +31,9 @@ loader = unittest.TestLoader()
 for m in testModules:
     suite.addTest(loader.loadTestsFromModule(m))
 
+
 def runTests(): unittest.TextTestRunner(verbosity=2).run(suite)
 
-if __name__ == '__main__': runTests()
+
+if __name__ == '__main__':
+    runTests()
