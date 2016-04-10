@@ -10,6 +10,7 @@ try:
 except ImportError:
     import unittest
 
+from pyasn1.compat.octets import str2octs
 from pysmi.parser.smi import parserFactory
 from pysmi.codegen.pysnmp import PySnmpCodeGen
 from pysmi.codegen.symtable import SymtableCodeGen
@@ -77,8 +78,7 @@ END
 
     def testObjectTypeReference(self):
         self.assertEqual(
-            self.ctx['testObjectType'].getReference(),
-            'ABC',
+            self.ctx['testObjectType'].getReference(), str2octs('ABC'),
             'bad REFERENCE'
         )
 
@@ -217,8 +217,7 @@ END
 
     def testObjectTypeSyntax(self):
         self.assertEqual(
-            self.ctx['testObjectType'].getSyntax(),
-            'test value',
+            self.ctx['testObjectType'].getSyntax(), str2octs('test value'),
             'bad DEFVAL'
         )
 
@@ -326,8 +325,7 @@ END
 
     def testObjectTypeSyntax(self):
         self.assertEqual(
-            self.ctx['testObjectType'].getSyntax().clone(''),
-            '',
+            self.ctx['testObjectType'].getSyntax().clone(''), str2octs(''),
             'bad size constrained SYNTAX'
         )
 
@@ -362,8 +360,7 @@ END
 
     def testObjectTypeSyntax(self):
         self.assertEqual(
-            self.ctx['testObjectType'].getSyntax().clone(('set',)),
-            '@',
+            self.ctx['testObjectType'].getSyntax().clone(('set',)), str2octs('@'),
             'bad BITS SYNTAX'
         )
 
@@ -642,7 +639,7 @@ END
     def testObjectTypeTableRowAugmention(self):
         # XXX provide getAugmentation() method
         self.assertTupleEqual(
-            self.ctx['testEntry'].augmentingRows.keys()[0],
+            list(self.ctx['testEntry'].augmentingRows.keys())[0],
             ('TEST-MIB', 'testEntryExt'),
             'bad AUGMENTS table clause'
         )
