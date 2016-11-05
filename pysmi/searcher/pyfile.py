@@ -50,7 +50,9 @@ class PyFileSearcher(AbstractSearcher):
                     continue
                 if fmt == imp.PY_COMPILED:
                     try:
-                        pyData = open(f, pyMode).read(8)
+                        fp = open(f, pyMode)
+                        pyData = fp.read(8)
+                        fp.close()
                     except IOError:
                         raise error.PySmiSearcherError('failure opening compiled file %s: %s' % (f, sys.exc_info()[1]),
                                                        searcher=self)

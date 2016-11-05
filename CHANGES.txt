@@ -2,6 +2,7 @@ Revision 0.0.8, XX-XX-2016
 --------------------------
 
 - Source code statically analyzed and hardened.
+- Files closed explicitly to mute ResourceWarnings
 
 Revision 0.0.7, 12-02-2016
 --------------------------

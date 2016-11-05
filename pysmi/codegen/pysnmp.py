@@ -953,7 +953,7 @@ class PySnmpCodeGen(AbstractCodeGen):
             # Textual convention
             display, syntax = data
             parentType, attrs = syntax
-            parentType += ', TextualConvention'
+            parentType = 'TextualConvention, ' + parentType
             attrs = (display and display or '') + attrs
         attrs = attrs or self.indent + 'pass\n'
         return parentType, attrs
