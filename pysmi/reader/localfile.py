@@ -63,9 +63,10 @@ class FileReader(AbstractReader):
         mibIndex = {}
         if os.path.exists(indexFile):
             try:
-                mibIndex = dict(
-                    [x.split()[:2] for x in open(indexFile).readlines()]
-                )
+                with open(indexFile) as f:
+                    mibIndex = dict(
+                        [x.split()[:2] for x in f.readlines()]
+                    )
                 debug.logger & debug.flagReader and debug.logger(
                     'loaded MIB index map from %s file, %s entries' % (indexFile, len(mibIndex)))
             except IOError:
@@ -102,8 +103,9 @@ class FileReader(AbstractReader):
                         debug.logger & debug.flagReader and debug.logger(
                             'source MIB %s mtime is %s, fetching data...' % (
                                 f, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(mtime))))
-                        return MibInfo(path='file://%s' % f, file=mibfile, name=mibalias, mtime=mtime), decode(
-                            open(f, mode='rb').read(self.maxMibSize))
+                        with open(f, mode='rb') as fp:
+                            return MibInfo(path='file://%s' % f, file=mibfile, name=mibalias, mtime=mtime), decode(
+                                fp.read(self.maxMibSize))
                     except (OSError, IOError):
                         debug.logger & debug.flagReader and debug.logger(
                             'source file %s open failure: %s' % (f, sys.exc_info()[1]))
