@@ -1,6 +1,7 @@
 Revision 0.0.8, XX-XX-2016
 --------------------------
 
+- JSON code generating backend implemented
 - Source code statically analyzed and hardened.
 - Files closed explicitly to mute ResourceWarnings
 

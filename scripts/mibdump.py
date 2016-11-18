@@ -10,15 +10,13 @@
 import os
 import sys
 import getopt
-from pysmi.reader.url import getReadersFromUrls
-from pysmi.searcher.pyfile import PyFileSearcher
-from pysmi.searcher.pypackage import PyPackageSearcher
-from pysmi.searcher.stub import StubSearcher
-from pysmi.borrower.pyfile import PyFileBorrower
-from pysmi.writer.pyfile import PyFileWriter
-from pysmi.parser.smi import parserFactory
-from pysmi.parser.dialect import smiV1Relaxed
+from pysmi.reader import getReadersFromUrls
+from pysmi.searcher import PyFileSearcher, PyPackageSearcher, StubSearcher
+from pysmi.borrower import PyFileBorrower
+from pysmi.writer import PyFileWriter, FileReader, CallbackWriter
+from pysmi.parser import SmiV1CompatParser
 from pysmi.codegen.pysnmp import PySnmpCodeGen, defaultMibPackages, baseMibs, fakeMibs
+from pysmi.codegen import JsonCodeGen, NullCodeGen
 from pysmi.compiler import MibCompiler
 from pysmi import debug
 from pysmi import error
@@ -30,12 +28,7 @@ doFuzzyMatchingFlag = True
 mibSearchers = []
 mibStubs = []
 mibBorrowers = []
-dstFormat = 'pysnmp'
-dstDirectory = os.path.expanduser("~")
-if sys.platform[:3] == 'win':
-    dstDirectory = os.path.join(dstDirectory, 'PySNMP Configuration', 'mibs')
-else:
-    dstDirectory = os.path.join(dstDirectory, '.pysnmp', 'mibs')
+dstFormat = None
 cacheDirectory = ''
 nodepsFlag = False
 rebuildFlag = False
@@ -72,7 +65,7 @@ Where:
     url      - file, http, https, ftp, sftp schemes are supported. 
                Use @mib@ placeholder token in URL location to refer
                to MIB module name requested.
-    format   - pysnmp format is only supported.""" % (
+    format   - pysnmp, json, null""" % (
     sys.argv[0],
     '|'.join([x for x in sorted(debug.flagMap)])
 )
@@ -152,20 +145,6 @@ Software documentation and support at http://pysmi.sf.net
     if opt[0] == '--disable-fuzzy-source':
         doFuzzyMatchingFlag = False
 
-if not mibSearchers:
-    mibSearchers = defaultMibPackages
-
-if not mibStubs:
-    mibStubs = [x for x in baseMibs if x not in fakeMibs]
-
-if not mibSources:
-    mibSources = ['file:///usr/share/snmp/mibs',
-                  'http://mibs.snmplabs.com/asn1/@mib@']
-
-if not mibBorrowers:
-    mibBorrowers = [('http://mibs.snmplabs.com/pysnmp/notexts/@mib@', False),
-                    ('http://mibs.snmplabs.com/pysnmp/fulltexts/@mib@', True)]
-
 if inputMibs:
     mibSources.extend(list(set(['file://' + os.path.abspath(os.path.dirname(x))
                                 for x in inputMibs
@@ -173,6 +152,67 @@ if inputMibs:
     inputMibs = [os.path.basename(os.path.splitext(x)[0]) for x in inputMibs]
 else:
     sys.stderr.write('ERROR: MIB modules names not specified\r\n%s\r\n' % helpMessage)
+    sys.exit(-1)
+
+if not mibSources:
+    mibSources = ['file:///usr/share/snmp/mibs',
+                  'http://mibs.snmplabs.com/asn1/@mib@']
+
+if not dstFormat:
+    dstFormat = 'pysnmp'
+
+if dstFormat == 'pysnmp':
+    if not mibSearchers:
+        mibSearchers = defaultMibPackages
+
+    if not mibStubs:
+        mibStubs = [x for x in baseMibs if x not in fakeMibs]
+
+    if not mibBorrowers:
+        mibBorrowers = [('http://mibs.snmplabs.com/pysnmp/notexts/@mib@', False),
+                        ('http://mibs.snmplabs.com/pysnmp/fulltexts/@mib@', True)]
+
+    dstDirectory = os.path.expanduser("~")
+    if sys.platform[:3] == 'win':
+        dstDirectory = os.path.join(dstDirectory, 'PySNMP Configuration', 'mibs')
+    else:
+        dstDirectory = os.path.join(dstDirectory, '.pysnmp', 'mibs')
+
+    # Compiler infrastructure
+    codeGenerator = PySnmpCodeGen()
+    fileWriter = PyFileWriter(dstDirectory).setOptions(pyCompile=pyCompileFlag,
+                                                       pyOptimizationLevel=pyOptimizationLevel)
+
+elif dstFormat == 'json':
+    if not mibStubs:
+        mibStubs = baseMibs
+
+    if not mibBorrowers:
+        mibBorrowers = [('http://mibs.snmplabs.com/json/notexts/@mib@', False),
+                        ('http://mibs.snmplabs.com/json/fulltexts/@mib@', True)]
+
+    dstDirectory = os.path.join('.')
+
+    # Compiler infrastructure
+    codeGenerator = JsonCodeGen()
+    fileWriter = FileReader(dstDirectory).setOptions(suffix='.json')
+
+elif dstFormat == 'null':
+    if not mibStubs:
+        mibStubs = baseMibs
+
+    if not mibBorrowers:
+        mibBorrowers = [('http://mibs.snmplabs.com/pysnmp/notexts/@mib@', False),
+                        ('http://mibs.snmplabs.com/pysnmp/fulltexts/@mib@', True)]
+
+    dstDirectory = ''
+
+    # Compiler infrastructure
+    codeGenerator = NullCodeGen()
+    fileWriter = CallbackWriter(lambda *x: None)
+
+else:
+    sys.stderr.write('ERROR: unknown destination format: %s\r\n%s\r\n' % (dstFormat, helpMessage))
     sys.exit(-1)
 
 if verboseFlag:
@@ -203,8 +243,8 @@ Try various filenames while searching for MIB module: %s
        nodepsFlag and 'no' or 'yes',
        rebuildFlag and 'yes' or 'no',
        dryrunFlag and 'yes' or 'no',
-       pyCompileFlag and 'yes' or 'no',
-       pyOptimizationLevel,
+       dstFormat == 'pysnmp' and pyCompileFlag and 'yes' or 'no',
+       dstFormat == 'pysnmp' and pyOptimizationLevel,
        ignoreErrorsFlag and 'yes' or 'no',
        buildIndexFlag and 'yes' or 'no',
        genMibTextsFlag and 'yes' or 'no',
@@ -213,11 +253,9 @@ Try various filenames while searching for MIB module: %s
 # Initialize compiler infrastructure
 
 mibCompiler = MibCompiler(
-    parserFactory(**smiV1Relaxed)(tempdir=cacheDirectory),
-    PySnmpCodeGen(),
-    PyFileWriter(dstDirectory).setOptions(
-        pyCompile=pyCompileFlag, pyOptimizationLevel=pyOptimizationLevel
-    )
+    SmiV1CompatParser(tempdir=cacheDirectory),
+    codeGenerator,
+    fileWriter
 )
 
 try:
