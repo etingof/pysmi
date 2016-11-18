@@ -156,8 +156,7 @@ class SmiV2Parser(AbstractParser):
                             | importedKeyword"""
         p[0] = p[1]
 
-    @classmethod
-    def p_importedKeyword(cls, p):
+    def p_importedKeyword(self, p):
         """importedKeyword : importedSMIKeyword
                            | BITS
                            | INTEGER32
@@ -1151,7 +1150,12 @@ class SmiV2Parser(AbstractParser):
 
 
 #
-# Parser grammar relaxation follows
+# Parser grammar relaxation follows.
+#
+# The classes that follow serve a purpose of encapsulating assorted functions
+# into a namespace. The namespace type is not universally supported across all
+# Python versions we want to run on, thus the hack with `staticmethod` decorator
+#  and `self` first parameter.
 #
 
 #
@@ -1161,6 +1165,7 @@ class SmiV2Parser(AbstractParser):
 # noinspection PyIncorrectDocstring
 class SupportSmiV1Keywords(object):
     # NETWORKADDRESS added
+    @staticmethod
     def p_importedKeyword(self, p):
         """importedKeyword : importedSMIKeyword
                            | BITS
@@ -1180,6 +1185,7 @@ class SupportSmiV1Keywords(object):
         p[0] = p[1]
 
     # NETWORKADDRESS added
+    @staticmethod
     def p_typeSMIandSPPI(self, p):
         """typeSMIandSPPI : IPADDRESS
                           | NETWORKADDRESS
@@ -1190,6 +1196,7 @@ class SupportSmiV1Keywords(object):
         p[0] = p[1]
 
     # NETWORKADDRESS added
+    @staticmethod
     def p_ApplicationSyntax(self, p):
         """ApplicationSyntax : IPADDRESS anySubType
                              | NETWORKADDRESS anySubType
@@ -1211,6 +1218,7 @@ class SupportSmiV1Keywords(object):
             p[0] = ('ApplicationSyntax', p[1], p[2])
 
     # NETWORKADDRESS added for SEQUENCE syntax
+    @staticmethod
     def p_sequenceApplicationSyntax(self, p):
         """sequenceApplicationSyntax : IPADDRESS anySubType
                                      | NETWORKADDRESS anySubType
@@ -1230,6 +1238,7 @@ class SupportSmiV1Keywords(object):
 # noinspection PyIncorrectDocstring
 class SupportIndex(object):
     # SMIv1 IndexTypes added
+    @staticmethod
     def p_Index(self, p):
         """Index : ObjectName
                  | typeSMIv1"""
@@ -1239,6 +1248,7 @@ class SupportIndex(object):
         p[0] = isinstance(p[1], tuple) and p[1][1][0] or p[1]
 
     # for Index rule
+    @staticmethod
     def p_typeSMIv1(self, p):
         """typeSMIv1 : INTEGER
                      | OCTET STRING
@@ -1256,6 +1266,7 @@ class SupportIndex(object):
 # noinspection PyIncorrectDocstring
 class CommaInImport(object):
     # comma at the end of import list
+    @staticmethod
     def p_importIdentifiers(self, p):
         """importIdentifiers : importIdentifiers ',' importIdentifier
                              | importIdentifier
@@ -1272,6 +1283,7 @@ class CommaInImport(object):
 # noinspection PyIncorrectDocstring
 class CommaInSequence(object):
     # comma at the end of sequence list
+    @staticmethod
     def p_sequenceItems(self, p):
         """sequenceItems : sequenceItems ',' sequenceItem
                          | sequenceItem
@@ -1289,6 +1301,7 @@ class CommaInSequence(object):
 # noinspection PyIncorrectDocstring
 class CommaAndSpaces(object):
     # common typos handled (mix of commas and spaces)
+    @staticmethod
     def p_enumItems(self, p):
         """enumItems : enumItems ',' enumItem
                      | enumItem
@@ -1309,6 +1322,7 @@ class CommaAndSpaces(object):
 # noinspection PyIncorrectDocstring
 class UppercaseIdentifier(object):
     # common mistake - using UPPERCASE_IDENTIFIER
+    @staticmethod
     def p_enumItem(self, p):
         """enumItem : LOWERCASE_IDENTIFIER '(' enumNumber ')'
                     | UPPERCASE_IDENTIFIER '(' enumNumber ')'"""
@@ -1318,6 +1332,7 @@ class UppercaseIdentifier(object):
 # noinspection PyIncorrectDocstring
 class LowcaseIdentifier(object):
     # common mistake - LOWERCASE_IDENTIFIER in symbol's name
+    @staticmethod
     def p_notificationTypeClause(self, p):
         """notificationTypeClause : fuzzy_lowercase_identifier NOTIFICATION_TYPE NotificationObjectsPart STATUS Status DESCRIPTION Text ReferPart COLON_COLON_EQUAL '{' NotificationName '}'"""  # some MIBs have uppercase and/or lowercase id
         p[0] = ('notificationTypeClause', p[1],  # id
@@ -1332,6 +1347,7 @@ class LowcaseIdentifier(object):
 # noinspection PyIncorrectDocstring,PyIncorrectDocstring
 class CurlyBracesInEnterprises(object):
     # common mistake - curly brackets around enterprise symbol
+    @staticmethod
     def p_trapTypeClause(self, p):
         """trapTypeClause : fuzzy_lowercase_identifier TRAP_TYPE EnterprisePart VarPart DescrPart ReferPart COLON_COLON_EQUAL NUMBER"""
         # libsmi: TODO: range of number?
@@ -1343,6 +1359,7 @@ class CurlyBracesInEnterprises(object):
                 #  p[6], # reference
                 p[8])  # NUMBER
 
+    @staticmethod
     def p_EnterprisePart(self, p):
         """EnterprisePart : ENTERPRISE objectIdentifier
                           | ENTERPRISE '{' objectIdentifier '}'"""
@@ -1356,6 +1373,7 @@ class CurlyBracesInEnterprises(object):
 # noinspection PyIncorrectDocstring
 class NoCells(object):
     # common mistake - no Cells
+    @staticmethod
     def p_CreationPart(self, p):
         """CreationPart : CREATION_REQUIRES '{' Cells '}'
                         | CREATION_REQUIRES '{' '}'
