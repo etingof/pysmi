@@ -71,7 +71,7 @@ END
         )
 
     def testObjectGroupObjects(self):
-        self.assertTupleEqual(
+        self.assertEqual(
             self.ctx['testObjectGroup'].getObjects(),
             (('TEST-MIB', 'testStorageType'), ('TEST-MIB', 'testRowStatus')),
             'bad OBJECTS'

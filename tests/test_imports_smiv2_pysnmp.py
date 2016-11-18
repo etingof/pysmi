@@ -40,7 +40,7 @@ END
         exec (codeobj, self.ctx, self.ctx)
 
     def testModuleImportsRequiredMibs(self):
-        self.assertTupleEqual(
+        self.assertEqual(
             self.mibInfo.imported,
             ('SNMP-FRAMEWORK-MIB', 'SNMPv2-CONF', 'SNMPv2-SMI', 'SNMPv2-TC'),
             'imported MIBs not reported'

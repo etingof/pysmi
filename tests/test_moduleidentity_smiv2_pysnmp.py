@@ -76,7 +76,7 @@ END
         )
 
     def testModuleIdentityRevisions(self):
-        self.assertTupleEqual(
+        self.assertEqual(
             self.ctx['testModule'].getRevisions(),
             ('2000-01-10 00:00',),
             'bad REVISIONS'

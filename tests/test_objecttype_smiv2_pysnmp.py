@@ -441,7 +441,7 @@ END
         )
 
     def testObjectTypeTableRowIndex(self):
-        self.assertTupleEqual(
+        self.assertEqual(
             self.ctx['testEntry'].getIndexNames(),
             ((0, 'TEST-MIB', 'testIndex'),),
             'bad table index'
@@ -495,7 +495,7 @@ END
         exec (codeobj, self.ctx, self.ctx)
 
     def testObjectTypeTableRowIndex(self):
-        self.assertTupleEqual(
+        self.assertEqual(
             self.ctx['testEntry'].getIndexNames(),
             ((1, 'TEST-MIB', 'testIndex'),),
             'bad IMPLIED table index'
@@ -557,7 +557,7 @@ END
         exec (codeobj, self.ctx, self.ctx)
 
     def testObjectTypeTableRowIndex(self):
-        self.assertTupleEqual(
+        self.assertEqual(
             self.ctx['testEntry'].getIndexNames(),
             ((0, 'TEST-MIB', 'testIndex'), (0, 'TEST-MIB', 'testValue')),
             'bad multiple table indices'
@@ -638,7 +638,7 @@ END
 
     def testObjectTypeTableRowAugmention(self):
         # XXX provide getAugmentation() method
-        self.assertTupleEqual(
+        self.assertEqual(
             list(self.ctx['testEntry'].augmentingRows.keys())[0],
             ('TEST-MIB', 'testEntryExt'),
             'bad AUGMENTS table clause'
