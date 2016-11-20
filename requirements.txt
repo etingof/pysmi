@@ -1,3 +1,2 @@
 ply
-ordereddict
-simplejson==2.1.0
+ordereddict; python_version < '2.7'
