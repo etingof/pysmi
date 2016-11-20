@@ -15,4 +15,9 @@
 * create a command-line tool for splitting MIBs stored in a single file
 * create a MIB querying tool: get MIB module's OIDs, enterprise IDs,
   canonical name(s); search MIB objects by regexp; build source .index
-* implement xml/html/json/yaml codegeneration backend
+* implement xml/html/yaml codegeneration backend
+* json codegen:
+  - make schema configurable
+  - implement index generation
+  - further simplify/review codegen code
+  - rebuild the docs
