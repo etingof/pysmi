@@ -2,6 +2,9 @@ Revision 0.0.8, XX-XX-2016
 --------------------------
 
 - JSON code generating backend implemented
+- Package structure flattened for easier use. Some names were sneaked
+  into codegen classes what (in rare cases) may cause backward compatibility
+  issues.
 - Source code statically analyzed and hardened.
 - Files closed explicitly to mute ResourceWarnings
 

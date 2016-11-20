@@ -65,6 +65,34 @@ Ignored MIBs:
 Failed MIBs: 
 ```
 
+You can also turn ASN.1 MIB into a general purpose JSON document:
+
+```
+$ mibdump.py --generate-mib-texts  --destination-format json IF-MIB
+Source MIB repositories: file:///usr/share/snmp/mibs, http://mibs.snmplabs.com/asn1/@mib@
+Borrow missing/failed MIBs from: http://mibs.snmplabs.com/json/fulltexts/@mib@
+Existing/compiled MIB locations: 
+Compiled MIBs destination directory: .
+MIBs excluded from code generation: RFC-1212, RFC-1215, RFC1065-SMI, RFC1155-SMI, RFC1158-MIB, RFC1213-MIB, SNMPv2-CONF, SNMPv2-SMI, SNMPv2-TC, SNMPv2-TM
+MIBs to compile: IF-MIB
+Destination format: json
+Parser grammar cache directory: not used
+Also compile all relevant MIBs: yes
+Rebuild MIBs regardless of age: yes
+Do not create/update MIBs: no
+Byte-compile Python modules: no (optimization level no)
+Ignore compilation errors: no
+Generate OID->MIB index: no
+Generate texts in MIBs: yes
+Try various filenames while searching for MIB module: yes
+Created/updated MIBs: IANAifType-MIB, IF-MIB, SNMPv2-MIB
+Pre-compiled MIBs borrowed: 
+Up to date MIBs: SNMPv2-CONF, SNMPv2-SMI, SNMPv2-TC
+Missing source MIBs: 
+Ignored MIBs: 
+Failed MIBs: 
+```
+
 The pysmi library can automatically fetch required MIBs from HTTP, FTP sites
 or local directories. You could configure any MIB source available to you (including
 [http://mibs.snmplabs.com/asn1/](http://mibs.snmplabs.com/asn1/)) for that purpose.
