@@ -243,7 +243,7 @@ Try various filenames while searching for MIB module: %s
        rebuildFlag and 'yes' or 'no',
        dryrunFlag and 'yes' or 'no',
        dstFormat == 'pysnmp' and pyCompileFlag and 'yes' or 'no',
-       dstFormat == 'pysnmp' and pyOptimizationLevel,
+       dstFormat == 'pysnmp' and pyOptimizationLevel and 'yes' or 'no',
        ignoreErrorsFlag and 'yes' or 'no',
        buildIndexFlag and 'yes' or 'no',
        genMibTextsFlag and 'yes' or 'no',
