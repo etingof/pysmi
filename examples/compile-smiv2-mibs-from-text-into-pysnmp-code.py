@@ -9,12 +9,13 @@
 # to compile IMPORT'ed MIBs as well.
 #
 import sys
-from pysmi.reader.callback import CallbackReader
-from pysmi.searcher.stub import StubSearcher
-from pysmi.writer.callback import CallbackWriter
-from pysmi.parser.smi import parserFactory
-from pysmi.codegen.pysnmp import PySnmpCodeGen, baseMibs
+from pysmi.reader import CallbackReader
+from pysmi.searcher import StubSearcher
+from pysmi.writer import CallbackWriter
+from pysmi.parser import SmiV2Parser
+from pysmi.codegen import PySnmpCodeGen
 from pysmi.compiler import MibCompiler
+# from pysmi import debug
 
 # debug.setLogger(debug.Debug('compiler'))
 
@@ -24,7 +25,7 @@ srcDir = '/usr/share/snmp/mibs/'  # we will read MIBs from here
 # Initialize compiler infrastructure
 
 mibCompiler = MibCompiler(
-    parserFactory()(),
+    SmiV2Parser(),
     PySnmpCodeGen(),
     # out own callback function stores results in its own way
     CallbackWriter(lambda m, d, c: sys.stdout.write(d))
@@ -36,7 +37,7 @@ mibCompiler.addSources(
 )
 
 # never recompile MIBs with MACROs
-mibCompiler.addSearchers(StubSearcher(*baseMibs))
+mibCompiler.addSearchers(StubSearcher(*PySnmpCodeGen.baseMibs))
 
 # run non-recursive MIB compilation
 results = mibCompiler.compile(*inputMibs, **dict(noDeps=True))

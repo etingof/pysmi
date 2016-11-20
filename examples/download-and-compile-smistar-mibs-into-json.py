@@ -4,16 +4,16 @@
 #
 # Try to support both SMIv1 and SMIv2 flavors of SMI as well as
 # popular deviations from official syntax found in the wild.
-##
+#
 from pysmi.reader import FileReader, HttpReader
 from pysmi.searcher import StubSearcher
 from pysmi.writer import CallbackWriter
 from pysmi.parser import SmiStarParser
 from pysmi.codegen import JsonCodeGen
 from pysmi.compiler import MibCompiler
-from pysmi import debug
+# from pysmi import debug
 
-debug.setLogger(debug.Debug('reader', 'compiler'))
+# debug.setLogger(debug.Debug('reader', 'compiler'))
 
 inputMibs = ['IF-MIB', 'IP-MIB']
 srcDirectories = ['/usr/share/snmp/mibs']
@@ -43,4 +43,4 @@ mibCompiler.addSearchers(StubSearcher(*JsonCodeGen.baseMibs))
 # run non-recursive MIB compilation
 results = mibCompiler.compile(*inputMibs)
 
-print('Results: %s' % ', '.join(['%s:%s' % (x, results[x]) for x in results]))
+print('\n# Results: %s' % ', '.join(['%s:%s' % (x, results[x]) for x in results]))

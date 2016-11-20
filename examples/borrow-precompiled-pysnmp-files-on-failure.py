@@ -4,15 +4,15 @@
 # some reason, attempt to download precompiled version of
 # failed MIB and store it locally as if we had compiled it.
 #
-from pysmi.reader.httpclient import HttpReader
-from pysmi.searcher.pyfile import PyFileSearcher
-from pysmi.searcher.stub import StubSearcher
-from pysmi.borrower.pyfile import PyFileBorrower
-from pysmi.writer.pyfile import PyFileWriter
-from pysmi.parser.smi import parserFactory
-from pysmi.parser.dialect import smiV1Relaxed
-from pysmi.codegen.pysnmp import PySnmpCodeGen, baseMibs
+from pysmi.reader import HttpReader
+from pysmi.searcher import PyFileSearcher
+from pysmi.searcher import StubSearcher
+from pysmi.borrower import PyFileBorrower
+from pysmi.writer import PyFileWriter
+from pysmi.parser import SmiStarParser
+from pysmi.codegen import PySnmpCodeGen
 from pysmi.compiler import MibCompiler
+# from pysmi import debug
 
 # debug.setLogger(debug.Debug('borrower', 'reader', 'searcher'))
 
@@ -28,14 +28,14 @@ dstDirectory = '.pysnmp-mibs'
 # Initialize compiler infrastructure
 
 mibCompiler = MibCompiler(
-    parserFactory(**smiV1Relaxed)(), PySnmpCodeGen(), PyFileWriter(dstDirectory)
+    SmiStarParser(), PySnmpCodeGen(), PyFileWriter(dstDirectory)
 )
 
 # search for source MIBs at Web sites
 mibCompiler.addSources(*[HttpReader(*x) for x in httpSources])
 
 # never recompile MIBs with MACROs
-mibCompiler.addSearchers(StubSearcher(*baseMibs))
+mibCompiler.addSearchers(StubSearcher(*PySnmpCodeGen.baseMibs))
 
 # check compiled/borrowed MIBs in our own productions
 mibCompiler.addSearchers(PyFileSearcher(dstDirectory))
