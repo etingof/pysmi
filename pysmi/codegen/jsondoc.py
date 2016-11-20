@@ -8,6 +8,10 @@ import sys
 import re
 import json
 from time import strptime, strftime
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 from pysmi.mibinfo import MibInfo
 from pysmi.codegen.base import AbstractCodeGen
 from pysmi import error
@@ -133,9 +137,11 @@ class JsonCodeGen(AbstractCodeGen):
                 imports[module] += self.constImports[module]
             else:
                 imports[module] = self.constImports[module]
-        outDict = {
-            'class': 'imports'
-        }
+        outDict = OrderedDict(
+            {
+                'class': 'imports'
+            }
+        )
         for module in sorted(imports):
             symbols = []
             for symbol in set(imports[module]):
@@ -146,7 +152,7 @@ class JsonCodeGen(AbstractCodeGen):
                 if module not in outDict:
                     outDict[module] = []
                 outDict[module].extend(symbols)
-        return {'imports': outDict}, tuple(sorted(imports))
+        return OrderedDict(imports=outDict), tuple(sorted(imports))
 
     # noinspection PyMethodMayBeStatic
     def genLabel(self, symbol, classmode=0):
@@ -156,11 +162,11 @@ class JsonCodeGen(AbstractCodeGen):
         self._seenSyms.add(symbol)
 
     # noinspection PyUnusedLocal
-    def regSym(self, symbol, outStr, parentOid=None, moduleIdentity=0):
+    def regSym(self, symbol, outDict, parentOid=None, moduleIdentity=0):
         if symbol in self._seenSyms and symbol not in self._importMap:
             raise error.PySmiSemanticError('Duplicate symbol found: %s' % symbol)
         self.addToExports(symbol, moduleIdentity)
-        self._out[symbol] = outStr
+        self._out[symbol] = outDict
 
     def genNumericOid(self, oid):
         numericOid = ()
@@ -207,11 +213,13 @@ class JsonCodeGen(AbstractCodeGen):
         label = self.genLabel(name)
         name = self.transOpers(name)
         oidStr, parentOid = oid
-        outDict = {
-            'name': name,
-            'oid': oidStr,
-            'class': 'agentcapabilities',
-        }
+        outDict = OrderedDict(
+            {
+                'name': name,
+                'oid': oidStr,
+                'class': 'agentcapabilities',
+            }
+        )
         if self.genRules['text'] and description:
             outDict['description'] = description
         self.regSym(name, outDict, parentOid)
@@ -223,11 +231,13 @@ class JsonCodeGen(AbstractCodeGen):
         label = self.genLabel(name)
         name = self.transOpers(name)
         oidStr, parentOid = oid
-        outDict = {
-            'name': name,
-            'oid': oidStr,
-            'class': 'moduleidentity',
-        }
+        outDict = OrderedDict(
+            {
+                'name': name,
+                'oid': oidStr,
+                'class': 'moduleidentity',
+            }
+        )
         if revisions:
             outDict['revisions'] = revisions
         if self.genRules['text']:
@@ -248,11 +258,13 @@ class JsonCodeGen(AbstractCodeGen):
         label = self.genLabel(name)
         name = self.transOpers(name)
         oidStr, parentOid = oid
-        outDict = {
-            'name': name,
-            'oid': oidStr,
-            'class': 'modulecompliance',
-        }
+        outDict = OrderedDict(
+            {
+                'name': name,
+                'oid': oidStr,
+                'class': 'modulecompliance',
+            }
+        )
         if compliances:
             outDict['modulecompliance'] = compliances
         if self.genRules['text'] and description:
@@ -266,11 +278,13 @@ class JsonCodeGen(AbstractCodeGen):
         label = self.genLabel(name)
         name = self.transOpers(name)
         oidStr, parentOid = oid
-        outDict = {
-            'name': name,
-            'oid': oidStr,
-            'class': 'notificationgroup',
-        }
+        outDict = OrderedDict(
+            {
+                'name': name,
+                'oid': oidStr,
+                'class': 'notificationgroup',
+            }
+        )
         if objects:
             outDict['objects'] = [{'module': self.moduleName[0], 'object': self.transOpers(obj)} for obj in objects]
         if self.genRules['text'] and description:
@@ -284,11 +298,13 @@ class JsonCodeGen(AbstractCodeGen):
         label = self.genLabel(name)
         name = self.transOpers(name)
         oidStr, parentOid = oid
-        outDict = {
-            'name': name,
-            'oid': oidStr,
-            'class': 'notificationtype',
-        }
+        outDict = OrderedDict(
+            {
+                'name': name,
+                'oid': oidStr,
+                'class': 'notificationtype',
+            }
+        )
         if objects:
             outDict['objects'] = [{'module': self.moduleName[0], 'object': self.transOpers(obj)} for obj in objects]
         if self.genRules['text'] and description:
@@ -302,11 +318,13 @@ class JsonCodeGen(AbstractCodeGen):
         label = self.genLabel(name)
         name = self.transOpers(name)
         oidStr, parentOid = oid
-        outDict = {
-            'name': name,
-            'oid': oidStr,
-            'class': 'objectgroup',
-        }
+        outDict = OrderedDict(
+            {
+                'name': name,
+                'oid': oidStr,
+                'class': 'objectgroup',
+            }
+        )
         if objects:
             outDict['objects'] = [{'module': self.moduleName[0], 'object': self.transOpers(obj)} for obj in objects]
         if self.genRules['text'] and description:
@@ -320,12 +338,14 @@ class JsonCodeGen(AbstractCodeGen):
         label = self.genLabel(name)
         name = self.transOpers(name)
         oidStr, parentOid = oid
-        outDict = {
-            'name': name,
-            'module': self.moduleName[0],
-            'oid': oidStr,
-            'class': 'objectidentity',
-        }
+        outDict = OrderedDict(
+            {
+                'name': name,
+                'module': self.moduleName[0],
+                'oid': oidStr,
+                'class': 'objectidentity',
+            }
+        )
         if self.genRules['text'] and description:
             outDict['description'] = description
         self.regSym(name, outDict, parentOid)
@@ -339,34 +359,40 @@ class JsonCodeGen(AbstractCodeGen):
         oidStr, parentOid = oid
         indexStr, fakeStrlist, fakeSyms = index or ('', '', [])
         defval = self.genDefVal(defval, objname=name)
-        outDict = {
-            'name': name,
-            'oid': oidStr,
-            'syntax': syntax[1],
-            'class': 'objecttype',
-        }
-        if indexStr:
-            outDict['indices'] = indexStr
+        outDict = OrderedDict(
+            {
+                'name': name,
+                'oid': oidStr,
+                'class': 'objecttype',
+            }
+        )
+        if syntax[1]:
+            outDict['syntax'] = syntax[1]
         if defval:
             outDict['default'] = defval
         if units:
             outDict['units'] = units
         if maxaccess:
             outDict['maxaccess'] = maxaccess
+        if indexStr:
+            outDict['indices'] = indexStr
         if augmention:
             augmention = self.transOpers(augmention)
-            outDict['augmention'] = {
-                'name': name,
-                'module': self.moduleName[0],
-                'object': augmention
-            }
+            outDict['augmention'] = OrderedDict(
+                {
+                    'name': name,
+                    'module': self.moduleName[0],
+                    'object': augmention
+                }
+            )
         if self.genRules['text'] and description:
             outDict['description'] = description
         self.regSym(name, outDict, parentOid)
-        if fakeSyms:  # fake symbols for INDEX to support SMIv1
-            for i in range(len(fakeSyms)):
-                fakeOutStr = fakeStrlist[i] % oidStr
-                self.regSym(fakeSyms[i], fakeOutStr, name)
+# TODO
+#        if fakeSyms:  # fake symbols for INDEX to support SMIv1
+#            for i in range(len(fakeSyms)):
+#                fakeOutStr = fakeStrlist[i] % oidStr
+#                self.regSym(fakeSyms[i], fakeOutStr, name)
         return outDict
 
     # noinspection PyUnusedLocal
@@ -375,11 +401,13 @@ class JsonCodeGen(AbstractCodeGen):
         label = self.genLabel(name)
         name = self.transOpers(name)
         enterpriseStr, parentOid = enterprise
-        outDict = {
-            'name': name,
-            'oid': enterpriseStr + '0.' + str(value),
-            'class': 'notificationtype',
-        }
+        outDict = OrderedDict(
+            {
+                'name': name,
+                'oid': enterpriseStr + '0.' + str(value),
+                'class': 'notificationtype',
+            }
+        )
         if variables:
             outDict['objects'] = [{'module': self.moduleName[0], 'object': self.transOpers(obj)} for obj in variables]
         if self.genRules['text'] and description:
@@ -390,10 +418,12 @@ class JsonCodeGen(AbstractCodeGen):
     # noinspection PyUnusedLocal
     def genTypeDeclaration(self, data, classmode=0):
         name, declaration = data
-        outDict = {
-            'name': name,
-            'class': 'type',
-        }
+        outDict = OrderedDict(
+            {
+                'name': name,
+                'class': 'type',
+            }
+        )
         if declaration:
             parentType, attrs = declaration
             if parentType:  # skipping SEQUENCE case
@@ -408,11 +438,13 @@ class JsonCodeGen(AbstractCodeGen):
         label = self.genLabel(name)
         name = self.transOpers(name)
         oidStr, parentOid = oid
-        outDict = {
-            'class': 'value',
-            'name': name,
-            'oid': oidStr,
-        }
+        outDict = OrderedDict(
+            {
+                'class': 'objectidentity',
+                'name': name,
+                'oid': oidStr,
+            }
+        )
         self.regSym(name, outDict, parentOid)
         return outDict
 
@@ -458,7 +490,7 @@ class JsonCodeGen(AbstractCodeGen):
             return {}
         if not objname:
             return data
-        outDict = {}
+        outDict = OrderedDict()
         defval = data[0]
         defvalType = self.getBaseType(objname, self.moduleName[0])
         if isinstance(defval, (int, long)):  # number
@@ -640,10 +672,12 @@ class JsonCodeGen(AbstractCodeGen):
         objType = self.typeClasses.get(objType, objType)
         objType = self.transOpers(objType)
         subtype = len(data) == 2 and data[1] or {}
-        outDict = {
-            'type': objType,
-            'class': 'type',
-        }
+        outDict = OrderedDict(
+            {
+                'type': objType,
+                'class': 'type',
+            }
+        )
         if subtype:
             outDict['constraints'] = subtype
         return 'MibScalar', outDict
@@ -652,7 +686,7 @@ class JsonCodeGen(AbstractCodeGen):
     def genTypeDeclarationRHS(self, data, classmode=0):
         if len(data) == 1:
             parentType, attrs = data[0]
-            outDict = {}
+            outDict = OrderedDict()
             if not attrs:
                 return outDict
             # just syntax
@@ -661,10 +695,12 @@ class JsonCodeGen(AbstractCodeGen):
             # Textual convention
             display, syntax = data
             parentType, attrs = syntax
-            outDict = {
+            outDict = OrderedDict(
+                {
                     'type': attrs['type'],
                     'class': 'textualconvention',
-            }
+                }
+            )
 
             if display:
                 outDict['displayhint'] = display
@@ -736,17 +772,12 @@ class JsonCodeGen(AbstractCodeGen):
         for sym in self.symbolTable[self.moduleName[0]]['_symtable_order']:
             if sym not in self._out:
                 raise error.PySmiCodegenError('No generated code for symbol %s' % sym)
-            if 'class' not in self._out[sym]:
-                raise error.PySmiCodegenError('No object class specified for symbol %s' % sym)
-            klass = self._out[sym].pop('class')
-            if klass not in outDict:
-                outDict[klass] = {}
-            outDict[klass][sym] = self._out[sym]
+            outDict[sym] = self._out[sym]
         if 'comments' in kwargs:
-            outDict['meta'] = {
-                'comments': kwargs['comments'],
-                'module': self.moduleName[0],
-            }
+            outDict['meta'] = OrderedDict(
+                comments=kwargs['comments'],
+                module=self.moduleName[0],
+            )
         debug.logger & debug.flagCodegen and debug.logger(
             'canonical MIB name %s (%s), imported MIB(s) %s, Python code size %s bytes' % (
                 self.moduleName[0], moduleOid, ','.join(importedModules) or '<none>', len(outDict)))
