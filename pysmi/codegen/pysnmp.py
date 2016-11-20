@@ -75,8 +75,8 @@ class PySnmpCodeGen(AbstractCodeGen):
     # - or import base ASN.1 types from implementation-specific MIBs
     fakeMibs = ('ASN1',
                 'ASN1-ENUMERATION',
-                'ASN1-REFINEMENT',
-                'SNMP-FRAMEWORK-MIB',
+                'ASN1-REFINEMENT')
+    baseMibs = ('SNMP-FRAMEWORK-MIB',
                 'SNMP-TARGET-MIB',
                 'TRANSPORT-ADDRESS-MIB') + AbstractCodeGen.baseMibs
 
