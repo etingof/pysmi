@@ -21,3 +21,4 @@
   - implement index generation
   - further simplify/review codegen code
   - rebuild the docs
+  - conditionally require simplejson and ordereddict
