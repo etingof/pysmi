@@ -1,2 +1,3 @@
 ply
 ordereddict
+simplejson==2.1.0

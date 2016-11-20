@@ -6,8 +6,11 @@
 #
 import sys
 import re
-import json
 from time import strptime, strftime
+try:
+    import json
+except ImportError:
+    import simplejson as json
 try:
     from collections import OrderedDict
 except ImportError:
@@ -734,8 +737,8 @@ class JsonCodeGen(AbstractCodeGen):
             outDict[sym] = self._out[sym]
         if 'comments' in kwargs:
             outDict['meta'] = OrderedDict()
-            outDict['comments'] = kwargs['comments']
-            outDict['module'] = self.moduleName[0]
+            outDict['meta']['comments'] = kwargs['comments']
+            outDict['meta']['module'] = self.moduleName[0]
         debug.logger & debug.flagCodegen and debug.logger(
             'canonical MIB name %s (%s), imported MIB(s) %s, Python code size %s bytes' % (
                 self.moduleName[0], moduleOid, ','.join(importedModules) or '<none>', len(outDict)))
