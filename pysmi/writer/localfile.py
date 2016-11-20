@@ -13,7 +13,7 @@ from pysmi import debug
 from pysmi import error
 
 
-class FileReader(AbstractWriter):
+class FileWriter(AbstractWriter):
     """Stores transformed MIB modules in files at specified location.
 
        User is expected to pass *FileReader* class instance to

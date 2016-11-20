@@ -13,10 +13,9 @@ import getopt
 from pysmi.reader import getReadersFromUrls
 from pysmi.searcher import PyFileSearcher, PyPackageSearcher, StubSearcher
 from pysmi.borrower import PyFileBorrower
-from pysmi.writer import PyFileWriter, FileReader, CallbackWriter
+from pysmi.writer import PyFileWriter, FileWriter, CallbackWriter
 from pysmi.parser import SmiV1CompatParser
-from pysmi.codegen.pysnmp import PySnmpCodeGen, defaultMibPackages, baseMibs, fakeMibs
-from pysmi.codegen import JsonCodeGen, NullCodeGen
+from pysmi.codegen import PySnmpCodeGen, JsonCodeGen, NullCodeGen
 from pysmi.compiler import MibCompiler
 from pysmi import debug
 from pysmi import error
@@ -163,10 +162,10 @@ if not dstFormat:
 
 if dstFormat == 'pysnmp':
     if not mibSearchers:
-        mibSearchers = defaultMibPackages
+        mibSearchers = PySnmpCodeGen.defaultMibPackages
 
     if not mibStubs:
-        mibStubs = [x for x in baseMibs if x not in fakeMibs]
+        mibStubs = [x for x in PySnmpCodeGen.baseMibs if x not in PySnmpCodeGen.fakeMibs]
 
     if not mibBorrowers:
         mibBorrowers = [('http://mibs.snmplabs.com/pysnmp/notexts/@mib@', False),
@@ -185,7 +184,7 @@ if dstFormat == 'pysnmp':
 
 elif dstFormat == 'json':
     if not mibStubs:
-        mibStubs = baseMibs
+        mibStubs = JsonCodeGen.baseMibs
 
     if not mibBorrowers:
         mibBorrowers = [('http://mibs.snmplabs.com/json/notexts/@mib@', False),
@@ -195,11 +194,11 @@ elif dstFormat == 'json':
 
     # Compiler infrastructure
     codeGenerator = JsonCodeGen()
-    fileWriter = FileReader(dstDirectory).setOptions(suffix='.json')
+    fileWriter = FileWriter(dstDirectory).setOptions(suffix='.json')
 
 elif dstFormat == 'null':
     if not mibStubs:
-        mibStubs = baseMibs
+        mibStubs = NullCodeGen.baseMibs
 
     if not mibBorrowers:
         mibBorrowers = [('http://mibs.snmplabs.com/pysnmp/notexts/@mib@', False),
