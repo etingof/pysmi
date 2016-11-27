@@ -804,3 +804,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         debug.logger & debug.flagCodegen and debug.logger(
             'OID->MIB index built, %s entries, %s bytes' % (count, len(out)))
         return out
+
+# backward compatibility
+baseMibs = PySnmpCodeGen.baseMibs
+fakeMibs = PySnmpCodeGen.fakeMibs
