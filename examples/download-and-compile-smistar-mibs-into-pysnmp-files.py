@@ -12,14 +12,14 @@
 # Also, we do not check if target file already exists thus MIB
 # compilation occurs on every invocation.
 #
-from pysmi.reader.httpclient import HttpReader
-from pysmi.reader.ftpclient import FtpReader
-from pysmi.searcher.stub import StubSearcher
-from pysmi.writer.pyfile import PyFileWriter
-from pysmi.parser.smi import parserFactory
-from pysmi.parser.dialect import smiV1Relaxed
-from pysmi.codegen.pysnmp import PySnmpCodeGen, baseMibs
+from pysmi.reader import HttpReader
+from pysmi.reader import FtpReader
+from pysmi.searcher import StubSearcher
+from pysmi.writer import PyFileWriter
+from pysmi.parser import SmiStarParser
+from pysmi.codegen import PySnmpCodeGen
 from pysmi.compiler import MibCompiler
+# from pysmi import debug
 
 # debug.setLogger(debug.Debug('all'))
 
@@ -35,7 +35,7 @@ dstDirectory = '.pysnmp-mibs'
 # Initialize compiler infrastructure
 
 mibCompiler = MibCompiler(
-    parserFactory(**smiV1Relaxed)(), PySnmpCodeGen(), PyFileWriter(dstDirectory)
+    SmiStarParser(), PySnmpCodeGen(), PyFileWriter(dstDirectory)
 )
 
 # search for source MIBs at Web and FTP sites
@@ -43,7 +43,7 @@ mibCompiler.addSources(*[HttpReader(*x) for x in httpSources])
 mibCompiler.addSources(*[FtpReader(*x) for x in ftpSources])
 
 # never recompile MIBs with MACROs
-mibCompiler.addSearchers(StubSearcher(*baseMibs))
+mibCompiler.addSearchers(StubSearcher(*PySnmpCodeGen.baseMibs))
 
 # run non-recursive MIB compilation
 results = mibCompiler.compile(*inputMibs, **dict(noDeps=True))
