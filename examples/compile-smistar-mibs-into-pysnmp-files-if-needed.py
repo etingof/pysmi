@@ -16,15 +16,13 @@
 # large] comments and texts found in MIBs. If you need them in pysnmp
 # MIB modules, just pass genTexts flag to MIB compiler.
 # 
-from pysmi.reader.localfile import FileReader
-from pysmi.searcher.pyfile import PyFileSearcher
-from pysmi.searcher.pypackage import PyPackageSearcher
-from pysmi.searcher.stub import StubSearcher
-from pysmi.writer.pyfile import PyFileWriter
-from pysmi.parser.smi import parserFactory
-from pysmi.parser.dialect import smiV1Relaxed
-from pysmi.codegen.pysnmp import PySnmpCodeGen, defaultMibPackages, baseMibs
+from pysmi.reader import FileReader
+from pysmi.searcher import PyFileSearcher, PyPackageSearcher, StubSearcher
+from pysmi.writer import PyFileWriter
+from pysmi.parser import SmiStarParser
+from pysmi.codegen import PySnmpCodeGen
 from pysmi.compiler import MibCompiler
+# from pysmi import debug
 
 # debug.setLogger(debug.Debug('reader', 'compiler'))
 
@@ -34,7 +32,7 @@ dstDirectory = '.pysnmp-mibs'
 
 # Initialize compiler infrastructure
 
-mibCompiler = MibCompiler(parserFactory(**smiV1Relaxed)(),
+mibCompiler = MibCompiler(SmiStarParser(),
                           PySnmpCodeGen(),
                           PyFileWriter(dstDirectory))
 
@@ -44,10 +42,10 @@ mibCompiler.addSources(*[FileReader(x) for x in srcDirectories])
 # check compiled MIBs in our own productions
 mibCompiler.addSearchers(PyFileSearcher(dstDirectory))
 # ...and at default PySNMP MIBs packages
-mibCompiler.addSearchers(*[PyPackageSearcher(x) for x in defaultMibPackages])
+mibCompiler.addSearchers(*[PyPackageSearcher(x) for x in PySnmpCodeGen.defaultMibPackages])
 
 # never recompile MIBs with MACROs
-mibCompiler.addSearchers(StubSearcher(*baseMibs))
+mibCompiler.addSearchers(StubSearcher(*PySnmpCodeGen.baseMibs))
 
 # run [possibly recursive] MIB compilation
 results = mibCompiler.compile(*inputMibs)  #, rebuild=True, genTexts=True)

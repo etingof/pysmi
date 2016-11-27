@@ -6,13 +6,14 @@
 #
 # Fetched pysnmp MIB(s) are stored in a local directory.
 #
-from pysmi.reader.httpclient import HttpReader
-from pysmi.searcher.pyfile import PyFileSearcher
-from pysmi.borrower.pyfile import PyFileBorrower
-from pysmi.writer.pyfile import PyFileWriter
-from pysmi.parser.null import NullParser
-from pysmi.codegen.null import NullCodeGen
+from pysmi.reader import HttpReader
+from pysmi.searcher import PyFileSearcher
+from pysmi.borrower import PyFileBorrower
+from pysmi.writer import PyFileWriter
+from pysmi.parser import NullParser
+from pysmi.codegen import NullCodeGen
 from pysmi.compiler import MibCompiler
+# from pysmi import debug
 
 # debug.setLogger(debug.Debug('compiler'))
 

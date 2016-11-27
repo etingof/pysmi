@@ -1,1 +1,1 @@
-# This file is necessary to make this directory a package.
+from pysmi.lexer.smi import SmiV2Lexer
