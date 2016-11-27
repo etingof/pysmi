@@ -1,7 +1,6 @@
 
 SNMP MIB parser
 ---------------
-[![Downloads](https://img.shields.io/pypi/dm/pysmi.svg)](https://pypi.python.org/pypi/pysmi)
 [![PyPI](https://img.shields.io/pypi/v/pysmi.svg?maxAge=2592000)](https://pypi.python.org/pypi/pysmi)
 [![Build status](https://travis-ci.org/etingof/pysmi.svg?branch=master)](https://secure.travis-ci.org/etingof/pysmi)
 [![Coverage Status](https://img.shields.io/codecov/c/github/etingof/pysmi.svg)](https://codecov.io/github/etingof/pysmi)
