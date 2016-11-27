@@ -11,8 +11,8 @@ import os
 import sys
 import getopt
 from pysmi.reader import getReadersFromUrls
-from pysmi.searcher import PyFileSearcher, PyPackageSearcher, StubSearcher
-from pysmi.borrower import PyFileBorrower
+from pysmi.searcher import AnyFileSearcher, PyFileSearcher, PyPackageSearcher, StubSearcher
+from pysmi.borrower import AnyFileBorrower, PyFileBorrower
 from pysmi.writer import PyFileWriter, FileWriter, CallbackWriter
 from pysmi.parser import SmiV1CompatParser
 from pysmi.codegen import PySnmpCodeGen, JsonCodeGen, NullCodeGen
@@ -178,7 +178,19 @@ if dstFormat == 'pysnmp':
         dstDirectory = os.path.join(dstDirectory, '.pysnmp', 'mibs')
 
     # Compiler infrastructure
+
+    borrowers = [PyFileBorrower(x[1], genTexts=mibBorrowers[x[0]][1])
+                 for x in enumerate(getReadersFromUrls(*[m[0] for m in mibBorrowers], **dict(lowcaseMatching=False)))]
+
+    searchers = [PyFileSearcher(dstDirectory)]
+
+    for mibSearcher in mibSearchers:
+        searchers.append(PyPackageSearcher(mibSearcher))
+
+    searchers.append(StubSearcher(*mibStubs))
+
     codeGenerator = PySnmpCodeGen()
+
     fileWriter = PyFileWriter(dstDirectory).setOptions(pyCompile=pyCompileFlag,
                                                        pyOptimizationLevel=pyOptimizationLevel)
 
@@ -193,7 +205,14 @@ elif dstFormat == 'json':
     dstDirectory = os.path.join('.')
 
     # Compiler infrastructure
+
+    borrowers = [AnyFileBorrower(x[1], genTexts=mibBorrowers[x[0]][1]).setOptions(exts=['.json'])
+                 for x in enumerate(getReadersFromUrls(*[m[0] for m in mibBorrowers], **dict(lowcaseMatching=False)))]
+
+    searchers = [AnyFileSearcher(dstDirectory).setOptions(exts=['.json']), StubSearcher(*mibStubs)]
+
     codeGenerator = JsonCodeGen()
+
     fileWriter = FileWriter(dstDirectory).setOptions(suffix='.json')
 
 elif dstFormat == 'null':
@@ -201,13 +220,20 @@ elif dstFormat == 'null':
         mibStubs = NullCodeGen.baseMibs
 
     if not mibBorrowers:
-        mibBorrowers = [('http://mibs.snmplabs.com/pysnmp/notexts/@mib@', False),
-                        ('http://mibs.snmplabs.com/pysnmp/fulltexts/@mib@', True)]
+        mibBorrowers = [('http://mibs.snmplabs.com/null/notexts/@mib@', False),
+                        ('http://mibs.snmplabs.com/null/fulltexts/@mib@', True)]
 
     dstDirectory = ''
 
     # Compiler infrastructure
+
     codeGenerator = NullCodeGen()
+
+    searchers = [StubSearcher(*mibStubs)]
+
+    borrowers = [AnyFileBorrower(x[1], genTexts=mibBorrowers[x[0]][1])
+                 for x in enumerate(getReadersFromUrls(*[m[0] for m in mibBorrowers], **dict(lowcaseMatching=False)))]
+
     fileWriter = CallbackWriter(lambda *x: None)
 
 else:
@@ -264,17 +290,9 @@ try:
         )
     )
 
-    mibCompiler.addSearchers(PyFileSearcher(dstDirectory))
+    mibCompiler.addSearchers(*searchers)
 
-    for mibSearcher in mibSearchers:
-        mibCompiler.addSearchers(PyPackageSearcher(mibSearcher))
-
-    mibCompiler.addSearchers(StubSearcher(*mibStubs))
-
-    mibCompiler.addBorrowers(
-        *[PyFileBorrower(x[1], genTexts=mibBorrowers[x[0]][1]) for x in
-          enumerate(getReadersFromUrls(*[m[0] for m in mibBorrowers], **dict(lowcaseMatching=False)))]
-    )
+    mibCompiler.addBorrowers(*borrowers)
 
     processed = mibCompiler.compile(*inputMibs,
                                     **dict(noDeps=nodepsFlag,

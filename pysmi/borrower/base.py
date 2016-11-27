@@ -10,7 +10,6 @@ from pysmi import debug
 
 class AbstractBorrower(object):
     genTexts = False
-    exts = []
 
     def __init__(self, reader, genTexts=None):
         """Creates an instance of *Borrower* class.
@@ -21,14 +20,15 @@ class AbstractBorrower(object):
                genText: indicates whether this borrower should be looking
                         for transformed MIBs that include human-oriented texts
         """
-        self._reader = reader.setOptions(exts=self.exts)
         if genTexts is not None:
             self.genTexts = genTexts
+        self._reader = reader
 
     def __str__(self):
-        return '%s{%s, genTexts=%s}' % (self.__class__.__name__, self._reader, self.genTexts)
+        return '%s{%s, genTexts=%s, exts=%s}' % (self.__class__.__name__, self._reader, self.genTexts, self.exts)
 
     def setOptions(self, **kwargs):
+        self._reader.setOptions(**kwargs)
         for k in kwargs:
             setattr(self, k, kwargs[k])
         return self

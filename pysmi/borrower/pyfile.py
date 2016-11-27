@@ -9,7 +9,7 @@ from pysmi.borrower.base import AbstractBorrower
 
 
 class PyFileBorrower(AbstractBorrower):
-    """Transformed MIB modules borrower.
+    """Transformed PySNMP MIB modules borrower.
     """
     for sfx, mode, typ in imp.get_suffixes():
         if typ == imp.PY_SOURCE:
