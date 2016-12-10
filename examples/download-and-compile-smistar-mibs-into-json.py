@@ -40,7 +40,7 @@ mibCompiler.addSources(*[HttpReader(*x) for x in httpSources])
 # never recompile MIBs with MACROs
 mibCompiler.addSearchers(StubSearcher(*JsonCodeGen.baseMibs))
 
-# run non-recursive MIB compilation
+# run recursive MIB compilation
 results = mibCompiler.compile(*inputMibs)
 
 print('\n# Results: %s' % ', '.join(['%s:%s' % (x, results[x]) for x in results]))
