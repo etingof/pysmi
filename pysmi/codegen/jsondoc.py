@@ -71,6 +71,9 @@ class JsonCodeGen(AbstractCodeGen):
         self._seenSyms = set()
         self._importMap = {}
         self._out = {}  # k, v = name, generated code
+        self._moduleIdentityOid = None
+        self._first = self._last = None
+        self._complianceOids = []
         self.moduleName = ['DUMMY']
         self.genRules = {'text': 1}
         self.symbolTable = {}
@@ -162,11 +165,26 @@ class JsonCodeGen(AbstractCodeGen):
         self._seenSyms.add(symbol)
 
     # noinspection PyUnusedLocal
-    def regSym(self, symbol, outDict, parentOid=None, moduleIdentity=0):
+    def regSym(self, symbol, outDict, parentOid=None, moduleIdentity=False, moduleCompliance=False):
         if symbol in self._seenSyms and symbol not in self._importMap:
             raise error.PySmiSemanticError('Duplicate symbol found: %s' % symbol)
         self.addToExports(symbol, moduleIdentity)
         self._out[symbol] = outDict
+
+        if 'oid' in outDict:
+            numOid = [int(x) for x in outDict['oid'].split('.')]
+            if not self._first or numOid < self._first:
+                self._first = numOid
+            if not self._last or numOid > self._last:
+                self._last = numOid
+
+            if moduleIdentity:
+                if self._moduleIdentityOid:
+                    raise error.PySmiSemanticError('Duplicate module identity')
+                self._moduleIdentityOid = outDict['oid']
+
+            if moduleCompliance:
+                self._complianceOids.append(outDict['oid'])
 
     def genNumericOid(self, oid):
         numericOid = ()
@@ -243,7 +261,7 @@ class JsonCodeGen(AbstractCodeGen):
                 outDict['contactinfo'] = contactInfo
             if description:
                 outDict['description'] = description
-        self.regSym(name, outDict, parentOid, moduleIdentity=1)
+        self.regSym(name, outDict, parentOid, moduleIdentity=True)
         return outDict
 
     # noinspection PyUnusedLocal
@@ -260,7 +278,7 @@ class JsonCodeGen(AbstractCodeGen):
             outDict['modulecompliance'] = compliances
         if self.genRules['text'] and description:
             outDict['description'] = description
-        self.regSym(name, outDict, parentOid)
+        self.regSym(name, outDict, parentOid, moduleCompliance=True)
         return outDict
 
     # noinspection PyUnusedLocal
@@ -423,7 +441,13 @@ class JsonCodeGen(AbstractCodeGen):
 
     def genBits(self, data):
         bits = data[0]
-        return 'Bits', dict(bits)
+        outDict = OrderedDict()
+        outDict['type'] = 'Bits'
+        outDict['class'] = 'type'
+        outDict['bits'] = OrderedDict()
+        for name, bit in sorted(bits, key=lambda x: x[1]):
+            outDict['bits'][name] = bit
+        return 'MibScalar', outDict
 
     # noinspection PyUnusedLocal
     def genCompliances(self, data):
@@ -463,7 +487,7 @@ class JsonCodeGen(AbstractCodeGen):
             outDict.update(value=defval, format='decimal')
         elif self.isHex(defval):  # hex
             if defvalType[0][0] in ('Integer32', 'Integer'):  # common bug in MIBs
-                outDict.update(value=str(int(defval[1:-2], 16)), format='hex')
+                outDict.update(value=str(int(len(defval) > 3 and defval[1:-2] or '0', 16)), format='hex')
             else:
                 outDict.update(value=defval[1:-2], format='hex')
         elif self.isBinary(defval):  # binary
@@ -658,13 +682,13 @@ class JsonCodeGen(AbstractCodeGen):
             if not attrs:
                 return outDict
             # just syntax
-            outDict['type'] = attrs['type']
+            outDict['type'] = attrs
         else:
             # Textual convention
             display, syntax = data
             parentType, attrs = syntax
             outDict = OrderedDict()
-            outDict['type'] = attrs['type']
+            outDict['type'] = attrs
             outDict['class'] = 'textualconvention'
             if display:
                 outDict['displayhint'] = display
@@ -726,6 +750,9 @@ class JsonCodeGen(AbstractCodeGen):
         self._seenSyms.clear()
         self._importMap.clear()
         self._out.clear()
+        self._moduleIdentityOid = None
+        self._first = self._last = None
+        self._complianceOids = []
         self.moduleName[0], moduleOid, imports, declarations = ast
         outDict, importedModules = self.genImports(imports and imports or {})
         for declr in declarations or []:
@@ -742,19 +769,41 @@ class JsonCodeGen(AbstractCodeGen):
         debug.logger & debug.flagCodegen and debug.logger(
             'canonical MIB name %s (%s), imported MIB(s) %s, Python code size %s bytes' % (
                 self.moduleName[0], moduleOid, ','.join(importedModules) or '<none>', len(outDict)))
-        return MibInfo(oid=None, name=self.moduleName[0],
+        return MibInfo(oid=moduleOid,
+                       identity=self._moduleIdentityOid,
+                       name=self.moduleName[0],
+                       enterprise=None,
+                       first=self._first and '.'.join([str(x) for x in self._first]),
+                       last=self._last and '.'.join([str(x) for x in self._last]),
+                       compliance=self._complianceOids,
                        imported=tuple([x for x in importedModules if x not in self.fakeMibs])), json.dumps(outDict, indent=2)
 
-    def genIndex(self, mibsMap, **kwargs):
-        out = '\nfrom pysnmp.proto.rfc1902 import ObjectName\n\noidToMibMap = {\n'
-        count = 0
-        for name, oid in mibsMap:
-            out += 'ObjectName("%s"): "%s",\n' % (oid, name)
-            count += 1
-        out += '}\n'
+    def genIndex(self, processed, **kwargs):
+        outDict = {
+            'modules': {},
+            'meta': {},
+        }
+        if kwargs.get('old_index_data'):
+            try:
+                outDict.update(
+                    json.loads(kwargs['old_index_data'])
+                )
+            except Exception:
+                raise error.PySmiCodegenError('Old index data load error: %s' % sys.exc_info()[1])
+        for module, status in processed.items():
+            modData = {}
+            for attr in ['oid', 'identity', 'first', 'last', 'compliance']:
+                value = getattr(status, attr, None)
+                if value:
+                    modData[attr] = value
+            if modData:
+                outDict['modules'][module] = modData
+        modules = OrderedDict()
+        for module in sorted(outDict['modules']):
+            modules[module] = outDict['modules'][module]
+        outDict['modules'] = modules
         if 'comments' in kwargs:
-            out = ''.join(['# %s\n' % x for x in kwargs['comments']]) + '#\n' + out
-            out = '#\n# PySNMP MIB indices (http://pysnmp.sf.net)\n' + out
+            outDict['meta']['comments'] = kwargs['comments']
         debug.logger & debug.flagCodegen and debug.logger(
-            'OID->MIB index built, %s entries, %s bytes' % (count, len(out)))
-        return out
+            'OID->MIB index built, %s entries' % len(processed))
+        return json.dumps(outDict, indent=2)

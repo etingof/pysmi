@@ -23,3 +23,9 @@
   - rebuild the docs
   - conditionally require simplejson and ordereddict
   - add tests
+  - is it a good iea to make writers also reading data?
+  - review symtable for unused pieces
+  - split index onto separate documents:
+    * enterprise-oid -> MIB
+    * OID -> MIB:compliance
+    * OID prefix -> MIB list

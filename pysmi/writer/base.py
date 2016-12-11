@@ -13,3 +13,6 @@ class AbstractWriter(object):
 
     def putData(self, mibname, data, comments=(), dryRun=False):
         raise NotImplementedError()
+
+    def getData(self, filename):
+        raise NotImplementedError()

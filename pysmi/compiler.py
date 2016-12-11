@@ -315,6 +315,8 @@ class MibCompiler(object):
         for mibname in parsedMibs.copy():
             fileInfo, mibInfo, mibTree = parsedMibs[mibname]
 
+            debug.logger & debug.flagCompiler and debug.logger('compiling %s read from %s' % (mibname, fileInfo.path))
+
             comments = [
                 'ASN.1 source %s' % fileInfo.path,
                 'Produced by %s-%s at %s' % (packageName, packageVersion, time.asctime()),
@@ -453,9 +455,10 @@ class MibCompiler(object):
         for mibname in builtMibs.copy():
             fileInfo, mibInfo, mibData = builtMibs[mibname]
             try:
-                self._writer.putData(
-                    mibname, mibData, dryRun=options.get('dryRun')
-                )
+                if options.get('writeMibs'):
+                    self._writer.putData(
+                        mibname, mibData, dryRun=options.get('dryRun')
+                    )
 
                 debug.logger & debug.flagCompiler and debug.logger('%s stored by %s' % (mibname, self._writer))
 
@@ -463,8 +466,14 @@ class MibCompiler(object):
 
                 if mibname not in processed:
                     processed[mibname] = statusCompiled.setOptions(
-                        path=fileInfo.path, file=fileInfo.file,
-                        alias=fileInfo.name
+                        path=fileInfo.path,
+                        file=fileInfo.file,
+                        alias=fileInfo.name,
+                        oid=mibInfo.oid,
+                        identity=mibInfo.identity,
+                        first=mibInfo.first,
+                        last=mibInfo.last,
+                        compliance=mibInfo.compliance,
                     )
 
             except error.PySmiError:
@@ -494,8 +503,9 @@ class MibCompiler(object):
             self._writer.putData(
                 self.indexFile,
                 self._codegen.genIndex(
-                    dict([(x, x.oid) for x in processedMibs if hasattr(x, 'oid')]),
-                    comments=comments
+                    processedMibs,
+                    comments=comments,
+                    old_index_data=self._writer.getData(self.indexFile)
                 ),
                 dryRun=options.get('dryRun')
             )

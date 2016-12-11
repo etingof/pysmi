@@ -12,7 +12,11 @@
 # path   -- URL to MIB file
 # file   -- MIB file name
 # mtime  -- MIB file modification time
-# oid    -- top-level OID defined in this MIB
+# oid    -- module OID
+# identity -- MODULE-IDENTITY OID
+# first  -- first OID defined in module
+# last   -- last OID defined in module
+# compliance -- list of MODULE-COMPLIANCE OIDs
 
 
 class MibInfo(object):

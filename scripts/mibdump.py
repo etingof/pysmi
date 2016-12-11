@@ -37,6 +37,7 @@ pyCompileFlag = True
 pyOptimizationLevel = 0
 ignoreErrorsFlag = False
 buildIndexFlag = False
+writeMibsFlag = True
 
 helpMessage = """\
 Usage: %s [--help]
@@ -58,6 +59,7 @@ Usage: %s [--help]
       [--build-index]
       [--rebuild]
       [--dry-run]
+      [--no-mib-writes]
       [--generate-mib-texts]
       [ mibfile [ mibfile [...]]]
 Where:
@@ -75,7 +77,7 @@ try:
                                      'mib-source=', 'mib-searcher=', 'mib-stub=', 'mib-borrower=',
                                      'destination-format=', 'destination-directory=', 'cache-directory=',
                                      'no-dependencies', 'no-python-compile', 'python-optimization-level=',
-                                     'ignore-errors', 'build-index', 'rebuild', 'dry-run',
+                                     'ignore-errors', 'build-index', 'rebuild', 'dry-run', 'no-mib-writes',
                                      'generate-mib-texts', 'disable-fuzzy-source']
                                     )
 except getopt.GetoptError:
@@ -139,6 +141,8 @@ Software documentation and support at http://pysmi.sf.net
         rebuildFlag = True
     if opt[0] == '--dry-run':
         dryrunFlag = True
+    if opt[0] == '--no-mib-writes':
+        writeMibsFlag = False
     if opt[0] == '--generate-mib-texts':
         genMibTextsFlag = True
     if opt[0] == '--disable-fuzzy-source':
@@ -251,7 +255,8 @@ Destination format: %s
 Parser grammar cache directory: %s
 Also compile all relevant MIBs: %s
 Rebuild MIBs regardless of age: %s
-Do not create/update MIBs: %s
+Dry run mode: %s
+Create/update MIBs: %s
 Byte-compile Python modules: %s (optimization level %s)
 Ignore compilation errors: %s
 Generate OID->MIB index: %s
@@ -268,6 +273,7 @@ Try various filenames while searching for MIB module: %s
        nodepsFlag and 'no' or 'yes',
        rebuildFlag and 'yes' or 'no',
        dryrunFlag and 'yes' or 'no',
+       writeMibsFlag and 'yes' or 'no',
        dstFormat == 'pysnmp' and pyCompileFlag and 'yes' or 'no',
        dstFormat == 'pysnmp' and pyOptimizationLevel and 'yes' or 'no',
        ignoreErrorsFlag and 'yes' or 'no',
@@ -299,6 +305,7 @@ try:
                                            rebuild=rebuildFlag,
                                            dryRun=dryrunFlag,
                                            genTexts=genMibTextsFlag,
+                                           writeMibs=writeMibsFlag,
                                            ignoreErrors=ignoreErrorsFlag))
 
     if buildIndexFlag:
