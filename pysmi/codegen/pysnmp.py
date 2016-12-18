@@ -451,6 +451,10 @@ class PySnmpCodeGen(AbstractCodeGen):
     # Subparts generation functions
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
+    def ftNames(self, data, classmode=0):
+        names = data[0]
+        return names
+
     def genBitNames(self, data, classmode=0):
         names = data[0]
         return names
@@ -798,8 +802,8 @@ class PySnmpCodeGen(AbstractCodeGen):
         return MibInfo(oid=moduleOid,
                        identity=self._moduleIdentityOid,
                        name=self.moduleName[0],
-                       first=None,
-                       last=None,
+                       oids=[],
+                       enterprise=None,
                        compliance=[],
                        imported=tuple([x for x in importedModules if x not in self.fakeMibs])), out
 

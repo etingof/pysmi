@@ -18,14 +18,10 @@
 * implement xml/html/yaml codegeneration backend
 * json codegen:
   - make schema configurable
-  - implement index generation
   - further simplify/review codegen code
   - rebuild the docs
   - conditionally require simplejson and ordereddict
   - add tests
   - is it a good iea to make writers also reading data?
   - review symtable for unused pieces
-  - split index onto separate documents:
-    * enterprise-oid -> MIB
-    * OID -> MIB:compliance
-    * OID prefix -> MIB list
+  - write a tool to split json index onto separate documents

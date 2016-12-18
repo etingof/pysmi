@@ -73,7 +73,7 @@ class JsonCodeGen(AbstractCodeGen):
         self._out = {}  # k, v = name, generated code
         self._moduleIdentityOid = None
         self._enterpriseOid = None
-        self._first = self._last = None
+        self._oids = set()
         self._complianceOids = []
         self.moduleName = ['DUMMY']
         self.genRules = {'text': 1}
@@ -173,13 +173,9 @@ class JsonCodeGen(AbstractCodeGen):
         self._out[symbol] = outDict
 
         if 'oid' in outDict:
-            numOid = [int(x) for x in outDict['oid'].split('.')]
-            if not self._first or numOid < self._first:
-                self._first = numOid
-            if not self._last or numOid > self._last:
-                self._last = numOid
+            self._oids.add(outDict['oid'])
 
-            if not self._enterpriseOid and outDict['oid'].startswith('1.3.6.1.4.1'):
+            if not self._enterpriseOid and outDict['oid'].startswith('1.3.6.1.4.1.'):
                 self._enterpriseOid = '.'.join(outDict['oid'].split('.')[:7])
 
             if moduleIdentity:
@@ -756,7 +752,7 @@ class JsonCodeGen(AbstractCodeGen):
         self._out.clear()
         self._moduleIdentityOid = None
         self._enterpriseOid = None
-        self._first = self._last = None
+        self._oids = set()
         self._complianceOids = []
         self.moduleName[0], moduleOid, imports, declarations = ast
         outDict, importedModules = self.genImports(imports and imports or {})
@@ -777,16 +773,18 @@ class JsonCodeGen(AbstractCodeGen):
         return MibInfo(oid=moduleOid,
                        identity=self._moduleIdentityOid,
                        name=self.moduleName[0],
+                       oids=self._oids,
                        enterprise=self._enterpriseOid,
-                       first=self._first and '.'.join([str(x) for x in self._first]),
-                       last=self._last and '.'.join([str(x) for x in self._last]),
                        compliance=self._complianceOids,
                        imported=tuple([x for x in importedModules if x not in self.fakeMibs])), json.dumps(outDict, indent=2)
 
     def genIndex(self, processed, **kwargs):
         outDict = {
-            'modules': {},
             'meta': {},
+            'identity': {},
+            'enterprise': {},
+            'compliance': {},
+            'oids': {},
         }
         if kwargs.get('old_index_data'):
             try:
@@ -794,21 +792,71 @@ class JsonCodeGen(AbstractCodeGen):
                     json.loads(kwargs['old_index_data'])
                 )
             except Exception:
-                raise error.PySmiCodegenError('Old index data load error: %s' % sys.exc_info()[1])
+                raise error.PySmiCodegenError('Index load error: %s' % sys.exc_info()[1])
+
+        def order(top):
+            if isinstance(top, dict):
+                new_top = OrderedDict()
+                try:
+                    # first try to sort keys as OIDs
+                    for k in sorted(top, key=lambda x: [int(y) for y in x.split('.')]):
+                        new_top[k] = order(top[k])
+                except ValueError:
+                    for k in sorted(top):
+                        new_top[k] = order(top[k])
+                return new_top
+            elif isinstance(top, list):
+                new_top = []
+                for e in sorted(set(top)):
+                    new_top.append(order(e))
+                return new_top
+
+            return top
+
         for module, status in processed.items():
-            modData = {}
-            for attr in ['oid', 'identity', 'first', 'last', 'compliance', 'enterprise']:
-                value = getattr(status, attr, None)
-                if value:
-                    modData[attr] = value
+            modData = outDict['identity']
+            identity_oid = getattr(status, 'identity', None)
+            if identity_oid:
+                if identity_oid not in modData:
+                    modData[identity_oid] = []
+                modData[identity_oid].append(module)
+
+            modData = outDict['enterprise']
+            enterprise_oid = getattr(status, 'enterprise', None)
+            if enterprise_oid:
+                if enterprise_oid not in modData:
+                    modData[enterprise_oid] = []
+                modData[enterprise_oid].append(module)
+
+            modData = outDict['compliance']
+            compliance_oids = getattr(status, 'compliance', ())
+            for compliance_oid in compliance_oids:
+                if compliance_oid not in modData:
+                    modData[compliance_oid] = []
+                modData[compliance_oid].append(module)
+
+            modData = outDict['oids']
+            objects_oids = getattr(status, 'oids', ())
+            for object_oid in objects_oids:
+                if object_oid not in modData:
+                    modData[object_oid] = []
+                modData[object_oid].append(module)
+
             if modData:
-                outDict['modules'][module] = modData
-        modules = OrderedDict()
-        for module in sorted(outDict['modules']):
-            modules[module] = outDict['modules'][module]
-        outDict['modules'] = modules
+                unique_prefixes = {}
+                for oid in sorted(modData, key=lambda x: x.count('.')):
+                    for oid_prefix, modules in unique_prefixes.items():
+                        if oid.startswith(oid_prefix) and set(modules).issuperset(modData[oid]):
+                            break
+                    else:
+                        unique_prefixes[oid] = modData[oid]
+
+                outDict['oids'] = unique_prefixes
+
         if 'comments' in kwargs:
             outDict['meta']['comments'] = kwargs['comments']
+
         debug.logger & debug.flagCodegen and debug.logger(
             'OID->MIB index built, %s entries' % len(processed))
-        return json.dumps(outDict, indent=2)
+
+        return json.dumps(order(outDict), indent=2)

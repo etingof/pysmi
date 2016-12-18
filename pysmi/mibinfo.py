@@ -13,9 +13,8 @@
 # file   -- MIB file name
 # mtime  -- MIB file modification time
 # oid    -- module OID
+# oids   -- all OIDs defined in this module
 # identity -- MODULE-IDENTITY OID
-# first  -- first OID defined in module
-# last   -- last OID defined in module
 # compliance -- list of MODULE-COMPLIANCE OIDs
 
 
