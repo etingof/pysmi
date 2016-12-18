@@ -471,6 +471,7 @@ class MibCompiler(object):
                         alias=fileInfo.name,
                         oid=mibInfo.oid,
                         identity=mibInfo.identity,
+                        enterprise=mibInfo.enterprise,
                         first=mibInfo.first,
                         last=mibInfo.last,
                         compliance=mibInfo.compliance,

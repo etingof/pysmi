@@ -72,6 +72,7 @@ class JsonCodeGen(AbstractCodeGen):
         self._importMap = {}
         self._out = {}  # k, v = name, generated code
         self._moduleIdentityOid = None
+        self._enterpriseOid = None
         self._first = self._last = None
         self._complianceOids = []
         self.moduleName = ['DUMMY']
@@ -177,6 +178,9 @@ class JsonCodeGen(AbstractCodeGen):
                 self._first = numOid
             if not self._last or numOid > self._last:
                 self._last = numOid
+
+            if not self._enterpriseOid and outDict['oid'].startswith('1.3.6.1.4.1'):
+                self._enterpriseOid = '.'.join(outDict['oid'].split('.')[:7])
 
             if moduleIdentity:
                 if self._moduleIdentityOid:
@@ -751,6 +755,7 @@ class JsonCodeGen(AbstractCodeGen):
         self._importMap.clear()
         self._out.clear()
         self._moduleIdentityOid = None
+        self._enterpriseOid = None
         self._first = self._last = None
         self._complianceOids = []
         self.moduleName[0], moduleOid, imports, declarations = ast
@@ -772,7 +777,7 @@ class JsonCodeGen(AbstractCodeGen):
         return MibInfo(oid=moduleOid,
                        identity=self._moduleIdentityOid,
                        name=self.moduleName[0],
-                       enterprise=None,
+                       enterprise=self._enterpriseOid,
                        first=self._first and '.'.join([str(x) for x in self._first]),
                        last=self._last and '.'.join([str(x) for x in self._last]),
                        compliance=self._complianceOids,
@@ -792,7 +797,7 @@ class JsonCodeGen(AbstractCodeGen):
                 raise error.PySmiCodegenError('Old index data load error: %s' % sys.exc_info()[1])
         for module, status in processed.items():
             modData = {}
-            for attr in ['oid', 'identity', 'first', 'last', 'compliance']:
+            for attr in ['oid', 'identity', 'first', 'last', 'compliance', 'enterprise']:
                 value = getattr(status, attr, None)
                 if value:
                     modData[attr] = value
