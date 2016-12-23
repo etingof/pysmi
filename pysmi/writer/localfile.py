@@ -32,6 +32,22 @@ class FileWriter(AbstractWriter):
     def __str__(self):
         return '%s{"%s"}' % (self.__class__.__name__, self._path)
 
+    def getData(self, mibname, dryRun=False):
+        filename = os.path.join(self._path, decode(mibname)) + self.suffix
+
+        f = None
+
+        try:
+            f = open(filename)
+            return f.read()
+
+        except (OSError, IOError, UnicodeEncodeError):
+            return
+
+        finally:
+            if f:
+                f.close()
+
     def putData(self, mibname, data, comments=(), dryRun=False):
         if dryRun:
             debug.logger & debug.flagWriter and debug.logger('dry run mode')

@@ -46,3 +46,6 @@ class CallbackWriter(AbstractWriter):
                 'user callback %s failure writing %s: %s' % (self._cbFun, mibname, sys.exc_info()[1]), writer=self)
 
         debug.logger & debug.flagWriter and debug.logger('user callback for %s succeeded' % mibname)
+
+    def getData(self, filename):
+        raise ''

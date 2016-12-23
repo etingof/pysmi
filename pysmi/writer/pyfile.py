@@ -92,3 +92,7 @@ class PyFileWriter(AbstractWriter):
                                              writer=self)
 
         debug.logger & debug.flagWriter and debug.logger('%s stored' % mibname)
+
+    def getData(self, filename):
+        return ''
+

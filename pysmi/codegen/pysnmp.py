@@ -116,6 +116,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         self._seenSyms = set()
         self._importMap = {}
         self._out = {}  # k, v = name, generated code
+        self._moduleIdentityOid = None
         self.moduleName = ['DUMMY']
         self.genRules = {'text': 1}
         self.symbolTable = {}
@@ -227,11 +228,16 @@ class PySnmpCodeGen(AbstractCodeGen):
         self._seenSyms.add(symbol)
 
     # noinspection PyUnusedLocal
-    def regSym(self, symbol, outStr, parentOid=None, moduleIdentity=0):
+    def regSym(self, symbol, outStr, oidStr=None, moduleIdentity=0):
         if symbol in self._seenSyms and symbol not in self._importMap:
             raise error.PySmiSemanticError('Duplicate symbol found: %s' % symbol)
         self.addToExports(symbol, moduleIdentity)
         self._out[symbol] = outStr
+        if moduleIdentity:
+            if self._moduleIdentityOid:
+                raise error.PySmiSemanticError('Duplicate module identity')
+            # TODO: turning literal tuple into a string - hackerish
+            self._moduleIdentityOid = '.'.join(oidStr.split(', '))[1:-1]
 
     def genNumericOid(self, oid):
         numericOid = ()
@@ -281,7 +287,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         outStr = name + ' = AgentCapabilities(' + oidStr + ')' + label + '\n'
         if self.genRules['text']:
             outStr += self.ifTextStr + name + description + '\n'
-        self.regSym(name, outStr, parentOid)
+        self.regSym(name, outStr, oidStr)
         return outStr
 
     # noinspection PyUnusedLocal
@@ -297,7 +303,7 @@ class PySnmpCodeGen(AbstractCodeGen):
             outStr += self.ifTextStr + name + organization + '\n'
             outStr += self.ifTextStr + name + contactInfo + '\n'
             outStr += self.ifTextStr + name + description + '\n'
-        self.regSym(name, outStr, parentOid, moduleIdentity=1)
+        self.regSym(name, outStr, oidStr, moduleIdentity=1)
         return outStr
 
     # noinspection PyUnusedLocal
@@ -310,7 +316,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         outStr += compliances + '\n'
         if self.genRules['text']:
             outStr += self.ifTextStr + name + description + '\n'
-        self.regSym(name, outStr, parentOid)
+        self.regSym(name, outStr, oidStr)
         return outStr
 
     # noinspection PyUnusedLocal
@@ -326,7 +332,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         outStr += '.setObjects(*(' + objStr + '))\n'
         if self.genRules['text']:
             outStr += self.ifTextStr + name + description + '\n'
-        self.regSym(name, outStr, parentOid)
+        self.regSym(name, outStr, oidStr)
         return outStr
 
     # noinspection PyUnusedLocal
@@ -342,7 +348,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         outStr += '.setObjects(*(' + objStr + '))\n'
         if self.genRules['text']:
             outStr += self.ifTextStr + name + description + '\n'
-        self.regSym(name, outStr, parentOid)
+        self.regSym(name, outStr, oidStr)
         return outStr
 
     # noinspection PyUnusedLocal
@@ -358,7 +364,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         outStr += '.setObjects(*(' + objStr + '))\n'
         if self.genRules['text']:
             outStr += self.ifTextStr + name + description + '\n'
-        self.regSym(name, outStr, parentOid)
+        self.regSym(name, outStr, oidStr)
         return outStr
 
     # noinspection PyUnusedLocal
@@ -370,7 +376,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         outStr = name + ' = ObjectIdentity(' + oidStr + ')' + label + '\n'
         if self.genRules['text']:
             outStr += self.ifTextStr + name + description + '\n'
-        self.regSym(name, outStr, parentOid)
+        self.regSym(name, outStr, oidStr)
         return outStr
 
     # noinspection PyUnusedLocal
@@ -401,7 +407,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         if fakeSyms:  # fake symbols for INDEX to support SMIv1
             for i in range(len(fakeSyms)):
                 fakeOutStr = fakeStrlist[i] % oidStr
-                self.regSym(fakeSyms[i], fakeOutStr, name)
+                self.regSym(fakeSyms[i], fakeOutStr, oidStr)
         return outStr
 
     # noinspection PyUnusedLocal
@@ -417,7 +423,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         outStr += '.setObjects(*(' + varStr + '))\n'
         if self.genRules['text']:
             outStr += self.ifTextStr + name + description + '\n'
-        self.regSym(name, outStr, parentOid)
+        self.regSym(name, outStr, enterpriseStr)
         return outStr
 
     # noinspection PyUnusedLocal
@@ -439,12 +445,16 @@ class PySnmpCodeGen(AbstractCodeGen):
         name = self.transOpers(name)
         oidStr, parentOid = oid
         outStr = name + ' = MibIdentifier(' + oidStr + ')' + label + '\n'
-        self.regSym(name, outStr, parentOid)
+        self.regSym(name, outStr, oidStr)
         return outStr
 
     # Subparts generation functions
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
+    def ftNames(self, data, classmode=0):
+        names = data[0]
+        return names
+
     def genBitNames(self, data, classmode=0):
         names = data[0]
         return names
@@ -770,6 +780,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         self._seenSyms.clear()
         self._importMap.clear()
         self._out.clear()
+        self._moduleIdentityOid = None
         self.moduleName[0], moduleOid, imports, declarations = ast
         out, importedModules = self.genImports(imports or {})
         for declr in declarations or []:
@@ -788,15 +799,22 @@ class PySnmpCodeGen(AbstractCodeGen):
         debug.logger & debug.flagCodegen and debug.logger(
             'canonical MIB name %s (%s), imported MIB(s) %s, Python code size %s bytes' % (
                 self.moduleName[0], moduleOid, ','.join(importedModules) or '<none>', len(out)))
-        return MibInfo(oid=None, name=self.moduleName[0],
+        return MibInfo(oid=moduleOid,
+                       identity=self._moduleIdentityOid,
+                       name=self.moduleName[0],
+                       oids=[],
+                       enterprise=None,
+                       compliance=[],
                        imported=tuple([x for x in importedModules if x not in self.fakeMibs])), out
 
-    def genIndex(self, mibsMap, **kwargs):
+    def genIndex(self, processed, **kwargs):
         out = '\nfrom pysnmp.proto.rfc1902 import ObjectName\n\noidToMibMap = {\n'
         count = 0
-        for name, oid in mibsMap:
-            out += 'ObjectName("%s"): "%s",\n' % (oid, name)
-            count += 1
+        for module, status in processed.items():
+            value = getattr(status, 'oid', None)
+            if value:
+                out += 'ObjectName("%s"): "%s",\n' % (value, module)
+                count += 1
         out += '}\n'
         if 'comments' in kwargs:
             out = ''.join(['# %s\n' % x for x in kwargs['comments']]) + '#\n' + out

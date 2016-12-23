@@ -16,10 +16,16 @@
 * create a MIB querying tool: get MIB module's OIDs, enterprise IDs,
   canonical name(s); search MIB objects by regexp; build source .index
 * implement xml/html/yaml codegeneration backend
+* write a tool to fetch canonical MIB name from MIB file, rename MIB file, split merged MIBs onto individual files
+* write a tool to turn IANA assigned numbers into JSON
 * json codegen:
   - make schema configurable
-  - implement index generation
   - further simplify/review codegen code
   - rebuild the docs
   - conditionally require simplejson and ordereddict
   - add tests
+  - is it a good idea to make writers also reading data?
+  - review symtable for unused pieces
+  - write a tool to split json index onto separate documents
+  - index NOTIFICATION-TYPE's
+  - add example script on index build
