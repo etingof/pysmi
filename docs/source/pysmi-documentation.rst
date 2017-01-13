@@ -87,7 +87,7 @@ You can always reconfigure PySMI to use some other remote MIB repository
 instead or in addition to this one.
 
 Should you have any questions or feedback on PySMI software, you are
-welcome to ping me at ilya@glas.net .
+welcome to ping me at etingof@gmail.com .
 
 License
 -------

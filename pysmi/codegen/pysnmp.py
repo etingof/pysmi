@@ -1,7 +1,7 @@
 #
 # This file is part of pysmi software.
 #
-# Copyright (c) 2015-2016, Ilya Etingof <ilya@glas.net>
+# Copyright (c) 2015-2017, Ilya Etingof <etingof@gmail.com>
 # License: http://pysmi.sf.net/license.html
 #
 import sys
