@@ -39,14 +39,14 @@ class FileWriter(AbstractWriter):
 
         try:
             f = open(filename)
-            return f.read()
+            data = f.read()
+            f.close()
+            return data
 
         except (OSError, IOError, UnicodeEncodeError):
-            return
-
-        finally:
             if f:
                 f.close()
+            return
 
     def putData(self, mibname, data, comments=(), dryRun=False):
         if dryRun:

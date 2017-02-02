@@ -1,4 +1,4 @@
-Revision 0.0.8, XX-12-2017
+Revision 0.0.8, XX-02-2017
 --------------------------
 
 - JSON code generating backend implemented
@@ -6,6 +6,7 @@ Revision 0.0.8, XX-12-2017
 - Package structure flattened for easier use
 - Source code statically analyzed and hardened
 - Files closed explicitly to mute ResourceWarnings
+- Fixed to Python 2.4 (and aged ply) compatibility
 - Author's e-mail changed, copyright extended to year 2017
 
 Revision 0.0.7, 12-02-2016

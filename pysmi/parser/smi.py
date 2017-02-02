@@ -12,6 +12,8 @@ from pysmi.parser.base import AbstractParser
 from pysmi import error
 from pysmi import debug
 
+YACC_VERSION = [int(x) for x in yacc.__version__.split('.')]
+
 
 # noinspection PyMethodMayBeStatic,PyIncorrectDocstring
 class SmiV2Parser(AbstractParser):
@@ -31,23 +33,30 @@ class SmiV2Parser(AbstractParser):
         # tokens are required for parser
         self.tokens = self.lexer.tokens
 
-        if debug.logger & debug.flagParser:
-            logger = debug.logger.getCurrentLogger()
+        if YACC_VERSION < (3, 0):
+            self.parser = yacc.yacc(module=self,
+                                    start=startSym,
+                                    write_tables=bool(tempdir),
+                                    debug=False,
+                                    outputdir=tempdir)
         else:
-            logger = yacc.NullLogger()
+            if debug.logger & debug.flagParser:
+                logger = debug.logger.getCurrentLogger()
+            else:
+                logger = yacc.NullLogger()
 
-        if debug.logger & debug.flagGrammar:
-            debuglogger = debug.logger.getCurrentLogger()
-        else:
-            debuglogger = None
+            if debug.logger & debug.flagGrammar:
+                debuglogger = debug.logger.getCurrentLogger()
+            else:
+                debuglogger = None
 
-        self.parser = yacc.yacc(module=self,
-                                start=startSym,
-                                write_tables=bool(tempdir),
-                                debug=False,
-                                outputdir=tempdir,
-                                debuglog=debuglogger,
-                                errorlog=logger)
+            self.parser = yacc.yacc(module=self,
+                                    start=startSym,
+                                    write_tables=bool(tempdir),
+                                    debug=False,
+                                    outputdir=tempdir,
+                                    debuglog=debuglogger,
+                                    errorlog=logger)
 
     def reset(self):
         # Ply requires lexer reinitialization for (at least) resetting lineno

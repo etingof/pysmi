@@ -13,7 +13,7 @@ from pysmi import debug
 
 UNSIGNED32_MAX = 4294967295
 UNSIGNED64_MAX = 18446744073709551615
-
+LEX_VERSION = [int(x) for x in lex.__version__.split('.')]
 
 # Do not overload single lexer methods - overload all or none of them!
 # noinspection PySingleQuotedDocstring,PyMethodMayBeStatic,PyIncorrectDocstring
@@ -92,21 +92,27 @@ class SmiV2Lexer(AbstractLexer):
         self.reset()
 
     def reset(self):
-        if debug.logger & debug.flagLexer:
-            logger = debug.logger.getCurrentLogger()
+        if LEX_VERSION < (3, 0):
+            self.lexer = lex.lex(module=self,
+                                 reflags=re.DOTALL,
+                                 outputdir=self._tempdir,
+                                 debug=False)
         else:
-            logger = lex.NullLogger()
+            if debug.logger & debug.flagLexer:
+                logger = debug.logger.getCurrentLogger()
+            else:
+                logger = lex.NullLogger()
 
-        if debug.logger & debug.flagGrammar:
-            debuglogger = debug.logger.getCurrentLogger()
-        else:
-            debuglogger = None
+            if debug.logger & debug.flagGrammar:
+                debuglogger = debug.logger.getCurrentLogger()
+            else:
+                debuglogger = None
 
-        self.lexer = lex.lex(module=self,
-                             reflags=re.DOTALL,
-                             outputdir=self._tempdir,
-                             debuglog=debuglogger,
-                             errorlog=logger)
+            self.lexer = lex.lex(module=self,
+                                 reflags=re.DOTALL,
+                                 outputdir=self._tempdir,
+                                 debuglog=debuglogger,
+                                 errorlog=logger)
 
     def t_newline(self, t):
         r'\r\n|\n|\r'
