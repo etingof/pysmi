@@ -92,7 +92,7 @@ class SmiV2Lexer(AbstractLexer):
         self.reset()
 
     def reset(self):
-        if LEX_VERSION < (3, 0):
+        if LEX_VERSION < [3, 0]:
             self.lexer = lex.lex(module=self,
                                  reflags=re.DOTALL,
                                  outputdir=self._tempdir,
