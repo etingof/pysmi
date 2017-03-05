@@ -455,7 +455,7 @@ class MibCompiler(object):
         for mibname in builtMibs.copy():
             fileInfo, mibInfo, mibData = builtMibs[mibname]
             try:
-                if options.get('writeMibs'):
+                if options.get('writeMibs', True):
                     self._writer.putData(
                         mibname, mibData, dryRun=options.get('dryRun')
                     )
