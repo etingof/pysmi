@@ -110,6 +110,8 @@ class PySnmpCodeGen(AbstractCodeGen):
     fakeidx = 1000  # starting index for fake symbols
 
     def __init__(self):
+        self._snmpTypes = set(self.typeClasses.values())
+        self._snmpTypes.add('Bits')
         self._rows = set()
         self._cols = {}  # k, v = name, datatype
         self._exports = set()
@@ -392,7 +394,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         classtype = syntax[0] == 'Bits' and 'MibScalar' or classtype  # Bits hack #2
         classtype = name in self.symbolTable[self.moduleName[0]]['_symtable_cols'] and 'MibTableColumn' or classtype
         defval = self.genDefVal(defval, objname=name)
-        outStr = name + ' = ' + classtype + '(' + oidStr + ', ' + subtype + (defval and defval or '') + ')' + label
+        outStr = name + ' = ' + classtype + '(' + oidStr + ', ' + subtype + (defval or '') + ')' + label
         outStr += units or ''
         outStr += maxaccess or ''
         outStr += indexStr or ''
@@ -719,7 +721,8 @@ class PySnmpCodeGen(AbstractCodeGen):
             # Textual convention
             display, syntax = data
             parentType, attrs = syntax
-            parentType = 'TextualConvention, ' + parentType
+            if parentType in self._snmpTypes:
+                parentType = 'TextualConvention, ' + parentType
             attrs = (display or '') + attrs
         attrs = attrs or self.indent + 'pass\n'
         return parentType, attrs
