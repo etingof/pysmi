@@ -90,7 +90,7 @@ Failed MIBs:
 
 JSON document containing
 [IF-MIB module](http://mibs.snmplabs.com/asn1/IF-MIB>)
-would look like:
+would hold information such as:
 
 ```
    {
@@ -139,15 +139,15 @@ would look like:
 
 In general, converted MIBs capture all aspects of original (ASN.1) MIB contents
 and layout. The snippet above is just an example, here is the complete
-[IF-MIB.json](http://mibs.snmplabs.com/json/fulltext/IF-MIB.json>)
+[IF-MIB.json](http://mibs.snmplabs.com/json/fulltext/IF-MIB.json)
 file.
 
-Besides 1-to-1 MIB conversion, PySMI library can produce JSON maps to facilitate
+Besides 1-to-1 MIB conversion, PySMI library can produce JSON index to facilitate
 fast MIB information lookup across large collection of MIB files. For example,
 JSON index for
-[IP-MIB.json](http://mibs.snmplabs.com/json/asn1/IP-MIB>),
-[TCP-MIB.json](http://mibs.snmplabs.com/json/asn1/TCP-MIB>) and
-[UDP-MIB.json])http://mibs.snmplabs.com/json/asn1/UDP-MIB>)
+[IP-MIB.json](http://mibs.snmplabs.com/json/asn1/IP-MIB),
+[TCP-MIB.json](http://mibs.snmplabs.com/json/asn1/TCP-MIB) and
+[UDP-MIB.json](http://mibs.snmplabs.com/json/asn1/UDP-MIB)
 modules would keep information like this:
 
 ```
