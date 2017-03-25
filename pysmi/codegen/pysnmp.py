@@ -136,13 +136,11 @@ class PySnmpCodeGen(AbstractCodeGen):
 
     @staticmethod
     def isBinary(s):
-        return isinstance(s, (str, unicode)) and s[0] == '\'' \
-               and s[-2:] in ('\'b', '\'B')
+        return isinstance(s, (str, unicode)) and s[0] == '\'' and s[-2:] in ('\'b', '\'B')
 
     @staticmethod
     def isHex(s):
-        return isinstance(s, (str, unicode)) and s[0] == '\'' \
-               and s[-2:] in ('\'h', '\'H')
+        return isinstance(s, (str, unicode)) and s[0] == '\'' and s[-2:] in ('\'h', '\'H')
 
     def str2int(self, s):
         if self.isBinary(s):
@@ -159,7 +157,7 @@ class PySnmpCodeGen(AbstractCodeGen):
             i = int(s)
         return i
 
-    def prepData(self, pdata, classmode=0):
+    def prepData(self, pdata, classmode=False):
         data = []
         for el in pdata:
             if not isinstance(el, tuple):
@@ -217,10 +215,9 @@ class PySnmpCodeGen(AbstractCodeGen):
         return self._exports and outStr or ''
 
     # noinspection PyMethodMayBeStatic
-    def genLabel(self, symbol, classmode=0):
+    def genLabel(self, symbol, classmode=False):
         if '-' in symbol or iskeyword(symbol):
-            return classmode and 'label = "' + symbol + '"\n' or \
-                   '.setLabel("' + symbol + '")'
+            return classmode and 'label = "' + symbol + '"\n' or '.setLabel("' + symbol + '")'
         return ''
 
     def addToExports(self, symbol, moduleIdentity=0):
@@ -230,7 +227,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         self._seenSyms.add(symbol)
 
     # noinspection PyUnusedLocal
-    def regSym(self, symbol, outStr, oidStr=None, moduleIdentity=0):
+    def regSym(self, symbol, outStr, oidStr=None, moduleIdentity=False):
         if symbol in self._seenSyms and symbol not in self._importMap:
             raise error.PySmiSemanticError('Duplicate symbol found: %s' % symbol)
         self.addToExports(symbol, moduleIdentity)
@@ -281,7 +278,7 @@ class PySnmpCodeGen(AbstractCodeGen):
     # Clause generation functions
 
     # noinspection PyUnusedLocal
-    def genAgentCapabilities(self, data, classmode=0):
+    def genAgentCapabilities(self, data, classmode=False):
         name, description, oid = data
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -293,7 +290,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         return outStr
 
     # noinspection PyUnusedLocal
-    def genModuleIdentity(self, data, classmode=0):
+    def genModuleIdentity(self, data, classmode=False):
         name, lastUpdated, organization, contactInfo, description, revisions, oid = data
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -305,11 +302,11 @@ class PySnmpCodeGen(AbstractCodeGen):
             outStr += self.ifTextStr + name + organization + '\n'
             outStr += self.ifTextStr + name + contactInfo + '\n'
             outStr += self.ifTextStr + name + description + '\n'
-        self.regSym(name, outStr, oidStr, moduleIdentity=1)
+        self.regSym(name, outStr, oidStr, moduleIdentity=True)
         return outStr
 
     # noinspection PyUnusedLocal
-    def genModuleCompliance(self, data, classmode=0):
+    def genModuleCompliance(self, data, classmode=False):
         name, description, compliances, oid = data
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -322,7 +319,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         return outStr
 
     # noinspection PyUnusedLocal
-    def genNotificationGroup(self, data, classmode=0):
+    def genNotificationGroup(self, data, classmode=False):
         name, objects, description, oid = data
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -338,7 +335,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         return outStr
 
     # noinspection PyUnusedLocal
-    def genNotificationType(self, data, classmode=0):
+    def genNotificationType(self, data, classmode=False):
         name, objects, description, oid = data
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -354,7 +351,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         return outStr
 
     # noinspection PyUnusedLocal
-    def genObjectGroup(self, data, classmode=0):
+    def genObjectGroup(self, data, classmode=False):
         name, objects, description, oid = data
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -370,7 +367,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         return outStr
 
     # noinspection PyUnusedLocal
-    def genObjectIdentity(self, data, classmode=0):
+    def genObjectIdentity(self, data, classmode=False):
         name, description, oid = data
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -382,7 +379,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         return outStr
 
     # noinspection PyUnusedLocal
-    def genObjectType(self, data, classmode=0):
+    def genObjectType(self, data, classmode=False):
         name, syntax, units, maxaccess, description, augmention, index, defval, oid = data
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -413,7 +410,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         return outStr
 
     # noinspection PyUnusedLocal
-    def genTrapType(self, data, classmode=0):
+    def genTrapType(self, data, classmode=False):
         name, enterprise, variables, description, value = data
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -429,7 +426,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         return outStr
 
     # noinspection PyUnusedLocal
-    def genTypeDeclaration(self, data, classmode=0):
+    def genTypeDeclaration(self, data, classmode=False):
         outStr = ''
         name, declaration = data
         if declaration:
@@ -441,7 +438,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         return outStr
 
     # noinspection PyUnusedLocal
-    def genValueDeclaration(self, data, classmode=0):
+    def genValueDeclaration(self, data, classmode=False):
         name, oid = data
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -453,15 +450,15 @@ class PySnmpCodeGen(AbstractCodeGen):
     # Subparts generation functions
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
-    def ftNames(self, data, classmode=0):
+    def ftNames(self, data, classmode=False):
         names = data[0]
         return names
 
-    def genBitNames(self, data, classmode=0):
+    def genBitNames(self, data, classmode=False):
         names = data[0]
         return names
 
-    def genBits(self, data, classmode=0):
+    def genBits(self, data, classmode=False):
         bits = data[0]
         namedval = ['("' + bit[0] + '", ' + str(bit[1]) + '),' for bit in bits]
         numFuncCalls = len(namedval) / 255 + 1
@@ -473,7 +470,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         return 'Bits', outStr
 
     # noinspection PyUnusedLocal
-    def genCompliances(self, data, classmode=0):
+    def genCompliances(self, data, classmode=False):
         compliances = []
         for complianceModule in data[0]:
             name = complianceModule[0] or self.moduleName[0]
@@ -482,7 +479,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         return '.setObjects(*(' + complStr + '))'
 
     # noinspection PyUnusedLocal
-    def genConceptualTable(self, data, classmode=0):
+    def genConceptualTable(self, data, classmode=False):
         row = data[0]
         if row[1] and row[1][-2:] == '()':
             row = row[1][:-2]
@@ -490,16 +487,16 @@ class PySnmpCodeGen(AbstractCodeGen):
         return 'MibTable', ''
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
-    def genContactInfo(self, data, classmode=0):
+    def genContactInfo(self, data, classmode=False):
         text = data[0]
         return '.setContactInfo(' + dorepr(text) + ')'
 
     # noinspection PyUnusedLocal
-    def genDisplayHint(self, data, classmode=0):
+    def genDisplayHint(self, data, classmode=False):
         return self.indent + 'displayHint = ' + dorepr(data[0]) + '\n'
 
     # noinspection PyUnusedLocal
-    def genDefVal(self, data, classmode=0, objname=None):
+    def genDefVal(self, data, classmode=False, objname=None):
         if not data:
             return ''
         if not objname:
@@ -516,7 +513,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         elif self.isBinary(defval):  # binary
             binval = defval[1:-2]
             if defvalType[0][0] in ('Integer32', 'Integer'):  # common bug in MIBs
-                val = str(int(binval and binval or '0', 2))
+                val = str(int(binval or '0', 2))
             else:
                 hexval = binval and hex(int(binval, 2))[2:] or ''
                 val = 'hexValue="' + hexval + '"'
@@ -554,11 +551,11 @@ class PySnmpCodeGen(AbstractCodeGen):
         return '.clone(' + val + ')'
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
-    def genDescription(self, data, classmode=0):
+    def genDescription(self, data, classmode=False):
         text = data[0]
         return '.setDescription(' + dorepr(text) + ')'
 
-    def genEnumSpec(self, data, classmode=0):
+    def genEnumSpec(self, data, classmode=False):
         items = data[0]
         singleval = [str(item[1]) + ',' for item in items]
         outStr = classmode and self.indent + 'subtypeSpec = %s.subtypeSpec+' or '.subtype(subtypeSpec='
@@ -567,8 +564,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         funcCalls = ''
         outStr += not singleCall and 'ConstraintsUnion(' or ''
         for i in range(int(numFuncCalls)):
-            funcCalls += 'SingleValueConstraint(' + \
-                         ' '.join(singleval[255 * i:255 * (i + 1)]) + '), '
+            funcCalls += 'SingleValueConstraint(' + ' '.join(singleval[255 * i:255 * (i + 1)]) + '), '
         funcCalls = funcCalls[:-2]
         outStr += funcCalls
         outStr += not singleCall and (classmode and ')\n' or '))') or (not classmode and ')' or '\n')
@@ -576,7 +572,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         return outStr
 
     # noinspection PyUnusedLocal
-    def genTableIndex(self, data, classmode=0):
+    def genTableIndex(self, data, classmode=False):
         def genFakeSyms(fakeidx, idxType):
             fakeSymName = 'pysmiFakeCol%s' % fakeidx
             objType = self.typeClasses.get(idxType, idxType)
@@ -600,8 +596,8 @@ class PySnmpCodeGen(AbstractCodeGen):
                               '", "' + idxName + '")')
         return '.setIndexNames(' + ', '.join(idxStrlist) + ')', fakeStrlist, fakeSyms
 
-    def genIntegerSubType(self, data, classmode=0):
-        singleRange = len(data[0]) == 1 or False
+    def genIntegerSubType(self, data, classmode=False):
+        singleRange = len(data[0]) == 1
         outStr = classmode and self.indent + 'subtypeSpec = %s.subtypeSpec+' or '.subtype(subtypeSpec='
         outStr += not singleRange and 'ConstraintsUnion(' or ''
         for rng in data[0]:
@@ -612,30 +608,29 @@ class PySnmpCodeGen(AbstractCodeGen):
         return outStr
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
-    def genMaxAccess(self, data, classmode=0):
+    def genMaxAccess(self, data, classmode=False):
         access = data[0].replace('-', '')
         return access != 'notaccessible' and '.setMaxAccess("' + access + '")' or ''
 
-    def genOctetStringSubType(self, data, classmode=0):
-        singleRange = len(data[0]) == 1 or False
+    def genOctetStringSubType(self, data, classmode=False):
+        singleRange = len(data[0]) == 1
         outStr = classmode and self.indent + 'subtypeSpec = %s.subtypeSpec+' or '.subtype(subtypeSpec='
         outStr += not singleRange and 'ConstraintsUnion(' or ''
         for rng in data[0]:
             vmin, vmax = len(rng) == 1 and (rng[0], rng[0]) or rng
             vmin, vmax = str(self.str2int(vmin)), str(self.str2int(vmax))
-            outStr += 'ValueSizeConstraint(' + vmin + ',' + vmax + ')' + \
-                      (not singleRange and ',' or '')
+            outStr += ('ValueSizeConstraint(' + vmin + ',' + vmax + ')' +
+                       (not singleRange and ',' or ''))
         outStr += not singleRange and (classmode and ')' or '))') or (not classmode and ')' or '\n')
         if data[0]:
             # noinspection PyUnboundLocalVariable
-            outStr += singleRange and \
-                      vmin == vmax and \
-                      (classmode and self.indent + 'fixedLength = ' + vmin + '\n' or
-                       '.setFixedLength(' + vmin + ')') or ''
+            outStr += (singleRange
+                       and vmin == vmax
+                       and (classmode and self.indent + 'fixedLength = ' + vmin + '\n' or '.setFixedLength(' + vmin + ')') or '')
         return outStr
 
     # noinspection PyUnusedLocal
-    def genOid(self, data, classmode=0):
+    def genOid(self, data, classmode=False):
         out = ()
         parent = ''
         for el in data[0]:
@@ -651,13 +646,13 @@ class PySnmpCodeGen(AbstractCodeGen):
         return str(self.genNumericOid(out)), parent
 
     # noinspection PyUnusedLocal
-    def genObjects(self, data, classmode=0):
+    def genObjects(self, data, classmode=False):
         if data[0]:
             return [self.transOpers(obj) for obj in data[0]]  # XXX self.transOpers or not??
         return []
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
-    def genTime(self, data, classmode=0):
+    def genTime(self, data, classmode=False):
         times = []
         for t in data:
             lenTimeStr = len(t)
@@ -676,33 +671,33 @@ class PySnmpCodeGen(AbstractCodeGen):
         return times
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
-    def genLastUpdated(self, data, classmode=0):
+    def genLastUpdated(self, data, classmode=False):
         text = data[0]
         return '.setLastUpdated(' + dorepr(text) + ')'
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
-    def genOrganization(self, data, classmode=0):
+    def genOrganization(self, data, classmode=False):
         text = data[0]
         return '.setOrganization(' + dorepr(text) + ')'
 
     # noinspection PyUnusedLocal
-    def genRevisions(self, data, classmode=0):
+    def genRevisions(self, data, classmode=False):
         times = self.genTime(data[0])
         return '.setRevisions(("' + '", "'.join(times) + '",))'
 
-    def genRow(self, data, classmode=0):
+    def genRow(self, data, classmode=False):
         row = data[0]
         row = self.transOpers(row)
         return row in self.symbolTable[self.moduleName[0]]['_symtable_rows'] and (
              'MibTableRow', '') or self.genSimpleSyntax(data, classmode=classmode)
 
     # noinspection PyUnusedLocal
-    def genSequence(self, data, classmode=0):
+    def genSequence(self, data, classmode=False):
         cols = data[0]
         self._cols.update(cols)
         return '', ''
 
-    def genSimpleSyntax(self, data, classmode=0):
+    def genSimpleSyntax(self, data, classmode=False):
         objType = data[0]
         objType = self.typeClasses.get(objType, objType)
         objType = self.transOpers(objType)
@@ -714,7 +709,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         return 'MibScalar', outStr
 
     # noinspection PyUnusedLocal
-    def genTypeDeclarationRHS(self, data, classmode=0):
+    def genTypeDeclarationRHS(self, data, classmode=False):
         if len(data) == 1:
             parentType, attrs = data[0]  # just syntax
         else:
@@ -728,7 +723,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         return parentType, attrs
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
-    def genUnits(self, data, classmode=0):
+    def genUnits(self, data, classmode=False):
         text = data[0]
         return '.setUnits(' + dorepr(text) + ')'
 

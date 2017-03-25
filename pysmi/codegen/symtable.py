@@ -110,13 +110,11 @@ class SymtableCodeGen(AbstractCodeGen):
 
     @staticmethod
     def isBinary(s):
-        return isinstance(s, (str, unicode)) and s[0] == '\'' \
-               and s[-2:] in ('\'b', '\'B')
+        return isinstance(s, (str, unicode)) and s[0] == '\'' and s[-2:] in ('\'b', '\'B')
 
     @staticmethod
     def isHex(s):
-        return isinstance(s, (str, unicode)) and s[0] == '\'' \
-               and s[-2:] in ('\'h', '\'H')
+        return isinstance(s, (str, unicode)) and s[0] == '\'' and s[-2:] in ('\'h', '\'H')
 
     def str2int(self, s):
         if self.isBinary(s):
@@ -133,7 +131,7 @@ class SymtableCodeGen(AbstractCodeGen):
             i = int(s)
         return i
 
-    def prepData(self, pdata, classmode=0):
+    def prepData(self, pdata, classmode=False):
         data = []
         for el in pdata:
             if not isinstance(el, tuple):
@@ -214,7 +212,7 @@ class SymtableCodeGen(AbstractCodeGen):
         # Clause handlers
 
     # noinspection PyUnusedLocal
-    def genAgentCapabilities(self, data, classmode=0):
+    def genAgentCapabilities(self, data, classmode=False):
         origName, description, oid = data
         pysmiName = self.transOpers(origName)
         symProps = {'type': 'AgentCapabilities',
@@ -224,7 +222,7 @@ class SymtableCodeGen(AbstractCodeGen):
         self.regSym(pysmiName, symProps)
 
     # noinspection PyUnusedLocal
-    def genModuleIdentity(self, data, classmode=0):
+    def genModuleIdentity(self, data, classmode=False):
         origName, lastUpdated, organization, contactInfo, description, revisions, oid = data
         pysmiName = self.transOpers(origName)
         symProps = {'type': 'ModuleIdentity',
@@ -234,7 +232,7 @@ class SymtableCodeGen(AbstractCodeGen):
         self.regSym(pysmiName, symProps)
 
     # noinspection PyUnusedLocal
-    def genModuleCompliance(self, data, classmode=0):
+    def genModuleCompliance(self, data, classmode=False):
         origName, description, compliances, oid = data
         pysmiName = self.transOpers(origName)
         symProps = {'type': 'ModuleCompliance',
@@ -243,7 +241,7 @@ class SymtableCodeGen(AbstractCodeGen):
         self.regSym(pysmiName, symProps)
 
     # noinspection PyUnusedLocal
-    def genNotificationGroup(self, data, classmode=0):
+    def genNotificationGroup(self, data, classmode=False):
         origName, objects, description, oid = data
         pysmiName = self.transOpers(origName)
         symProps = {'type': 'NotificationGroup',
@@ -253,7 +251,7 @@ class SymtableCodeGen(AbstractCodeGen):
         self.regSym(pysmiName, symProps)
 
     # noinspection PyUnusedLocal
-    def genNotificationType(self, data, classmode=0):
+    def genNotificationType(self, data, classmode=False):
         origName, objects, description, oid = data
         pysmiName = self.transOpers(origName)
         symProps = {'type': 'NotificationType',
@@ -263,7 +261,7 @@ class SymtableCodeGen(AbstractCodeGen):
         self.regSym(pysmiName, symProps)
 
     # noinspection PyUnusedLocal
-    def genObjectGroup(self, data, classmode=0):
+    def genObjectGroup(self, data, classmode=False):
         origName, objects, description, oid = data
         pysmiName = self.transOpers(origName)
         symProps = {'type': 'ObjectGroup',
@@ -273,7 +271,7 @@ class SymtableCodeGen(AbstractCodeGen):
         self.regSym(pysmiName, symProps)
 
     # noinspection PyUnusedLocal
-    def genObjectIdentity(self, data, classmode=0):
+    def genObjectIdentity(self, data, classmode=False):
         origName, description, oid = data
         pysmiName = self.transOpers(origName)
         symProps = {'type': 'ObjectIdentity',
@@ -283,7 +281,7 @@ class SymtableCodeGen(AbstractCodeGen):
         self.regSym(pysmiName, symProps)
 
     # noinspection PyUnusedLocal
-    def genObjectType(self, data, classmode=0):
+    def genObjectType(self, data, classmode=False):
         origName, syntax, units, maxaccess, description, augmention, index, defval, oid = data
         pysmiName = self.transOpers(origName)
         symProps = {'type': 'ObjectType',
@@ -308,7 +306,7 @@ class SymtableCodeGen(AbstractCodeGen):
         self.regSym(pysmiName, symProps, parents)
 
     # noinspection PyUnusedLocal
-    def genTrapType(self, data, classmode=0):
+    def genTrapType(self, data, classmode=False):
         origName, enterprise, variables, description, value = data
         pysmiName = self.transOpers(origName)
         symProps = {'type': 'NotificationType',
@@ -317,7 +315,7 @@ class SymtableCodeGen(AbstractCodeGen):
         self.regSym(pysmiName, symProps)
 
     # noinspection PyUnusedLocal
-    def genTypeDeclaration(self, data, classmode=0):
+    def genTypeDeclaration(self, data, classmode=False):
         origName, declaration = data
         pysmiName = self.transOpers(origName)
         if declaration:
@@ -329,7 +327,7 @@ class SymtableCodeGen(AbstractCodeGen):
                 self.regSym(pysmiName, symProps, [declaration[0][0]])
 
     # noinspection PyUnusedLocal
-    def genValueDeclaration(self, data, classmode=0):
+    def genValueDeclaration(self, data, classmode=False):
         origName, oid = data
         pysmiName = self.transOpers(origName)
         symProps = {'type': 'MibIdentifier',
@@ -339,23 +337,23 @@ class SymtableCodeGen(AbstractCodeGen):
 
     # Subparts generation functions
     # noinspection PyUnusedLocal,PyMethodMayBeStatic
-    def genBitNames(self, data, classmode=0):
+    def genBitNames(self, data, classmode=False):
         names = data[0]
         return names
         # done
 
     # noinspection PyUnusedLocal,PyMethodMayBeStatic
-    def genBits(self, data, classmode=0):
+    def genBits(self, data, classmode=False):
         bits = data[0]
         return ('Bits', ''), bits
         # done
 
     # noinspection PyUnusedLocal,PyUnusedLocal,PyMethodMayBeStatic
-    def genCompliances(self, data, classmode=0):
+    def genCompliances(self, data, classmode=False):
         return ''
 
     # noinspection PyUnusedLocal
-    def genConceptualTable(self, data, classmode=0):
+    def genConceptualTable(self, data, classmode=False):
         row = data[0]
         if row[0] and row[0][0]:
             self._rows.add(self.transOpers(row[0][0]))
@@ -363,15 +361,15 @@ class SymtableCodeGen(AbstractCodeGen):
         # done
 
     # noinspection PyUnusedLocal,PyUnusedLocal,PyMethodMayBeStatic
-    def genContactInfo(self, data, classmode=0):
+    def genContactInfo(self, data, classmode=False):
         return ''
 
     # noinspection PyUnusedLocal,PyUnusedLocal,PyMethodMayBeStatic
-    def genDisplayHint(self, data, classmode=0):
+    def genDisplayHint(self, data, classmode=False):
         return ''
 
     # noinspection PyUnusedLocal
-    def genDefVal(self, data, classmode=0):  # XXX should be fixed, see pysnmp.py
+    def genDefVal(self, data, classmode=False):  # XXX should be fixed, see pysnmp.py
         defval = data[0]
         if isinstance(defval, (int, long)):  # number
             val = str(defval)
@@ -393,13 +391,13 @@ class SymtableCodeGen(AbstractCodeGen):
         return val
 
     # noinspection PyUnusedLocal,PyUnusedLocal,PyMethodMayBeStatic
-    def genDescription(self, data, classmode=0):
+    def genDescription(self, data, classmode=False):
         return ''
 
-    def genEnumSpec(self, data, classmode=0):
+    def genEnumSpec(self, data, classmode=False):
         return self.genBits(data, classmode=classmode)[1]
 
-    def genIndex(self, data, classmode=0):
+    def genIndex(self, data, classmode=False):
         indexes = data[0]
         fakeIdxName = 'pysmiFakeCol'
         fakeIndexes, fakeSymsSyntax = [], []
@@ -415,19 +413,19 @@ class SymtableCodeGen(AbstractCodeGen):
         return fakeIdxName, fakeIndexes, fakeSymsSyntax
 
     # noinspection PyUnusedLocal,PyUnusedLocal,PyMethodMayBeStatic
-    def genIntegerSubType(self, data, classmode=0):
+    def genIntegerSubType(self, data, classmode=False):
         return ''
 
     # noinspection PyUnusedLocal,PyUnusedLocal,PyMethodMayBeStatic
-    def genMaxAccess(self, data, classmode=0):
+    def genMaxAccess(self, data, classmode=False):
         return ''
 
     # noinspection PyUnusedLocal,PyUnusedLocal,PyMethodMayBeStatic
-    def genOctetStringSubType(self, data, classmode=0):
+    def genOctetStringSubType(self, data, classmode=False):
         return ''
 
     # noinspection PyUnusedLocal
-    def genOid(self, data, classmode=0):
+    def genOid(self, data, classmode=False):
         out = ()
         for el in data[0]:
             if isinstance(el, (str, unicode)):
@@ -443,38 +441,38 @@ class SymtableCodeGen(AbstractCodeGen):
         return out
 
     # noinspection PyUnusedLocal,PyUnusedLocal,PyMethodMayBeStatic
-    def genObjects(self, data, classmode=0):
+    def genObjects(self, data, classmode=False):
         return ''
 
     # noinspection PyUnusedLocal,PyUnusedLocal,PyMethodMayBeStatic
-    def genTime(self, data, classmode=0):
+    def genTime(self, data, classmode=False):
         return ''
 
     # noinspection PyUnusedLocal,PyUnusedLocal,PyMethodMayBeStatic
-    def genLastUpdated(self, data, classmode=0):
+    def genLastUpdated(self, data, classmode=False):
         return ''
 
     # noinspection PyUnusedLocal,PyUnusedLocal,PyMethodMayBeStatic
-    def genOrganization(self, data, classmode=0):
+    def genOrganization(self, data, classmode=False):
         return ''
 
     # noinspection PyUnusedLocal,PyUnusedLocal,PyMethodMayBeStatic
-    def genRevisions(self, data, classmode=0):
+    def genRevisions(self, data, classmode=False):
         return ''
 
-    def genRow(self, data, classmode=0):
+    def genRow(self, data, classmode=False):
         row = data[0]
         row = self.transOpers(row)
         return row in self._rows and (('MibTableRow', ''), '') or self.genSimpleSyntax(data, classmode=classmode)
 
     # noinspection PyUnusedLocal
-    def genSequence(self, data, classmode=0):
+    def genSequence(self, data, classmode=False):
         cols = data[0]
         self._cols.update(cols)
         return '', ''
 
     # noinspection PyUnusedLocal
-    def genSimpleSyntax(self, data, classmode=0):
+    def genSimpleSyntax(self, data, classmode=False):
         objType = data[0]
         module = ''
         objType = self.typeClasses.get(objType, objType)
@@ -485,7 +483,7 @@ class SymtableCodeGen(AbstractCodeGen):
         return (objType, module), subtype
 
     # noinspection PyUnusedLocal,PyMethodMayBeStatic
-    def genTypeDeclarationRHS(self, data, classmode=0):
+    def genTypeDeclarationRHS(self, data, classmode=False):
         if len(data) == 1:
             parentType, attrs = data[0]  # just syntax
         else:
@@ -495,7 +493,7 @@ class SymtableCodeGen(AbstractCodeGen):
         return parentType, attrs
 
     # noinspection PyUnusedLocal,PyUnusedLocal,PyMethodMayBeStatic
-    def genUnits(self, data, classmode=0):
+    def genUnits(self, data, classmode=False):
         return ''
 
     handlersTable = {

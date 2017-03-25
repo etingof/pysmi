@@ -10,8 +10,9 @@ from pysmi import debug
 
 class AbstractBorrower(object):
     genTexts = False
+    exts = ''
 
-    def __init__(self, reader, genTexts=None):
+    def __init__(self, reader, genTexts=False):
         """Creates an instance of *Borrower* class.
 
            Args:

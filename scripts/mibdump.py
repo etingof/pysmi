@@ -72,18 +72,19 @@ Where:
 )
 
 try:
-    opts, inputMibs = getopt.getopt(sys.argv[1:], 'hv',
-                                    ['help', 'version', 'quiet', 'debug=',
-                                     'mib-source=', 'mib-searcher=', 'mib-stub=', 'mib-borrower=',
-                                     'destination-format=', 'destination-directory=', 'cache-directory=',
-                                     'no-dependencies', 'no-python-compile', 'python-optimization-level=',
-                                     'ignore-errors', 'build-index', 'rebuild', 'dry-run', 'no-mib-writes',
-                                     'generate-mib-texts', 'disable-fuzzy-source']
-                                    )
+    opts, inputMibs = getopt.getopt(
+        sys.argv[1:], 'hv',
+        ['help', 'version', 'quiet', 'debug=',
+        'mib-source=', 'mib-searcher=', 'mib-stub=', 'mib-borrower=',
+        'destination-format=', 'destination-directory=', 'cache-directory=',
+        'no-dependencies', 'no-python-compile', 'python-optimization-level=',
+        'ignore-errors', 'build-index', 'rebuild', 'dry-run', 'no-mib-writes',
+        'generate-mib-texts', 'disable-fuzzy-source']
+    )
 except getopt.GetoptError:
     if verboseFlag:
         sys.stderr.write('ERROR: %s\r\n%s\r\n' % (sys.exc_info()[1], helpMessage))
-    sys.exit(-1)
+    sys.exit(1)
 
 for opt in opts:
     if opt[0] == '-h' or opt[0] == '--help':
@@ -99,12 +100,12 @@ Documentation:
         from pysmi import __version__
 
         sys.stderr.write("""\
-SNMP SMI/MIB library version %s, written by Ilya Etingof <ilya@snmplabs.com>
+SNMP SMI/MIB library version %s, written by Ilya Etingof <etingof@gmail.com>
 Python interpreter: %s
 Software documentation and support at http://pysmi.sf.net
 %s
 """ % (__version__, sys.version, helpMessage))
-        sys.exit(-1)
+        sys.exit(1)
     if opt[0] == '--quiet':
         verboseFlag = False
     if opt[0] == '--debug':
