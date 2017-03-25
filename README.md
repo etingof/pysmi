@@ -1,36 +1,30 @@
 
 SNMP MIB parser
 ---------------
-[![PyPI](https://img.shields.io/pypi/v/pysmi.svg?maxAge=2592000)](https://pypi.python.org/pypi/pysmi)
 [![Python Versions](https://img.shields.io/pypi/pyversions/pysmi.svg)](https://pypi.python.org/pypi/pysmi/)
 [![Build status](https://travis-ci.org/etingof/pysmi.svg?branch=master)](https://secure.travis-ci.org/etingof/pysmi)
 [![Coverage Status](https://img.shields.io/codecov/c/github/etingof/pysmi.svg)](https://codecov.io/github/etingof/pysmi)
-[![GitHub license](https://img.shields.io/badge/license-BSD-blue.svg)](https://raw.githubusercontent.com/etingof/pysmi/master/LICENSE.txt)
+[![GitHub license](https://img.shields.io/badge/license-BSD-blue.svg)](https://raw.githubusercontent.com/etingof/pysmi/master/LICENSE.rst)
 
-This is a pure-Python implementation of SNMP SMI MIB parser. This software
+PySMI is a pure-Python implementation of SNMP SMI MIB parser. This tool
 is designed to turn ASN.1 MIBs into various formats. As of this moment, JSON and
 [pysnmp](https://github.com/etingof/pysnmp) modules can be generated from ASN.1 MIBs.
 
-Download
+Features
 --------
 
-The pysmi package is distributed under terms and conditions of 2-clause
-BSD [license](http://pysmi.sourceforge.net/license.html). Source code is freely
-available as a Github [repo](https://github.com/etingof/pysmi).
+* Understands SMIv1, SMIv2 and de-facto dialects
+* Turns MIBs into pysnmp classes and JSON documents
+* Maintain an index of MIB objects
+* Automatically downloads ASN.1 MIBs from various sources
+* 100% Python, works with Python 2.4 up to Python 3.6
 
-Installation
-------------
+Rendered pysmi documentation can be found at [pysmi site](http://pysmi.sf.net).
 
-Download pysmi from [PyPI](https://pypi.python.org/pypi/pysmi) or just run:
-
-```bash
-$ pip install pysmi
-```
-
-How to use pysmi
+How to use PySMI
 ----------------
 
-If you are using pysnmp, you might never notice pysmi presense - pysnmp will call it for MIB
+If you are using pysnmp, you might never notice pysmi presence - pysnmp will call it for MIB
 download and compilation automatically.
 
 If you want to compile ASN.1 MIB into PySNMP module by hand, use *mibdump.py* tool
@@ -105,15 +99,18 @@ The pysmi library can automatically fetch required MIBs from HTTP, FTP sites
 or local directories. You could configure any MIB source available to you (including
 [http://mibs.snmplabs.com/asn1/](http://mibs.snmplabs.com/asn1/)) for that purpose.
 
-Documentation
--------------
+How to get PySMI
+----------------
 
-Detailed information on pysmi library interfaces be found at [pysmi site](http://pysmi.sf.net).
+The pysmi package is distributed under terms and conditions of 2-clause
+BSD [license](http://pyasn1.sourceforge.net/license.html). Source code is freely
+available as a GitHub [repo](https://github.com/etingof/pysmi).
 
-Feedback
---------
+You could `pip install pysmi` or download it from [PyPI](https://pypi.python.org/pypi/pysmi).
 
-I'm interested in bug reports and fixes, suggestions and improvements. Your pull requests
-are very welcome as well!
+If something does not work as expected,
+[open an issue](https://github.com/etingof/pysmi/issues) at GitHub or
+post your question [on Stack Overflow](http://stackoverflow.com/questions/ask).
 
-Copyright (c) 2015-2017, [Ilya Etingof](mailto:etingof@gmail.com). All rights reserved.
+Copyright (c) 2015-2017, [Ilya Etingof](http://etingof@gmail.com).
+All rights reserved.
