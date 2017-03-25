@@ -83,31 +83,6 @@ class JsonCodeGen(AbstractCodeGen):
     def transOpers(symbol):
         return symbol.replace('-', '_')
 
-    @staticmethod
-    def isBinary(s):
-        return isinstance(s, (str, unicode)) and s[0] == '\'' \
-               and s[-2:] in ('\'b', '\'B')
-
-    @staticmethod
-    def isHex(s):
-        return isinstance(s, (str, unicode)) and s[0] == '\'' \
-               and s[-2:] in ('\'h', '\'H')
-
-    def str2int(self, s):
-        if self.isBinary(s):
-            if s[1:-2]:
-                i = int(s[1:-2], 2)
-            else:
-                raise error.PySmiSemanticError('empty binary string to int conversion')
-        elif self.isHex(s):
-            if s[1:-2]:
-                i = int(s[1:-2], 16)
-            else:
-                raise error.PySmiSemanticError('empty hex string to int conversion')
-        else:
-            i = int(s)
-        return i
-
     def prepData(self, pdata):
         data = []
         for el in pdata:
@@ -125,37 +100,52 @@ class JsonCodeGen(AbstractCodeGen):
         # convertion to SNMPv2
         toDel = []
         for module in list(imports):
+
             if module in self.convertImportv2:
+
                 for symbol in imports[module]:
+
                     if symbol in self.convertImportv2[module]:
                         toDel.append((module, symbol))
+
                         for newImport in self.convertImportv2[module][symbol]:
                             newModule, newSymbol = newImport
+
                             if newModule in imports:
                                 imports[newModule].append(newSymbol)
                             else:
                                 imports[newModule] = [newSymbol]
+
         # removing converted symbols
         for d in toDel:
             imports[d[0]].remove(d[1])
+
         # merging mib and constant imports
         for module in self.constImports:
             if module in imports:
                 imports[module] += self.constImports[module]
             else:
                 imports[module] = self.constImports[module]
+
         outDict = OrderedDict()
         outDict['class'] = 'imports'
         for module in sorted(imports):
             symbols = []
             for symbol in set(imports[module]):
                 symbols.append(symbol)
+
             if symbols:
-                self._seenSyms.update([self.transOpers(s) for s in symbols])
-                self._importMap.update([(self.transOpers(s), module) for s in symbols])
+                self._seenSyms.update(
+                    [self.transOpers(s) for s in symbols]
+                )
+                self._importMap.update(
+                    [(self.transOpers(s), module) for s in symbols]
+                )
                 if module not in outDict:
                     outDict[module] = []
+
                 outDict[module].extend(symbols)
+
         return OrderedDict(imports=outDict), tuple(sorted(imports))
 
     # noinspection PyMethodMayBeStatic
@@ -169,6 +159,7 @@ class JsonCodeGen(AbstractCodeGen):
     def regSym(self, symbol, outDict, parentOid=None, moduleIdentity=False, moduleCompliance=False):
         if symbol in self._seenSyms and symbol not in self._importMap:
             raise error.PySmiSemanticError('Duplicate symbol found: %s' % symbol)
+
         self.addToExports(symbol, moduleIdentity)
         self._out[symbol] = outDict
 
@@ -188,32 +179,41 @@ class JsonCodeGen(AbstractCodeGen):
 
     def genNumericOid(self, oid):
         numericOid = ()
+
         for part in oid:
             if isinstance(part, tuple):
                 parent, module = part
                 if parent == 'iso':
                     numericOid += (1,)
                     continue
+
                 if module not in self.symbolTable:
                     # XXX do getname for possible future borrowed mibs
                     raise error.PySmiSemanticError('no module "%s" in symbolTable' % module)
+
                 if parent not in self.symbolTable[module]:
                     raise error.PySmiSemanticError('no symbol "%s" in module "%s"' % (parent, module))
                 numericOid += self.genNumericOid(self.symbolTable[module][parent]['oid'])
+
             else:
                 numericOid += (part,)
+
         return numericOid
 
     def getBaseType(self, symName, module):
         if module not in self.symbolTable:
             raise error.PySmiSemanticError('no module "%s" in symbolTable' % module)
+
         if symName not in self.symbolTable[module]:
             raise error.PySmiSemanticError('no symbol "%s" in module "%s"' % (symName, module))
+
         symType, symSubtype = self.symbolTable[module][symName].get('syntax', (('', ''), ''))
         if not symType[0]:
             raise error.PySmiSemanticError('unknown type for symbol "%s"' % symName)
+
         if symType[0] in self.baseTypes:
             return symType, symSubtype
+
         else:
             baseSymType, baseSymSubtype = self.getBaseType(*symType)
             if isinstance(baseSymSubtype, list):
@@ -221,6 +221,7 @@ class JsonCodeGen(AbstractCodeGen):
                     symSubtype += baseSymSubtype
                 else:
                     symSubtype = baseSymSubtype
+
             return baseSymType, symSubtype
 
     # Clause generation functions
@@ -228,30 +229,41 @@ class JsonCodeGen(AbstractCodeGen):
     # noinspection PyUnusedLocal
     def genAgentCapabilities(self, data):
         name, description, oid = data
+
         label = self.genLabel(name)
         name = self.transOpers(name)
+
         oidStr, parentOid = oid
+
         outDict = OrderedDict()
         outDict['name'] = name
         outDict['oid'] = oidStr
         outDict['class'] = 'agentcapabilities'
+
         if self.genRules['text'] and description:
             outDict['description'] = description
+
         self.regSym(name, outDict, parentOid)
+
         return outDict
 
     # noinspection PyUnusedLocal
     def genModuleIdentity(self, data):
         name, lastUpdated, organization, contactInfo, description, revisions, oid = data
+
         label = self.genLabel(name)
         name = self.transOpers(name)
+
         oidStr, parentOid = oid
+
         outDict = OrderedDict()
         outDict['name'] = name
         outDict['oid'] = oidStr
         outDict['class'] = 'moduleidentity'
+
         if revisions:
             outDict['revisions'] = revisions
+
         if self.genRules['text']:
             if lastUpdated:
                 outDict['lastupdated'] = lastUpdated
@@ -261,107 +273,141 @@ class JsonCodeGen(AbstractCodeGen):
                 outDict['contactinfo'] = contactInfo
             if description:
                 outDict['description'] = description
+
         self.regSym(name, outDict, parentOid, moduleIdentity=True)
+
         return outDict
 
     # noinspection PyUnusedLocal
     def genModuleCompliance(self, data):
         name, description, compliances, oid = data
+
         label = self.genLabel(name)
         name = self.transOpers(name)
+
         oidStr, parentOid = oid
+
         outDict = OrderedDict()
         outDict['name'] = name
         outDict['oid'] = oidStr
         outDict['class'] = 'modulecompliance'
+
         if compliances:
             outDict['modulecompliance'] = compliances
+
         if self.genRules['text'] and description:
             outDict['description'] = description
+
         self.regSym(name, outDict, parentOid, moduleCompliance=True)
+
         return outDict
 
     # noinspection PyUnusedLocal
     def genNotificationGroup(self, data):
         name, objects, description, oid = data
+
         label = self.genLabel(name)
         name = self.transOpers(name)
+
         oidStr, parentOid = oid
         outDict = OrderedDict()
         outDict['name'] = name
         outDict['oid'] = oidStr
         outDict['class'] = 'notificationgroup'
+
         if objects:
             outDict['objects'] = [{'module': self.moduleName[0], 'object': self.transOpers(obj)} for obj in objects]
+
         if self.genRules['text'] and description:
             outDict['description'] = description
+
         self.regSym(name, outDict, parentOid)
+
         return outDict
 
     # noinspection PyUnusedLocal
     def genNotificationType(self, data):
         name, objects, description, oid = data
+
         label = self.genLabel(name)
         name = self.transOpers(name)
+
         oidStr, parentOid = oid
         outDict = OrderedDict()
         outDict['name'] = name
         outDict['oid'] = oidStr
         outDict['class'] = 'notificationtype'
+
         if objects:
             outDict['objects'] = [{'module': self.moduleName[0], 'object': self.transOpers(obj)} for obj in objects]
+
         if self.genRules['text'] and description:
             outDict['description'] = description
+
         self.regSym(name, outDict, parentOid)
+
         return outDict
 
     # noinspection PyUnusedLocal
     def genObjectGroup(self, data):
         name, objects, description, oid = data
+
         label = self.genLabel(name)
         name = self.transOpers(name)
+
         oidStr, parentOid = oid
-        outDict = OrderedDict(
-            {
-                'name': name,
-                'oid': oidStr,
-                'class': 'objectgroup',
-            }
-        )
+        outDict = OrderedDict({'name': name,
+                               'oid': oidStr,
+                               'class': 'objectgroup'})
+
         if objects:
             outDict['objects'] = [{'module': self.moduleName[0], 'object': self.transOpers(obj)} for obj in objects]
+
         if self.genRules['text'] and description:
             outDict['description'] = description
+
         self.regSym(name, outDict, parentOid)
+
         return outDict
 
     # noinspection PyUnusedLocal
     def genObjectIdentity(self, data):
         name, description, oid = data
+
         label = self.genLabel(name)
         name = self.transOpers(name)
+
         oidStr, parentOid = oid
+
         outDict = OrderedDict()
         outDict['name'] = name
         outDict['oid'] = oidStr
         outDict['class'] = 'objectidentity'
+
         if self.genRules['text'] and description:
             outDict['description'] = description
+
         self.regSym(name, outDict, parentOid)
+
         return outDict
 
     # noinspection PyUnusedLocal
     def genObjectType(self, data):
         name, syntax, units, maxaccess, description, augmention, index, defval, oid = data
+
         label = self.genLabel(name)
         name = self.transOpers(name)
+
         oidStr, parentOid = oid
         indexStr, fakeStrlist, fakeSyms = index or ('', '', [])
+
         defval = self.genDefVal(defval, objname=name)
+
         outDict = OrderedDict()
         outDict['name'] = name
         outDict['oid'] = oidStr
         outDict['class'] = 'objecttype'
+
         if syntax[1]:
             outDict['syntax'] = syntax[1]
         if defval:
@@ -378,58 +424,75 @@ class JsonCodeGen(AbstractCodeGen):
             outDict['augmention']['name'] = name
             outDict['augmention']['module'] = self.moduleName[0]
             outDict['augmention']['object'] = augmention
+
         if self.genRules['text'] and description:
             outDict['description'] = description
+
         self.regSym(name, outDict, parentOid)
 # TODO
 #        if fakeSyms:  # fake symbols for INDEX to support SMIv1
 #            for i in range(len(fakeSyms)):
 #                fakeOutStr = fakeStrlist[i] % oidStr
 #                self.regSym(fakeSyms[i], fakeOutStr, name)
+
         return outDict
 
     # noinspection PyUnusedLocal
     def genTrapType(self, data):
         name, enterprise, variables, description, value = data
+
         label = self.genLabel(name)
         name = self.transOpers(name)
+
         enterpriseStr, parentOid = enterprise
+
         outDict = OrderedDict()
         outDict['name'] = name
         outDict['oid'] = enterpriseStr + '0.' + str(value)
         outDict['class'] = 'notificationtype'
+
         if variables:
             outDict['objects'] = [{'module': self.moduleName[0], 'object': self.transOpers(obj)} for obj in variables]
+
         if self.genRules['text'] and description:
             outDict['description'] = description
+
         self.regSym(name, outDict, parentOid)
+
         return outDict
 
     # noinspection PyUnusedLocal
     def genTypeDeclaration(self, data):
         name, declaration = data
+
         outDict = OrderedDict()
         outDict['name'] = name
         outDict['class'] = 'type'
+
         if declaration:
             parentType, attrs = declaration
             if parentType:  # skipping SEQUENCE case
                 name = self.transOpers(name)
                 outDict.update(attrs)
                 self.regSym(name, outDict)
+
         return outDict
 
     # noinspection PyUnusedLocal
     def genValueDeclaration(self, data):
         name, oid = data
+
         label = self.genLabel(name)
         name = self.transOpers(name)
+
         oidStr, parentOid = oid
         outDict = OrderedDict()
         outDict['name'] = name
         outDict['oid'] = oidStr
         outDict['class'] = 'objectidentity'
+
         self.regSym(name, outDict, parentOid)
+
         return outDict
 
     # Subparts generation functions
@@ -441,28 +504,35 @@ class JsonCodeGen(AbstractCodeGen):
 
     def genBits(self, data):
         bits = data[0]
+
         outDict = OrderedDict()
         outDict['type'] = 'Bits'
         outDict['class'] = 'type'
         outDict['bits'] = OrderedDict()
+
         for name, bit in sorted(bits, key=lambda x: x[1]):
             outDict['bits'][name] = bit
+
         return 'MibScalar', outDict
 
     # noinspection PyUnusedLocal
     def genCompliances(self, data):
         compliances = []
+
         for complianceModule in data[0]:
             name = complianceModule[0] or self.moduleName[0]
             compliances += [{'object': self.transOpers(compl), 'module': name} for compl in complianceModule[1]]
+
         return compliances
 
     # noinspection PyUnusedLocal
     def genConceptualTable(self, data):
         row = data[0]
+
         if row[1] and row[1][-2:] == '()':
             row = row[1][:-2]
             self._rows.add(row)
+
         return 'MibTable', ''
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
@@ -480,16 +550,21 @@ class JsonCodeGen(AbstractCodeGen):
             return {}
         if not objname:
             return data
+
         outDict = OrderedDict()
+
         defval = data[0]
         defvalType = self.getBaseType(objname, self.moduleName[0])
+
         if isinstance(defval, (int, long)):  # number
             outDict.update(value=defval, format='decimal')
+
         elif self.isHex(defval):  # hex
             if defvalType[0][0] in ('Integer32', 'Integer'):  # common bug in MIBs
                 outDict.update(value=str(int(len(defval) > 3 and defval[1:-2] or '0', 16)), format='hex')
             else:
                 outDict.update(value=defval[1:-2], format='hex')
+
         elif self.isBinary(defval):  # binary
             binval = defval[1:-2]
             if defvalType[0][0] in ('Integer32', 'Integer'):  # common bug in MIBs
@@ -497,39 +572,51 @@ class JsonCodeGen(AbstractCodeGen):
             else:
                 hexval = binval and hex(int(binval, 2))[2:] or ''
                 outDict.update(value=hexval, format='hex')
+
         elif defval[0] == defval[-1] and defval[0] == '"':  # quoted string
             if defval[1:-1] == '' and defvalType != 'OctetString':  # common bug
                 # a warning should be here
                 return {}  # we will set no default value
             outDict.update(value=defval[1:-1], format='string')
+
         else:  # symbol (oid as defval) or name for enumeration member
-            if defvalType[0][0] == 'ObjectIdentifier' and \
-                    (defval in self.symbolTable[self.moduleName[0]] or defval in self._importMap):  # oid
+            if (defvalType[0][0] == 'ObjectIdentifier' and
+                (defval in self.symbolTable[self.moduleName[0]] or defval in self._importMap)):  # oid
+
                 module = self._importMap.get(defval, self.moduleName[0])
+
                 try:
                     val = str(self.genNumericOid(self.symbolTable[module][defval]['oid']))
                     outDict.update(value=val, format='oid')
                 except:
                     # or no module if it will be borrowed later
                     raise error.PySmiSemanticError('no symbol "%s" in module "%s"' % (defval, module))
+
             # enumeration
-            elif defvalType[0][0] in ('Integer32', 'Integer') and \
-                    isinstance(defvalType[1], list) and defval in dict(defvalType[1]):
+            elif (defvalType[0][0] in ('Integer32', 'Integer') and
+                  isinstance(defvalType[1], list) and defval in dict(defvalType[1])):
                 outDict.update(value=defval, format='enum')
+
             elif defvalType[0][0] == 'Bits':
                 defvalBits = []
+
                 bits = dict(defvalType[1])
+
                 for bit in defval:
                     bitValue = bits.get(bit, None)
                     if bitValue is not None:
                         defvalBits.append((bit, bitValue))
                     else:
                         raise error.PySmiSemanticError('no such bit as "%s" for symbol "%s"' % (bit, objname))
+
                 outDict.update(value=self.genBits([defvalBits])[1], format='bits')
+
                 return outDict
+
             else:
                 raise error.PySmiSemanticError(
                     'unknown type "%s" for defval "%s" of symbol "%s"' % (defvalType, defval, objname))
+
         return {'default': outDict}
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
@@ -544,7 +631,6 @@ class JsonCodeGen(AbstractCodeGen):
     # noinspection PyUnusedLocal
     def genTableIndex(self, data):
         def genFakeSyms(fakeidx, idxType):
-            fakeSymName = 'pysmiFakeCol%s' % fakeidx
             objType = self.typeClasses.get(idxType, idxType)
             objType = self.transOpers(objType)
 
@@ -553,6 +639,7 @@ class JsonCodeGen(AbstractCodeGen):
 
         indexes = data[0]
         idxStrlist, fakeSyms, fakeStrlist = [], [], []
+
         for idx in indexes:
             idxName = idx[1]
             if idxName in self.smiv1IdxTypes:  # SMIv1 support
@@ -561,10 +648,12 @@ class JsonCodeGen(AbstractCodeGen):
                 fakeStrlist.append(fakeSymStr)
                 fakeSyms.append(idxName)
                 self.fakeidx += 1
+
             index = OrderedDict()
             index['module'] = self._importMap.get(idxName, self.moduleName[0])
             index['object'] = idxName
             idxStrlist.append(index)
+
         return idxStrlist, fakeStrlist, fakeSyms
 
     def genIntegerSubType(self, data):
@@ -576,6 +665,7 @@ class JsonCodeGen(AbstractCodeGen):
             ran['min'] = vmin
             ran['max'] = vmax
             ranges.append(ran)
+
         return {'range': ranges}
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
@@ -588,10 +678,12 @@ class JsonCodeGen(AbstractCodeGen):
         for rng in data[0]:
             vmin, vmax = len(rng) == 1 and (rng[0], rng[0]) or rng
             vmin, vmax = self.str2int(vmin), self.str2int(vmax)
+
             size = OrderedDict()
             size['min'] = vmin
             size['max'] = vmax
             sizes.append(size)
+
         return {'size': sizes}
 
     # noinspection PyUnusedLocal
@@ -602,12 +694,16 @@ class JsonCodeGen(AbstractCodeGen):
             if isinstance(el, (str, unicode)):
                 parent = self.transOpers(el)
                 out += ((parent, self._importMap.get(parent, self.moduleName[0])),)
+
             elif isinstance(el, (int, long)):
                 out += (el,)
+
             elif isinstance(el, tuple):
                 out += (el[1],)  # XXX Do we need to create a new object el[0]?
+
             else:
                 raise error.PySmiSemanticError('unknown datatype for OID: %s' % el)
+
         return '.'.join([str(x) for x in self.genNumericOid(out)]), parent
 
     # noinspection PyUnusedLocal
@@ -619,20 +715,23 @@ class JsonCodeGen(AbstractCodeGen):
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def genTime(self, data):
         times = []
-        for t in data:
-            lenTimeStr = len(t)
-            if lenTimeStr == 11:
-                t = '19' + t
+        for timeStr in data:
+
+            if len(timeStr) == 11:
+                timeStr = '19' + timeStr
+
             # XXX raise in strict mode
             # elif lenTimeStr != 13:
             #  raise error.PySmiSemanticError("Invalid date %s" % t)
             try:
-                times.append(strftime('%Y-%m-%d %H:%M', strptime(t, '%Y%m%d%H%MZ')))
+                times.append(strftime('%Y-%m-%d %H:%M', strptime(timeStr, '%Y%m%d%H%MZ')))
+
             except ValueError:
                 # XXX raise in strict mode
                 # raise error.PySmiSemanticError("Invalid date %s: %s" % (t, sys.exc_info()[1]))
-                t = '197001010000Z'  # dummy date for dates with typos
-                times.append(strftime('%Y-%m-%d %H:%M', strptime(t, '%Y%m%d%H%MZ')))
+                timeStr = '197001010000Z'  # dummy date for dates with typos
+                times.append(strftime('%Y-%m-%d %H:%M', strptime(timeStr, '%Y%m%d%H%MZ')))
+
         return times
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
@@ -666,27 +765,34 @@ class JsonCodeGen(AbstractCodeGen):
         objType = data[0]
         objType = self.typeClasses.get(objType, objType)
         objType = self.transOpers(objType)
+
         subtype = len(data) == 2 and data[1] or {}
+
         outDict = OrderedDict()
         outDict['type'] = objType
         outDict['class'] = 'type'
+
         if subtype:
             outDict['constraints'] = subtype
+
         return 'MibScalar', outDict
 
     # noinspection PyUnusedLocal
     def genTypeDeclarationRHS(self, data):
         if len(data) == 1:
             parentType, attrs = data[0]
+
             outDict = OrderedDict()
             if not attrs:
                 return outDict
             # just syntax
             outDict['type'] = attrs
+
         else:
             # Textual convention
             display, syntax = data
             parentType, attrs = syntax
+
             outDict = OrderedDict()
             outDict['type'] = attrs
             outDict['class'] = 'textualconvention'
@@ -755,21 +861,28 @@ class JsonCodeGen(AbstractCodeGen):
         self._oids = set()
         self._complianceOids = []
         self.moduleName[0], moduleOid, imports, declarations = ast
+
         outDict, importedModules = self.genImports(imports and imports or {})
+
         for declr in declarations or []:
             if declr:
                 self.handlersTable[declr[0]](self, self.prepData(declr[1:]))
+
         for sym in self.symbolTable[self.moduleName[0]]['_symtable_order']:
             if sym not in self._out:
                 raise error.PySmiCodegenError('No generated code for symbol %s' % sym)
+
             outDict[sym] = self._out[sym]
+
         if 'comments' in kwargs:
             outDict['meta'] = OrderedDict()
             outDict['meta']['comments'] = kwargs['comments']
             outDict['meta']['module'] = self.moduleName[0]
+
         debug.logger & debug.flagCodegen and debug.logger(
             'canonical MIB name %s (%s), imported MIB(s) %s, Python code size %s bytes' % (
                 self.moduleName[0], moduleOid, ','.join(importedModules) or '<none>', len(outDict)))
+
         return MibInfo(oid=moduleOid,
                        identity=self._moduleIdentityOid,
                        name=self.moduleName[0],
@@ -791,6 +904,7 @@ class JsonCodeGen(AbstractCodeGen):
                 outDict.update(
                     json.loads(kwargs['old_index_data'])
                 )
+
             except Exception:
                 raise error.PySmiCodegenError('Index load error: %s' % sys.exc_info()[1])
 
@@ -801,14 +915,17 @@ class JsonCodeGen(AbstractCodeGen):
                     # first try to sort keys as OIDs
                     for k in sorted(top, key=lambda x: [int(y) for y in x.split('.')]):
                         new_top[k] = order(top[k])
+
                 except ValueError:
                     for k in sorted(top):
                         new_top[k] = order(top[k])
+
                 return new_top
             elif isinstance(top, list):
                 new_top = []
                 for e in sorted(set(top)):
                     new_top.append(order(e))
+
                 return new_top
 
             return top
@@ -819,6 +936,7 @@ class JsonCodeGen(AbstractCodeGen):
             if identity_oid:
                 if identity_oid not in modData:
                     modData[identity_oid] = []
+
                 modData[identity_oid].append(module)
 
             modData = outDict['enterprise']
@@ -826,6 +944,7 @@ class JsonCodeGen(AbstractCodeGen):
             if enterprise_oid:
                 if enterprise_oid not in modData:
                     modData[enterprise_oid] = []
+
                 modData[enterprise_oid].append(module)
 
             modData = outDict['compliance']
@@ -840,6 +959,7 @@ class JsonCodeGen(AbstractCodeGen):
             for object_oid in objects_oids:
                 if object_oid not in modData:
                     modData[object_oid] = []
+
                 modData[object_oid].append(module)
 
             if modData:

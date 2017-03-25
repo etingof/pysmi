@@ -56,16 +56,17 @@ class FtpReader(AbstractReader):
 
         try:
             conn.connect(self._host, self._port, self._timeout)
+
         except ftplib.all_errors:
             raise error.PySmiReaderFileNotFoundError(
                 'failed to connect to FTP server %s:%s: %s' % (self._host, self._port, sys.exc_info()[1]), reader=self)
 
         try:
             conn.login(self._user, self._password)
+
         except ftplib.all_errors:
             conn.close()
-            raise error.PySmiReaderFileNotFoundError('failed to log in to FTP server %s:%s as %s/%s: %s' % (
-            self._host, self._port, self._user, self._password, sys.exc_info()[1]), reader=self)
+            raise error.PySmiReaderFileNotFoundError('failed to log in to FTP server %s:%s as %s/%s: %s' % (self._host, self._port, self._user, self._password, sys.exc_info()[1]), reader=self)
 
         mibname = decode(mibname)
 
@@ -73,25 +74,34 @@ class FtpReader(AbstractReader):
 
         for mibalias, mibfile in self.getMibVariants(mibname):
             location = self._locationTemplate.replace('@mib@', mibfile)
+
             mtime = time.time()
+
             debug.logger & debug.flagReader and debug.logger(
                 'trying to fetch MIB %s from %s:%s' % (location, self._host, self._port))
+
             data = []
+
             try:
                 try:
                     response = conn.sendcmd('MDTM %s' % location)
+
                 except ftplib.all_errors:
                     debug.logger & debug.flagReader and debug.logger(
                         'server %s:%s does not support MDTM command, fetching file %s' % (
                         self._host, self._port, location))
+
                 else:
                     debug.logger & debug.flagReader and debug.logger(
                         'server %s:%s MDTM response is %s' % (self._host, self._port, response))
+
                     if response[:3] == 213:
                         mtime = time.mktime(time.strptime(response[4:], "%Y%m%d%H%M%S"))
-                debug.logger & debug.flagReader and debug.logger('fetching source MIB %s, mtime %s' % (
-                location, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(mtime))))
+
+                debug.logger & debug.flagReader and debug.logger('fetching source MIB %s, mtime %s' % (location, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(mtime))))
+
                 conn.retrlines('RETR %s' % location, lambda x, y=data: y.append(x))
+
             except ftplib.all_errors:
                 debug.logger & debug.flagReader and debug.logger(
                     'failed to fetch MIB %s from %s:%s: %s' % (location, self._host, self._port, sys.exc_info()[1]))
@@ -102,6 +112,7 @@ class FtpReader(AbstractReader):
             debug.logger & debug.flagReader and debug.logger('fetched %s bytes in %s' % (len(data), location))
 
             conn.close()
+
             return MibInfo(path='ftp://%s%s' % (self._host, location), file=mibfile, name=mibalias, mtime=mtime), data
 
         conn.close()

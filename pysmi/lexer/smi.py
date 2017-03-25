@@ -195,9 +195,12 @@ class SmiV2Lexer(AbstractLexer):
         r'[A-Z][-a-zA-z0-9]*'
         if t.value in self.forbidden_words:
             raise error.PySmiLexerError("%s is forbidden" % t.value, lineno=t.lineno)
+
         if t.value[-1] == '-':
             raise error.PySmiLexerError("Identifier should not end with '-': %s" % t.value, lineno=t.lineno)
+
         t.type = self.reserved.get(t.value, 'UPPERCASE_IDENTIFIER')
+
         return t
 
     def t_LOWERCASE_IDENTIFIER(self, t):
@@ -212,17 +215,22 @@ class SmiV2Lexer(AbstractLexer):
         neg = 0
         if t.value < 0:
             neg = 1
+
         val = abs(t.value)
+
         if val <= UNSIGNED32_MAX:
             if neg:
                 t.type = 'NEGATIVENUMBER'
+
         elif val <= UNSIGNED64_MAX:
             if neg:
                 t.type = 'NEGATIVENUMBER64'
             else:
                 t.type = 'NUMBER64'
+
         else:
             raise error.PySmiLexerError("Number %s is too big" % t.value, lineno=t.lineno)
+
         return t
 
     def t_BIN_STRING(self, t):
@@ -302,23 +310,24 @@ class SupportSmiV1Keywords(object):
     @staticmethod
     def tokens():
         # Token names required!
-        return list(set([
-                            'BIN_STRING',
-                            'CHOICE',
-                            'COLON_COLON_EQUAL',
-                            'DOT_DOT',
-                            'EXPORTS',
-                            'HEX_STRING',
-                            'LOWERCASE_IDENTIFIER',
-                            'MACRO',
-                            'NEGATIVENUMBER',
-                            'NEGATIVENUMBER64',
-                            'NUMBER',
-                            'NUMBER64',
-                            'QUOTED_STRING',
-                            'UPPERCASE_IDENTIFIER',
-                        ] + list(SupportSmiV1Keywords.reserved().values())
-                        ))
+        tokens = [
+            'BIN_STRING',
+            'CHOICE',
+            'COLON_COLON_EQUAL',
+            'DOT_DOT',
+            'EXPORTS',
+            'HEX_STRING',
+            'LOWERCASE_IDENTIFIER',
+            'MACRO',
+            'NEGATIVENUMBER',
+            'NEGATIVENUMBER64',
+            'NUMBER',
+            'NUMBER64',
+            'QUOTED_STRING',
+            'UPPERCASE_IDENTIFIER',
+        ]
+        tokens += list(SupportSmiV1Keywords.reserved().values())
+        return list(set(tokens))
 
 
 relaxedGrammar = {
@@ -340,6 +349,7 @@ relaxedGrammar = {
 
 def lexerFactory(**grammarOptions):
     classAttr = {}
+
     for option in grammarOptions:
         if grammarOptions[option]:
             if option not in relaxedGrammar:

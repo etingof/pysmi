@@ -81,9 +81,11 @@ try:
         'ignore-errors', 'build-index', 'rebuild', 'dry-run', 'no-mib-writes',
         'generate-mib-texts', 'disable-fuzzy-source']
     )
+
 except getopt.GetoptError:
     if verboseFlag:
         sys.stderr.write('ERROR: %s\r\n%s\r\n' % (sys.exc_info()[1], helpMessage))
+
     sys.exit(1)
 
 for opt in opts:
@@ -96,6 +98,7 @@ Documentation:
 %s
 """ % helpMessage)
         sys.exit(-1)
+
     if opt[0] == '-v' or opt[0] == '--version':
         from pysmi import __version__
 
@@ -106,46 +109,66 @@ Software documentation and support at http://pysmi.sf.net
 %s
 """ % (__version__, sys.version, helpMessage))
         sys.exit(1)
+
     if opt[0] == '--quiet':
         verboseFlag = False
+
     if opt[0] == '--debug':
         debug.setLogger(debug.Debug(*opt[1].split(',')))
+
     if opt[0] == '--mib-source':
         mibSources.append(opt[1])
+
     if opt[0] == '--mib-searcher':
         mibSearchers.append(opt[1])
+
     if opt[0] == '--mib-stub':
         mibStubs.append(opt[1])
+
     if opt[0] == '--mib-borrower':
         mibBorrowers.append((opt[1], genMibTextsFlag))
+
     if opt[0] == '--destination-format':
         dstFormat = opt[1]
+
     if opt[0] == '--destination-directory':
         dstDirectory = opt[1]
+
     if opt[0] == '--cache-directory':
         cacheDirectory = opt[1]
+
     if opt[0] == '--no-dependencies':
         nodepsFlag = True
+
     if opt[0] == '--no-python-compile':
         pyCompileFlag = False
+
     if opt[0] == '--python-optimization-level':
         try:
             pyOptimizationLevel = int(opt[1])
+
         except ValueError:
             sys.stderr.write('ERROR: known Python optimization levels: -1, 0, 1, 2\r\n%s\r\n' % helpMessage)
             sys.exit(-1)
+
     if opt[0] == '--ignore-errors':
         ignoreErrorsFlag = True
+
     if opt[0] == '--build-index':
         buildIndexFlag = True
+
     if opt[0] == '--rebuild':
         rebuildFlag = True
+
     if opt[0] == '--dry-run':
         dryrunFlag = True
+
     if opt[0] == '--no-mib-writes':
         writeMibsFlag = False
+
     if opt[0] == '--generate-mib-texts':
         genMibTextsFlag = True
+
     if opt[0] == '--disable-fuzzy-source':
         doFuzzyMatchingFlag = False
 
@@ -154,6 +177,7 @@ if inputMibs:
                                 for x in inputMibs
                                 if os.path.sep in x])))
     inputMibs = [os.path.basename(os.path.splitext(x)[0]) for x in inputMibs]
+
 else:
     sys.stderr.write('ERROR: MIB modules names not specified\r\n%s\r\n' % helpMessage)
     sys.exit(-1)

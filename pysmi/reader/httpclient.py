@@ -65,11 +65,14 @@ class HttpReader(AbstractReader):
 
         for mibalias, mibfile in self.getMibVariants(mibname):
             location = self._locationTemplate.replace('@mib@', mibfile)
+
             debug.logger & debug.flagReader and debug.logger(
                 'trying to fetch MIB from %s://%s:%s%s' % (self._schema, self._host, self._port, location))
+
             try:
                 conn.request('GET', location, '', headers)
                 response = conn.getresponse()
+
             except Exception:
                 debug.logger & debug.flagReader and debug.logger('failed to fetch MIB from %s://%s:%s%s: %s' % (
                     self._schema, self._host, self._port, location, sys.exc_info()[1]))
@@ -80,6 +83,7 @@ class HttpReader(AbstractReader):
             if response.status == 200:
                 try:
                     mtime = time.mktime(time.strptime(response.getheader('Last-Modified'), "%a, %d %b %Y %H:%M:%S %Z"))
+
                 except Exception:
                     debug.logger & debug.flagReader and debug.logger('malformed HTTP headers: %s' % sys.exc_info()[1])
                     mtime = time.time()

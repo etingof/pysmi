@@ -40,19 +40,24 @@ class PyFileSearcher(AbstractSearcher):
         if rebuild:
             debug.logger & debug.flagSearcher and debug.logger('pretend %s is very old' % mibname)
             return
+
         mibname = decode(mibname)
         pyfile = os.path.join(self._path, mibname)
+
         for fmt in imp.PY_COMPILED, imp.PY_SOURCE:
             for pySfx, pyMode in self.suffixes[fmt]:
                 f = pyfile + pySfx
+
                 if not os.path.exists(f) or not os.path.isfile(f):
                     debug.logger & debug.flagSearcher and debug.logger('%s not present or not a file' % f)
                     continue
+
                 if fmt == imp.PY_COMPILED:
                     try:
                         fp = open(f, pyMode)
                         pyData = fp.read(8)
                         fp.close()
+
                     except IOError:
                         raise error.PySmiSearcherError('failure opening compiled file %s: %s' % (f, sys.exc_info()[1]),
                                                        searcher=self)
@@ -63,20 +68,24 @@ class PyFileSearcher(AbstractSearcher):
                             'found %s, mtime %s' % (f, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(pyTime))))
                         if pyTime >= mtime:
                             raise error.PySmiFileNotModifiedError()
+
                         else:
                             raise error.PySmiFileNotFoundError('older file %s exists' % mibname, searcher=self)
+
                     else:
                         debug.logger & debug.flagSearcher and debug.logger('bad magic in %s' % f)
                         continue
                 else:
                     try:
                         pyTime = os.stat(f)[8]
+
                     except OSError:
                         raise error.PySmiSearcherError('failure opening compiled file %s: %s' % (f, sys.exc_info()[1]),
                                                        searcher=self)
 
                     debug.logger & debug.flagSearcher and debug.logger(
                         'found %s, mtime %s' % (f, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(pyTime))))
+
                     if pyTime >= mtime:
                         raise error.PySmiFileNotModifiedError()
 

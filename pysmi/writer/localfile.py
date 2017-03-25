@@ -46,15 +46,17 @@ class FileWriter(AbstractWriter):
         except (OSError, IOError, UnicodeEncodeError):
             if f:
                 f.close()
-            return
+            return ''
 
     def putData(self, mibname, data, comments=(), dryRun=False):
         if dryRun:
             debug.logger & debug.flagWriter and debug.logger('dry run mode')
             return
+
         if not os.path.exists(self._path):
             try:
                 os.makedirs(self._path)
+
             except OSError:
                 raise error.PySmiWriterError(
                     'failure creating destination directory %s: %s' % (self._path, sys.exc_info()[1]), writer=self)
@@ -77,8 +79,10 @@ class FileWriter(AbstractWriter):
             if tfile:
                 try:
                     os.unlink(tfile)
+
                 except OSError:
                     pass
+
             raise error.PySmiWriterError('failure writing file %s: %s' % (filename, exc[1]), file=filename, writer=self)
 
         debug.logger & debug.flagWriter and debug.logger('%s stored in %s' % (mibname, filename))

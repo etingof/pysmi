@@ -65,8 +65,11 @@ class SmiV2Parser(AbstractParser):
     def parse(self, data, **kwargs):
         debug.logger & debug.flagParser and debug.logger(
             'source MIB size is %s characters, first 50 characters are "%s..."' % (len(data), data[:50]))
+
         ast = self.parser.parse(data, lexer=self.lexer.lexer)
+
         self.reset()
+
         if ast and ast[0] == 'mibFile' and ast[1]:  # mibfile is not empty
             return ast[1]
         else:
@@ -117,7 +120,6 @@ class SmiV2Parser(AbstractParser):
     def p_exportsClause(self, p):
         """exportsClause : EXPORTS
                          | empty"""
-        pass
 
     def p_importPart(self, p):
         """importPart : imports
@@ -131,6 +133,7 @@ class SmiV2Parser(AbstractParser):
                     importDict[fromModule] += symbols
                 else:
                     importDict[fromModule] = symbols
+
             p[0] = importDict
 
     def p_imports(self, p):
@@ -229,7 +232,6 @@ class SmiV2Parser(AbstractParser):
 
     def p_macroClause(self, p):
         """macroClause : macroName MACRO END"""
-        pass
 
     def p_macroName(self, p):
         """macroName : MODULE_IDENTITY
@@ -242,11 +244,9 @@ class SmiV2Parser(AbstractParser):
                      | NOTIFICATION_GROUP
                      | MODULE_COMPLIANCE
                      | AGENT_CAPABILITIES"""
-        pass
 
     def p_choiceClause(self, p):
         """choiceClause : CHOICE """
-        pass
 
     # libsmi: The only ASN.1 value declarations are for OIDs, REF:RFC1902,491.
     def p_fuzzy_lowercase_identifier(self, p):
@@ -463,12 +463,10 @@ class SmiV2Parser(AbstractParser):
                                  | empty"""
         # if p[1]:
         #  p[0] = (p[1], p[3])
-        pass
 
     def p_SubjectCategories(self, p):
         """SubjectCategories : CategoryIDs"""
         # p[0] = p[1]
-        pass
 
     def p_CategoryIDs(self, p):
         """CategoryIDs : CategoryIDs ',' CategoryID
@@ -478,7 +476,6 @@ class SmiV2Parser(AbstractParser):
         #  p[0] = ('CategoryIDs', p[1][1] + [p[3]])
         # elif n == 2:
         #  p[0] = ('CategoryIDs', [p[1]])
-        pass
 
     def p_CategoryID(self, p):
         """CategoryID : LOWERCASE_IDENTIFIER '(' NUMBER ')'
@@ -488,7 +485,6 @@ class SmiV2Parser(AbstractParser):
         #  p[0] = ('CategoryID', p[1])
         # elif n == 5:
         #  p[0] = ('CategoryID', p[3])
-        pass
 
     def p_ObjectSyntax(self, p):
         """ObjectSyntax : SimpleSyntax
@@ -506,7 +502,6 @@ class SmiV2Parser(AbstractParser):
     def p_typeTag(self, p):
         """typeTag : '[' APPLICATION NUMBER ']' IMPLICIT
                    | '[' UNIVERSAL NUMBER ']' IMPLICIT"""
-        pass
 
     def p_sequenceObjectSyntax(self, p):
         """sequenceObjectSyntax : sequenceSimpleSyntax
@@ -533,11 +528,13 @@ class SmiV2Parser(AbstractParser):
         n = len(p)
         if n == 2:
             p[0] = ('SimpleSyntax', p[1])
+
         elif n == 3:
             if p[1] == 'OCTET':
                 p[0] = ('SimpleSyntax', p[1] + ' ' + p[2])
             else:
                 p[0] = ('SimpleSyntax', p[1], p[2])
+
         elif n == 4:
             p[0] = ('SimpleSyntax', p[1] + ' ' + p[2], p[3])
 
@@ -676,7 +673,6 @@ class SmiV2Parser(AbstractParser):
     def p_Status(self, p):
         """Status : LOWERCASE_IDENTIFIER"""
         #  p[0] = ('Status', p[1])
-        pass
 
     def p_Status_Capabilities(self, p):
         """Status_Capabilities : LOWERCASE_IDENTIFIER"""
@@ -781,7 +777,6 @@ class SmiV2Parser(AbstractParser):
                      | empty"""
         #    if p[1]:
         #      p[0] = (p[1], p[2])
-        pass
 
     def p_RevisionPart(self, p):
         """RevisionPart : Revisions
@@ -1003,7 +998,6 @@ class SmiV2Parser(AbstractParser):
         #        p[4], # write syntax
         #        p[5], # access
         #        (p[6], p[7])) # description
-        pass
 
     def p_SyntaxPart(self, p):
         """SyntaxPart : SYNTAX Syntax
@@ -1043,7 +1037,6 @@ class SmiV2Parser(AbstractParser):
                                    | empty"""
         # if p[1]:
         #  p[0] = p[1]
-        pass
 
     def p_Modules_Capabilities(self, p):
         """Modules_Capabilities : Modules_Capabilities Module_Capabilities
@@ -1053,14 +1046,12 @@ class SmiV2Parser(AbstractParser):
         #  p[0] = ('Modules_Capabilities', p[1][1] + [p[2]])
         # elif n == 2:
         #  p[0] = ('Modules_Capabilities', [p[1]])
-        pass
 
     def p_Module_Capabilities(self, p):
         """Module_Capabilities : SUPPORTS ModuleName_Capabilities INCLUDES '{' CapabilitiesGroups '}' VariationPart"""
         # p[0] = ('Module_Capabilities', (p[1], p[2]), # supports
         #                               (p[3], p[5]), # includes
         #                               p[7]) # variations
-        pass
 
     def p_CapabilitiesGroups(self, p):
         """CapabilitiesGroups : CapabilitiesGroups ',' CapabilitiesGroup
@@ -1070,12 +1061,10 @@ class SmiV2Parser(AbstractParser):
         #  p[0] = ('CapabilitiesGroups', p[1][1] + [p[3]])
         # elif n == 2:
         #  p[0] = ('CapabilitiesGroups', [p[1]])
-        pass
 
     def p_CapabilitiesGroup(self, p):
         """CapabilitiesGroup : objectIdentifier"""
         # p[0] = ('CapabilitiesGroup', p[1])
-        pass
 
     def p_ModuleName_Capabilities(self, p):
         """ModuleName_Capabilities : UPPERCASE_IDENTIFIER objectIdentifier
@@ -1085,14 +1074,12 @@ class SmiV2Parser(AbstractParser):
         #  p[0] = ('ModuleName_Capabilities', p[1])
         # elif n == 3:
         #  p[0] = ('ModuleName_Capabilities', p[1], p[2])
-        pass
 
     def p_VariationPart(self, p):
         """VariationPart : Variations
                          | empty"""
         # if p[1]:
         #  p[0] = p[1]
-        pass
 
     def p_Variations(self, p):
         """Variations : Variations Variation
@@ -1101,8 +1088,7 @@ class SmiV2Parser(AbstractParser):
         # if n == 3:
         #  p[0] = ('Variations', p[1][1] + [p[2]])
         # elif n == 2:
-        #  p[0] = ('Variations', [p[1]])
-        pass
+        #  p[0] = ('Variations', [p[1]])        pass
 
     def p_Variation(self, p):
         """Variation : VARIATION ObjectName SyntaxPart WriteSyntaxPart VariationAccessPart CreationPart DefValPart DESCRIPTION Text"""
@@ -1114,19 +1100,16 @@ class SmiV2Parser(AbstractParser):
         #        p[6], # creation
         #        p[7], # defval
         #        (p[8], p[9])) # description
-        pass
 
     def p_VariationAccessPart(self, p):
         """VariationAccessPart : ACCESS VariationAccess
                                | empty"""
         # if p[1]:
         #  p[0] = (p[1], p[2])
-        pass
 
     def p_VariationAccess(self, p):
         """VariationAccess : LOWERCASE_IDENTIFIER"""
         # p[0] = p[1]
-        pass
 
     def p_CreationPart(self, p):
         """CreationPart : CREATION_REQUIRES '{' Cells '}'
@@ -1149,7 +1132,6 @@ class SmiV2Parser(AbstractParser):
 
     def p_empty(self, p):
         """empty :"""
-        pass
 
     # Error rule for syntax errors
     def p_error(self, p):
@@ -1447,6 +1429,7 @@ def parserFactory(**grammarOptions):
 
     """
     classAttr = {}
+
     for option in grammarOptions:
         if grammarOptions[option]:
             if option not in relaxedGrammar:

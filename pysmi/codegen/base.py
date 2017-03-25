@@ -263,3 +263,28 @@ class AbstractCodeGen(object):
 
     def genIndex(self, mibsMap, **kwargs):
         raise NotImplementedError()
+
+    @staticmethod
+    def isBinary(s):
+        return (isinstance(s, (str, unicode)) and
+                s[0] == '\'' and s[-2:] in ('\'b', '\'B'))
+
+    @staticmethod
+    def isHex(s):
+        return (isinstance(s, (str, unicode)) and s[0] == '\''
+                and s[-2:] in ('\'h', '\'H'))
+
+    def str2int(self, s):
+        if self.isBinary(s):
+            if s[1:-2]:
+                return int(s[1:-2], 2)
+            else:
+                raise error.PySmiSemanticError('empty binary string to int conversion')
+
+        elif self.isHex(s):
+            if s[1:-2]:
+                return int(s[1:-2], 16)
+            else:
+                raise error.PySmiSemanticError('empty hex string to int conversion')
+        else:
+            return int(s)

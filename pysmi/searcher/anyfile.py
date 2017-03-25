@@ -33,15 +33,19 @@ class AnyFileSearcher(AbstractSearcher):
         if rebuild:
             debug.logger & debug.flagSearcher and debug.logger('pretend %s is very old' % mibname)
             return
+
         mibname = decode(mibname)
         basename = os.path.join(self._path, mibname)
+
         for sfx in self.exts:
             f = basename + sfx
             if not os.path.exists(f) or not os.path.isfile(f):
                 debug.logger & debug.flagSearcher and debug.logger('%s not present or not a file' % f)
                 continue
+
             try:
                 fileTime = os.stat(f)[8]
+
             except OSError:
                 raise error.PySmiSearcherError('failure opening compiled file %s: %s' % (f, sys.exc_info()[1]),
                                                searcher=self)

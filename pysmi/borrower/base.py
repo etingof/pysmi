@@ -23,15 +23,20 @@ class AbstractBorrower(object):
         """
         if genTexts is not None:
             self.genTexts = genTexts
+
         self._reader = reader
 
     def __str__(self):
-        return '%s{%s, genTexts=%s, exts=%s}' % (self.__class__.__name__, self._reader, self.genTexts, self.exts)
+        return '%s{%s, genTexts=%s, exts=%s}' % (self.__class__.__name__,
+                                                 self._reader, self.genTexts,
+                                                 self.exts)
 
     def setOptions(self, **kwargs):
         self._reader.setOptions(**kwargs)
+
         for k in kwargs:
             setattr(self, k, kwargs[k])
+
         return self
 
     def getData(self, mibname, **kwargs):
@@ -40,5 +45,8 @@ class AbstractBorrower(object):
                 'skipping incompatible borrower %s for file %s' % (self, mibname))
             raise error.PySmiFileNotFoundError(mibname=mibname, reader=self._reader)
 
-        debug.logger & debug.flagBorrower and debug.logger('trying to borrow file %s from %s' % (mibname, self._reader))
+        debug.logger & debug.flagBorrower and (
+            debug.logger('trying to borrow file %s from %s' % (mibname, self._reader))
+        )
+
         return self._reader.getData(mibname)

@@ -41,6 +41,7 @@ class CallbackWriter(AbstractWriter):
 
         try:
             self._cbFun(mibname, data, self._cbCtx)
+
         except Exception:
             raise error.PySmiWriterError(
                 'user callback %s failure writing %s: %s' % (self._cbFun, mibname, sys.exc_info()[1]), writer=self)
@@ -48,4 +49,4 @@ class CallbackWriter(AbstractWriter):
         debug.logger & debug.flagWriter and debug.logger('user callback for %s succeeded' % mibname)
 
     def getData(self, filename):
-        raise ''
+        return ''

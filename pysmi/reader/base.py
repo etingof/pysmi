@@ -24,12 +24,16 @@ class AbstractReader(object):
 
     def getMibVariants(self, mibname):
         filenames = []
+
         if self.originalMatching:
             filenames.append(mibname)
+
         if self.uppercaseMatching:
             filenames.append(mibname.upper())
+
         if self.lowcaseMatching:
             filenames.append(mibname.lower())
+
         if self.fuzzyMatching:
             part = filenames[-1].find('-mib')
             if part != -1:

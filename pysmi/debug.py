@@ -38,14 +38,20 @@ class Printer(object):
     def __init__(self, logger=None, handler=None, formatter=None):
         if logger is None:
             logger = logging.getLogger('pysmi')
+
         logger.setLevel(logging.DEBUG)
+
         if handler is None:
             handler = logging.StreamHandler()
+
         if formatter is None:
             formatter = logging.Formatter('%(asctime)s %(name)s: %(message)s')
+
         handler.setFormatter(formatter)
         handler.setLevel(logging.DEBUG)
+
         logger.addHandler(handler)
+
         self.__logger = logger
 
     def __call__(self, msg):
@@ -74,8 +80,10 @@ class Debug(object):
         self._flags = flagNone
         if options.get('printer') is not None:
             self._printer = options.get('printer')
+
         elif self.defaultPrinter is not None:
             self._printer = self.defaultPrinter
+
         else:
             if 'loggerName' in options:
                 # route our logs to parent logger
@@ -85,16 +93,21 @@ class Debug(object):
                 )
             else:
                 self._printer = Printer()
+
         self('running pysmi version %s' % __version__)
+
         for flag in flags:
             inverse = flag and flag[0] in ('!', '~')
+
             if inverse:
                 flag = flag[1:]
+
             try:
                 if inverse:
                     self._flags &= ~flagMap[flag]
                 else:
                     self._flags |= flagMap[flag]
+
             except KeyError:
                 raise error.PySmiError('bad debug flag %s' % flag)
 

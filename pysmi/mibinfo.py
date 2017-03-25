@@ -5,20 +5,41 @@
 # License: http://pysmi.sf.net/license.html
 #
 
-#
-# Known attributes:
-# name   -- actual MIB name
-# alias  -- possible alternative to MIB name
-# path   -- URL to MIB file
-# file   -- MIB file name
-# mtime  -- MIB file modification time
-# oid    -- module OID
-# oids   -- all OIDs defined in this module
-# identity -- MODULE-IDENTITY OID
-# compliance -- list of MODULE-COMPLIANCE OIDs
-
 
 class MibInfo(object):
+    #: actual MIB name
+    name = ''
+
+    #: possible alternative to MIB name
+    alias = ''
+
+    #: URL to MIB file
+    path = ''
+
+    #: MIB file name
+    file = ''
+
+    #: MIB file modification time
+    mtime = 0
+
+    #: module OID
+    oid = ''
+
+    #: all OIDs defined in this module
+    oids = ()
+
+    #: MODULE-IDENTITY OID
+    identity = ''
+
+    #: Enterprise OID
+    enterprise = ()
+
+    #: MODULE-COMPLIANCE OIDs
+    compliance = ()
+
+    #: imported MIB names
+    imported = ()
+
     def __init__(self, **kwargs):
         for k in kwargs:
             setattr(self, k, kwargs[k])
