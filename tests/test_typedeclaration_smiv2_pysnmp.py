@@ -153,6 +153,7 @@ END
 # populate test case class with per-type methods
 
 typesMap = (
+    # TODO: Integer/Integer32?
     ('TestTypeInteger', 'Integer'),
     ('TestTypeOctetString', 'OctetString'),
     ('TestTypeObjectIdentifier', 'ObjectIdentifier'),
