@@ -4,7 +4,20 @@
 # Copyright (c) 2015-2017, Ilya Etingof <etingof@gmail.com>
 # License: http://pysmi.sf.net/license.html
 #
+import sys
 
+
+if sys.version_info[0] > 2:
+    # noinspection PyShadowingBuiltins
+    unicode = str
+    # noinspection PyShadowingBuiltins
+    long = int
+
+    def dorepr(s):
+        return repr(s)
+else:
+    def dorepr(s):
+        return repr(s.encode('utf-8')).decode('utf-8')
 
 def updateDict(d1, d2):
     d1.update(d2)

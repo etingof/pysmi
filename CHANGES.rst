@@ -2,9 +2,10 @@ Revision 0.1.0, 25-03-2017
 --------------------------
 
 - JSON code generating backend implemented
-- JSON OID->MIB indices generation implemented
+- Experimental JSON OID->MIB indices generation implemented
 - Package structure flattened for easier use
-- Source code statically analyzed and hardened
+- Minor refactoring to the test suite
+- Source code statically analyzed, hardened and PEP8-ized
 - Files closed explicitly to mute ResourceWarnings
 - Fixed to Python 2.4 (and aged ply) compatibility
 - Added a workaround to avoid generating pysnmp TextualConvention classes

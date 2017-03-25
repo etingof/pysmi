@@ -9,7 +9,7 @@
 import sys
 from keyword import iskeyword
 from pysmi.mibinfo import MibInfo
-from pysmi.codegen.base import AbstractCodeGen
+from pysmi.codegen.base import AbstractCodeGen, dorepr
 from pysmi import error
 from pysmi import debug
 
@@ -18,13 +18,6 @@ if sys.version_info[0] > 2:
     unicode = str
     # noinspection PyShadowingBuiltins
     long = int
-
-
-    def dorepr(s):
-        return repr(s)
-else:
-    def dorepr(s):
-        return repr(s.encode('utf-8')).decode('utf-8')
 
 
 class SymtableCodeGen(AbstractCodeGen):
