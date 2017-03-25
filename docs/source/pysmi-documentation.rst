@@ -92,4 +92,4 @@ welcome to ping me at etingof@gmail.com .
 License
 -------
 
-.. include:: ../../LICENSE.txt
+.. include:: ../../LICENSE.rst
