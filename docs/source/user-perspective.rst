@@ -5,11 +5,9 @@ PySMI: user perspective
 .. toctree::
    :maxdepth: 2
 
-At the time of this writing, a single *mibdump* tool is currently shipped
-with PySMI.
-
-The mibdump tool can be used for automatic downoading and transformation
-of specific MIB module 
+The *mibdump* tool is a command-line frontend to the PySMI library. This
+tool can be used for automatic downloading and transforming SNMP MIB modules
+into various formats.
 
 .. code-block:: bash
 
@@ -35,7 +33,7 @@ of specific MIB module
          [--dry-run]
          [--no-mib-writes]
          [--generate-mib-texts]
-         [ mibfile [ mibfile [...]]]
+         [mibfile [ mibfile [...]]]
    Where:
        url      - file, http, https, ftp, sftp schemes are supported.
                   Use @mib@ placeholder token in URL location to refer
@@ -153,7 +151,6 @@ Default source of pre-compiled MIBs for pysnmp target is:
 If you wish to modify this default list use one or more
 --mib-borrower options.
 
-
 Choosing target transformation
 ------------------------------
 
@@ -222,6 +219,40 @@ but might not make any sense in other applications.
 To save space and CPU time, PySMI does not by default include those texts 
 into transformed MIBs. However this can be reverted by adding
 --generate-mib-texts option.
+
+Building MIB indices
+--------------------
+
+If --build-index option is given, depending on the destination format chosen,
+the *mibdump* tool may create new (or update existing) document containing
+MIB information in a form that is convenient for querying cornerstone
+properties of MIB files.
+
+For example, building JSON index for `IF-MIB` would emit something like
+this:
+
+.. code-block:: json
+
+   {
+     "compliance": {
+       "1.3.6.1.2.1.31.2.2.1": [
+         "IF-MIB"
+       ]
+     },
+     "identity": {
+       "1.3.6.1.2.1.31": [
+         "IF-MIB"
+       ],
+     },
+     "oids": {
+       "1.3.6.1.2.1.2": [
+         "IF-MIB"
+       ]
+   }
+
+With this example, *compliance* and *identity* keys point to
+*MODULE-COMPLIANCE* and *MODULE-IDENTITY* MIB objects, *oids*
+list top-level OIDs branches defined in MIB modules.
 
 Minor speedups
 --------------
