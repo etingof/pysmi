@@ -1,4 +1,4 @@
-Revision 0.0.8, XX-02-2017
+Revision 0.1.0, 25-03-2017
 --------------------------
 
 - JSON code generating backend implemented
