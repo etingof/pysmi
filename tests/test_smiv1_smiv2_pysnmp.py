@@ -4,6 +4,7 @@
 # Copyright (c) 2015-2017, Ilya Etingof <etingof@gmail.com>
 # License: http://pysmi.sf.net/license.html
 #
+import sys
 try:
     import unittest2 as unittest
 
@@ -11,7 +12,6 @@ except ImportError:
     import unittest
 
 from pysmi.parser.smi import parserFactory
-from pysmi.parser.dialect import smiV1Relaxed
 from pysmi.codegen.pysnmp import PySnmpCodeGen
 from pysmi.codegen.symtable import SymtableCodeGen
 from pysnmp.smi.builder import MibBuilder
@@ -86,6 +86,7 @@ END
             'bad SYNTAX class'
         )
 
+suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.TextTestRunner(verbosity=2).run(suite)

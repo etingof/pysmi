@@ -4,6 +4,7 @@
 # Copyright (c) 2015-2017, Ilya Etingof <etingof@gmail.com>
 # License: http://pysmi.sf.net/license.html
 #
+import sys
 try:
     import unittest2 as unittest
 
@@ -77,6 +78,7 @@ END
             'bad SYNTAX class'
         )
 
+suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.TextTestRunner(verbosity=2).run(suite)
