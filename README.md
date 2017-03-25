@@ -36,7 +36,9 @@ Source MIB repositories: file:///usr/share/snmp/mibs, http://mibs.snmplabs.com/a
 Borrow missing/failed MIBs from: http://mibs.snmplabs.com/pysnmp/notexts/@mib@
 Existing/compiled MIB locations: pysnmp.smi.mibs, pysnmp_mibs
 Compiled MIBs destination directory: /Users/ilya/.pysnmp/mibs
-MIBs excluded from code generation: RFC-1212, RFC-1215, RFC1065-SMI, RFC1155-SMI, RFC1158-MIB, RFC1213-MIB, SNMP-FRAMEWORK-MIB, SNMP-TARGET-MIB, SNMPv2-CONF, SNMPv2-SMI, SNMPv2-TC, SNMPv2-TM, TRANSPORT-ADDRESS-MIB
+MIBs excluded from code generation: RFC-1212, RFC-1215, RFC1065-SMI, RFC1155-SMI,
+RFC1158-MIB, RFC1213-MIB, SNMP-FRAMEWORK-MIB, SNMP-TARGET-MIB, SNMPv2-CONF, SNMPv2-SMI,
+SNMPv2-TC, SNMPv2-TM, TRANSPORT-ADDRESS-MIB
 MIBs to compile: CISCO-MIB
 Destination format: pysnmp
 Parser grammar cache directory: not used
@@ -50,7 +52,8 @@ Generate texts in MIBs: no
 Try various filenames while searching for MIB module: yes
 Created/updated MIBs: CISCO-MIB IF-MIB IP-MIB TCP-MIB
 Pre-compiled MIBs borrowed: 
-Up to date MIBs: IANAifType-MIB, INET-ADDRESS-MIB, RFC-1212, RFC1155-SMI, RFC1213-MIB, SNMPv2-CONF, SNMPv2-MIB, SNMPv2-SMI, SNMPv2-TC
+Up to date MIBs: IANAifType-MIB, INET-ADDRESS-MIB, RFC-1212, RFC1155-SMI,
+RFC1213-MIB, SNMPv2-CONF, SNMPv2-MIB, SNMPv2-SMI, SNMPv2-TC
 Missing source MIBs: 
 Ignored MIBs: 
 Failed MIBs: 
@@ -64,7 +67,8 @@ Source MIB repositories: file:///usr/share/snmp/mibs, http://mibs.snmplabs.com/a
 Borrow missing/failed MIBs from: http://mibs.snmplabs.com/json/fulltexts/@mib@
 Existing/compiled MIB locations: 
 Compiled MIBs destination directory: .
-MIBs excluded from code generation: RFC-1212, RFC-1215, RFC1065-SMI, RFC1155-SMI, RFC1158-MIB, RFC1213-MIB, SNMPv2-CONF, SNMPv2-SMI, SNMPv2-TC, SNMPv2-TM
+MIBs excluded from code generation: RFC-1212, RFC-1215, RFC1065-SMI, RFC1155-SMI,
+RFC1158-MIB, RFC1213-MIB, SNMPv2-CONF, SNMPv2-SMI, SNMPv2-TC, SNMPv2-TM
 MIBs to compile: IF-MIB
 Destination format: json
 Parser grammar cache directory: not used
@@ -112,5 +116,5 @@ If something does not work as expected,
 [open an issue](https://github.com/etingof/pysmi/issues) at GitHub or
 post your question [on Stack Overflow](http://stackoverflow.com/questions/ask).
 
-Copyright (c) 2015-2017, [Ilya Etingof](http://etingof@gmail.com).
+Copyright (c) 2015-2017, [Ilya Etingof](mailto://etingof@gmail.com).
 All rights reserved.

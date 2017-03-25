@@ -5,14 +5,14 @@ PySMI: user perspective
 .. toctree::
    :maxdepth: 2
 
-The *mibdump* tool is a command-line frontend to the PySMI library. This
+The *mibdump.py* tool is a command-line frontend to the PySMI library. This
 tool can be used for automatic downloading and transforming SNMP MIB modules
 into various formats.
 
 .. code-block:: bash
 
-   $ mibdump.py --help
-   Usage: mibdump.py [--help]
+   $ *mibdump.py*.py --help
+   Usage: *mibdump.py*.py [--help]
          [--version]
          [--quiet]
          [--debug=<all|borrower|codegen|compiler|grammar|lexer|parser|reader|searcher|writer>]
@@ -33,12 +33,12 @@ into various formats.
          [--dry-run]
          [--no-mib-writes]
          [--generate-mib-texts]
-         [mibfile [ mibfile [...]]]
+         [mibfile [mibfile [...]]]
    Where:
        url      - file, http, https, ftp, sftp schemes are supported.
                   Use @mib@ placeholder token in URL location to refer
                   to MIB module name requested.
-       format   - pysnmp, json, null
+       format   - pysnmp (default), json, null
 
 Specifying MIB source
 ---------------------
@@ -54,63 +54,64 @@ methods are supported:
 * HTTP/HTTPS. A fully specified URL where MIB module name is specified by
   a @mib@ placeholder. When specific MIB is looked up, PySMI will replace
   that placeholder with MIB module name it is looking for. 
-  Example: http://mibs.snmplabs.com/asn1/@mib@
+  Example: `http://mibs.snmplabs.com/asn1/@mib@ <http://mibs.snmplabs.com/asn1/>`_
 * SFTP/FTP. A fully specified URL including FTP username and password. 
   MIB module name is specified by a @mib@ placeholder. When specific MIB
   is looked up, PySMI will replace that placeholder with MIB module name
-  it is looking for.  Example: http://mibs.snmplabs.com/asn1/@mib@
+  it is looking for. 
+  Example: `http://mibs.snmplabs.com/asn1/@mib@ <http://mibs.snmplabs.com/asn1/>`_
 
-When trying to fetch a MIB module, the mibdump tool will try each of
+When trying to fetch a MIB module, the *mibdump.py* tool will try each of
 configured --mib-source transports in order of specification till 
 first successful hit.
 
-By default mibdump will search:
+By default *mibdump.py* will search:
 
 * file:///usr/share/snmp
 * http://mibs.snmplabs.com/asn1/@mib@
 
 Once another --mib-source option is given, those defaults will not be used
-and should be manually given to mibdump if needed.
+and should be manually given to *mibdump.py* if needed.
 
 Fuzzying MIB module names
 -------------------------
 
 There is no single convention on how MIB module files should be named. By
-default mibdump will try a handful of guesses when trying to find a file
+default *mibdump.py* will try a handful of guesses when trying to find a file
 containing specific MIB module. It will try upper and lower cases, a file 
 named after MIB module, try adding different extensions to a file (.mib,
 .my etc), try adding/cutting the '-MIB' part of the file name.
-If nothing matches, mibdump will consider that probed --mib-source
+If nothing matches, *mibdump.py* will consider that probed --mib-source
 does not contain MIB module it is looking for.
 
 There is a small chance, though, that fuzzy natching may result in getting
 a wrong MIB. If that happens, you can disable the above fuzzyness by
-giving mibdump the --disable-fuzzy-source flag.
+giving *mibdump.py* the --disable-fuzzy-source flag.
 
 Avoiding excessive transformation
 ---------------------------------
 
 It well may happen that many MIB modules refer to a common single MIB
-module. In that case mibdump may transform it many times unless you
-tell mibdump where to search for already transformed MIBs. That place
-could of course be a directory where mibdump writes its transforms into
+module. In that case *mibdump.py* may transform it many times unless you
+tell *mibdump.py* where to search for already transformed MIBs. That place
+could of course be a directory where *mibdump.py* writes its transforms into
 and/or some other local locations.
 
 The --mib-searcher option specifies either local directory or importable
 Python package (applicable to pysnmp transformation) containing transformed
-MIB modules. Multiple --mib-searcher options could be given, mibdump
+MIB modules. Multiple --mib-searcher options could be given, *mibdump.py*
 will use each of them in order of specification till first hit.
 
-If no transformed MIB module is found, mibdump will go on running its full
+If no transformed MIB module is found, *mibdump.py* will go on running its full
 transformation cycle.
 
-By default mibdump will use:
+By default *mibdump.py* will use:
 
 * --mib-searcher=$HOME/.pysnmp/mibs
 * --mib-searcher=pysnmp_mibs
 
 Once another --mib-searcher option is given, those defaults will not be used
-and should be manually given to mibdump if needed.
+and should be manually given to *mibdump.py* if needed.
 
 Blacklisting MIBs
 -----------------
@@ -166,7 +167,7 @@ known to the authors.
 Setting destination directory
 -----------------------------
 
-By default mibdump writes pysnmp MIBs into:
+By default *mibdump.py* writes pysnmp MIBs into:
 
 * $HOME/.pysnmp/mibs  (on UNIX)
 * @HOME@\PySNMP Configuration\MIBs\  (on Windows)
@@ -224,7 +225,7 @@ Building MIB indices
 --------------------
 
 If --build-index option is given, depending on the destination format chosen,
-the *mibdump* tool may create new (or update existing) document containing
+the *mibdump.py* tool may create new (or update existing) document containing
 MIB information in a form that is convenient for querying cornerstone
 properties of MIB files.
 

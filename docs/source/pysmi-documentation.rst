@@ -6,11 +6,12 @@ PySMI documentation
    :maxdepth: 2
 
 The PySMI library and tools are designed to parse, verify and transform
-SNMP SMI MIB modules. The ultimate goal of PySMI effort is to handle as 
-much SMI syntax flavors and conversion operations as libsmi does but in
-pure Python. PySMI's APIs are designed in modular, reusable and 
-object-oriented fashion in hope to make PySMI useful for native Python
-applications.
+`SNMP SMI <https://en.wikipedia.org/wiki/Management_information_base>`_ MIB
+modules. The ultimate goal of PySMI effort is to handle as much SMI syntax
+flavors and conversion operations as
+`libsmi <http://www.ibr.cs.tu-bs.de/projects/libsmi/>`_ does but in pure Python.
+PySMI's APIs are designed in modular, reusable and object-oriented fashion
+in hope to make PySMI useful for native Python applications.
 
 Top-level design
 ----------------
@@ -54,7 +55,7 @@ chosen and configured to compiler.
 User perspective
 ----------------
 
-The library is shipped with a command-line tool called mibdump.py
+The library is shipped with a command-line tool called *mibdump.py*
 that utilizes most of PySMI library features. Most importantly,
 it allows you to convert ASN.1 MIBs into PySNMP format.
 
@@ -79,7 +80,7 @@ Hints and tricks
 ----------------
 
 The PySMI project developers maintain a collection of ASN.1 MIB files
-at http://mibs.snmplabs.com/asn1/ . The *mibdump* tool as well as many
+at http://mibs.snmplabs.com/asn1/ . The *mibdump.py* tool as well as many
 other utilities based on PySMI are programmed to use this MIB
 repository for automatic download and dependency resolution.
 
