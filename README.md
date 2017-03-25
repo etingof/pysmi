@@ -15,53 +15,22 @@ from ASN.1 MIBs.
 Features
 --------
 
-* Understands SMIv1, SMIv2 and de-facto dialects
+* Understands SMIv1, SMIv2 and de-facto SMI dialects
 * Turns MIBs into pysnmp classes and JSON documents
-* Maintain an index of MIB objects
+* Maintains an index of MIB objects over many MIB modules
 * Automatically downloads ASN.1 MIBs from various sources
 * 100% Python, works with Python 2.4 up to Python 3.6
 
-Rendered pysmi documentation can be found at [pysmi site](http://pysmi.sf.net).
+Rendered PySMI documentation can be found at [pysmi site](http://pysmi.sf.net).
 
 How to use PySMI
 ----------------
 
-If you are using pysnmp, you might never notice pysmi presence - pysnmp will call it for MIB
-download and compilation automatically.
+If you are using pysnmp, you might never notice pysmi presence - pysnmp
+calls pysmi for MIB download and compilation behind the scenes (you can
+still can do that manually by invoking *mibdump.py* tool).
 
-If you want to compile ASN.1 MIB into PySNMP module by hand, use *mibdump.py* tool
-like this:
-
-```
-$ mibdump.py CISCO-MIB
-Source MIB repositories: file:///usr/share/snmp/mibs, http://mibs.snmplabs.com/asn1/@mib@
-Borrow missing/failed MIBs from: http://mibs.snmplabs.com/pysnmp/notexts/@mib@
-Existing/compiled MIB locations: pysnmp.smi.mibs, pysnmp_mibs
-Compiled MIBs destination directory: /Users/ilya/.pysnmp/mibs
-MIBs excluded from code generation: RFC-1212, RFC-1215, RFC1065-SMI, RFC1155-SMI,
-RFC1158-MIB, RFC1213-MIB, SNMP-FRAMEWORK-MIB, SNMP-TARGET-MIB, SNMPv2-CONF, SNMPv2-SMI,
-SNMPv2-TC, SNMPv2-TM, TRANSPORT-ADDRESS-MIB
-MIBs to compile: CISCO-MIB
-Destination format: pysnmp
-Parser grammar cache directory: not used
-Also compile all relevant MIBs: yes
-Rebuild MIBs regardless of age: no
-Do not create/update MIBs: no
-Byte-compile Python modules: yes (optimization level 0)
-Ignore compilation errors: no
-Generate OID->MIB index: no
-Generate texts in MIBs: no
-Try various filenames while searching for MIB module: yes
-Created/updated MIBs: CISCO-MIB IF-MIB IP-MIB TCP-MIB
-Pre-compiled MIBs borrowed: 
-Up to date MIBs: IANAifType-MIB, INET-ADDRESS-MIB, RFC-1212, RFC1155-SMI,
-RFC1213-MIB, SNMPv2-CONF, SNMPv2-MIB, SNMPv2-SMI, SNMPv2-TC
-Missing source MIBs: 
-Ignored MIBs: 
-Failed MIBs: 
-```
-
-You can also turn ASN.1 MIB into a general purpose JSON document:
+To turn ASN.1 MIB into a JSON document, call *mibdump.py* tool like this:
 
 ```
 $ mibdump.py --generate-mib-texts  --destination-format json IF-MIB
@@ -90,7 +59,7 @@ Ignored MIBs:
 Failed MIBs: 
 ```
 
-JSON document containing
+JSON document build from
 [IF-MIB module](http://mibs.snmplabs.com/asn1/IF-MIB>)
 would hold information such as:
 
@@ -139,13 +108,13 @@ would hold information such as:
 ```
 
 In general, converted MIBs capture all aspects of original (ASN.1) MIB contents
-and layout. The snippet above is just an example, here is the complete
-[IF-MIB.json](http://mibs.snmplabs.com/json/fulltext/IF-MIB.json)
+and layout. The snippet above is just a partial example, but here is the
+complete [IF-MIB.json](http://mibs.snmplabs.com/json/fulltext/IF-MIB.json)
 file.
 
-Besides 1-to-1 MIB conversion, PySMI library can produce JSON index to facilitate
-fast MIB information lookup across large collection of MIB files. For example,
-JSON index for
+Besides one-to-one MIB conversion, PySMI library can produce JSON index to
+facilitate fast MIB information lookup across large collection of MIB files.
+For example, JSON index for
 [IP-MIB.json](http://mibs.snmplabs.com/json/asn1/IP-MIB),
 [TCP-MIB.json](http://mibs.snmplabs.com/json/asn1/TCP-MIB) and
 [UDP-MIB.json](http://mibs.snmplabs.com/json/asn1/UDP-MIB)
