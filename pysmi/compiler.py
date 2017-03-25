@@ -524,7 +524,7 @@ class MibCompiler(object):
                 del builtMibs[mibname]
 
         debug.logger & debug.flagCompiler and debug.logger(
-            'MIBs modifed: %s' % ', '.join([x for x in processed if processed[x] in ('compiled', 'borrowed')]))
+            'MIBs modified: %s' % ', '.join([x for x in processed if processed[x] in ('compiled', 'borrowed')]))
 
         return processed
 
