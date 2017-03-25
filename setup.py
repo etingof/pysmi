@@ -62,7 +62,7 @@ if sys.version_info[:2] < (2, 4):
 try:
     from setuptools import setup, Command
 
-    params = {'install_requires': ['ply'], 'zip_safe': True}
+    params = {'zip_safe': True}
 
 except ImportError:
     for arg in sys.argv:
@@ -72,8 +72,13 @@ except ImportError:
     from distutils.core import setup, Command
 
     params = {}
-    if sys.version_info[:2] > (2, 4):
-        params['requires'] = ['ply']
+
+if sys.version_info[:2] < (2, 6):
+    params['install_requires'] = ['ply==3.4', 'simplejson==2.1']
+else:
+    params['install_requires'] = ['ply']
+
+params['install_requires'].append('ordereddict')
 
 doclines = [x.strip() for x in (__doc__ or '').split('\n') if x]
 

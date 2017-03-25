@@ -1,2 +1,4 @@
-ply
+ply==3.4; python_version < '2.6'
+ply; python_version >= '2.6'
 ordereddict; python_version < '2.7'
+simplejson; python_version < '2.6'

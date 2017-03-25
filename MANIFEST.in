@@ -1,5 +1,4 @@
 include *.txt
 recursive-include tests *.py
 recursive-include examples *.py
-include docs *.txt *.rst Makefile
-include docs/source *.rst *.py
+recursive-include docs *.txt *.rst *.py Makefile
