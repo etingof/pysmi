@@ -6,9 +6,11 @@ SNMP MIB parser
 [![Coverage Status](https://img.shields.io/codecov/c/github/etingof/pysmi.svg)](https://codecov.io/github/etingof/pysmi)
 [![GitHub license](https://img.shields.io/badge/license-BSD-blue.svg)](https://raw.githubusercontent.com/etingof/pysmi/master/LICENSE.rst)
 
-PySMI is a pure-Python implementation of SNMP SMI MIB parser. This tool
-is designed to turn ASN.1 MIBs into various formats. As of this moment, JSON and
-[pysnmp](https://github.com/etingof/pysnmp) modules can be generated from ASN.1 MIBs.
+PySMI is a pure-Python implementation of
+[SNMP SMI](https://en.wikipedia.org/wiki/Management_information_base) MIB parser.
+This tool is designed to turn ASN.1 MIBs into various formats. As of this moment,
+JSON and [pysnmp](https://github.com/etingof/pysnmp) modules can be generated
+from ASN.1 MIBs.
 
 Features
 --------
@@ -104,7 +106,6 @@ would hold information such as:
             "1993-11-08 21:55"
           ]
         },
-
       ...
       "ifTestTable": {
         "name": "ifTestTable",
