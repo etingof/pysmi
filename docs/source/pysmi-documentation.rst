@@ -47,7 +47,7 @@ named MIB module. Compiler will:
   compiler will call its *writer* component to store all transformed MIB
   modules.
 
-The locaiton of ASN.1 MIB modules and flavor of their syntax, as well as
+The location of ASN.1 MIB modules and flavor of their syntax, as well as
 desired transformation format, is determined by respective components
 chosen and configured to compiler.
 

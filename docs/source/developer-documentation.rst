@@ -1,7 +1,7 @@
 PySMI: developer documentation
 ==============================
 
-The following chapter explains official PySMI programming interfaces.
+The following chapter documents public API of the PySMI library.
 
 .. toctree::
    :maxdepth: 2
@@ -98,7 +98,7 @@ PySMI is designed to handle both SMIv1 and SMIv2. The way it is done is
 that SMIv2 is considered the most basic and complete, whereas SMIv1 is a
 specialization of SMIv2 syntax.
 
-For a user to acqure SMIv2 parser the following factory function should
+For a user to acquire SMIv2 parser the following factory function should
 be used.
 
 .. autofunction:: pysmi.parser.smi.parserFactory
@@ -106,9 +106,12 @@ be used.
 PySMI offers a pre-built collection of parser grammar relaxation options
 to simplify its use.
 
->>> from pysmi.parser.dialect import smiV1
->>> from pysmi.parser.smi import parserFactory
->>> SmiV1Parser = parserFactory(**smiV1)
+.. code-block:: python
+
+  from pysmi.parser.dialect import smiV1
+  from pysmi.parser.smi import parserFactory
+
+  SmiV1Parser = parserFactory(**smiV1)
 
 Apparently, many production MIBs were shipped in syntaxically broken
 condition. PySMI attempts to work around such issues by allowing some
@@ -116,9 +119,12 @@ extra SMI grammar relaxations. You can enable all those relaxations at
 once to maximize the number of MIBs, found in the wild, successfully
 compiled.
 
->>> from pysmi.parser.dialect import smiV1Relaxed
->>> from pysmi.parser.smi import parserFactory
->>> RelaxedSmiV1Parser = parserFactory(**smiV1Relaxed)
+.. code-block:: python
+
+  from pysmi.parser.dialect import smiV1Relaxed
+  from pysmi.parser.smi import parserFactory
+
+  RelaxedSmiV1Parser = parserFactory(**smiV1Relaxed)
 
 .. tip:: Please, note that *parserFactory* function returns a class, not
          class instance. Make sure to instantiate it when passing to
@@ -131,12 +137,15 @@ PySMI is designed to be able to transform ASN.1 MIBs into many different
 forms. Destination MIB representation is determined by a kind of 
 *code generator* object being passed to *MibCompiler* on instantiation.
 
-At the time of this writing, a single fully functional code generation
-backend is shipped with PySMI.
+At the time of this writing, two code generation backends are shipped
+with PySMI.
 
 .. autoclass:: pysmi.codegen.pysnmp.PySnmpCodeGen
   :members:
-  
+
+.. autoclass:: pysmi.codegen.jsondoc.JsonCodeGen
+  :members:
+
 .. autoclass:: pysmi.codegen.null.NullCodeGen
   :members:
 

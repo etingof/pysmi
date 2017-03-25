@@ -14,11 +14,10 @@ of specific MIB module
 .. code-block:: bash
 
    $ mibdump.py --help
-   Usage: scripts/mibdump.py [--help]
+   Usage: mibdump.py [--help]
          [--version]
          [--quiet]
-         [--debug=<all|borrower|codegen|compiler|grammar|lexer|
-                   parser|reader|searcher|writer>]
+         [--debug=<all|borrower|codegen|compiler|grammar|lexer|parser|reader|searcher|writer>]
          [--mib-source=<url>]
          [--disable-fuzzy-source]
          [--mib-searcher=<path|package>]
@@ -34,15 +33,14 @@ of specific MIB module
          [--build-index]
          [--rebuild]
          [--dry-run]
+         [--no-mib-writes]
          [--generate-mib-texts]
          [ mibfile [ mibfile [...]]]
-
    Where:
-       url      - file, http, https, ftp, sftp schemes are supported. 
+       url      - file, http, https, ftp, sftp schemes are supported.
                   Use @mib@ placeholder token in URL location to refer
                   to MIB module name requested.
-       format   - pysnmp format is only supported.
-
+       format   - pysnmp, json, null
 
 Specifying MIB source
 ---------------------
@@ -103,7 +101,7 @@ and/or some other local locations.
 The --mib-searcher option specifies either local directory or importable
 Python package (applicable to pysnmp transformation) containing transformed
 MIB modules. Multiple --mib-searcher options could be given, mibdump
-will use each of them in oroder of specification till first hit.
+will use each of them in order of specification till first hit.
 
 If no transformed MIB module is found, mibdump will go on running its full
 transformation cycle.
@@ -121,7 +119,7 @@ Blacklisting MIBs
 
 Some MIBs may not be automatically transformed into another form and 
 therefore must be explicitly excluded from processing. Such MIBs are
-normally manually implemented for each targer MIB format. Examples 
+normally manually implemented for each target MIB format. Examples
 include MIBs containing base SMI types or ASN.1 MACRO definitions
 (SNMPv2-SMI, SNMPV2-TC), initially compiled but later manually modified 
 MIBs and others.
@@ -137,7 +135,7 @@ Dealing with broken MIBs
 ------------------------
 
 Curiously enough, some MIBs coming from quite prominent vendors 
-appear syntaxically incorrect. That leads to MIB compilers fail on
+appear syntactically incorrect. That leads to MIB compilers fail on
 such MIBs. While many MIB compiler implementations (PySMI included)
 introduce workarounds and grammar relaxations allowing slightly
 broken MIBs to compile, however severely broken MIBs can't be
@@ -156,23 +154,27 @@ If you wish to modify this default list use one or more
 --mib-borrower options.
 
 
-Chosing target transformation
------------------------------
+Choosing target transformation
+------------------------------
 
-Although PySMI design allows many transformation formats to be
-supported in form of specialized code generation components, the
-only target format currently implemented is pysnmp.
+PySMI design allows many transformation formats to be
+supported in form of specialized code generation components.
+At the moment PySMI can produce MIBs in form of pysnmp classes
+and JSON documents.
 
-Therefore the --destination-format option is pretty much useless
-at the moment.
+JSON document schema is chosen to preserve as much of MIB
+information as possible. There's no established JSON schema
+known to the authors.
 
 Setting destination directory
 -----------------------------
 
-By default mibdump writes transformed MIBs into:
+By default mibdump writes pysnmp MIBs into:
 
 * $HOME/.pysnmp/mibs  (on UNIX)
 * @HOME@\PySNMP Configuration\MIBs\  (on Windows)
+
+and JSON files in current working directory.
 
 Use --destination-directory option to change default output
 diretory.
