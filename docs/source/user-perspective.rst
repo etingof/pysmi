@@ -40,6 +40,61 @@ into various formats.
                   to MIB module name requested.
        format   - pysnmp (default), json, null
 
+When JSON destination format is requested, for each MIB module *mibdump.py*
+will produce a JSON document containing all MIB objects. For example,
+`IF-MIB <http://mibs.snmplabs.com/asn1/IF-MIB>`_ module in JSON form
+would look like:
+
+.. code-block:: json
+
+   {
+      "ifMIB": {
+          "name": "ifMIB",
+          "oid": "1.3.6.1.2.1.31",
+          "class": "moduleidentity",
+          "revisions": [
+            "2007-02-15 00:00",
+            "1996-02-28 21:55",
+            "1993-11-08 21:55"
+          ]
+        },
+
+      ...
+      "ifTestTable": {
+        "name": "ifTestTable",
+        "oid": "1.3.6.1.2.1.31.1.3",
+        "class": "objecttype",
+        "maxaccess": "not-accessible"
+      },
+      "ifTestEntry": {
+        "name": "ifTestEntry",
+        "oid": "1.3.6.1.2.1.31.1.3.1",
+        "class": "objecttype",
+        "maxaccess": "not-accessible",
+        "augmention": {
+          "name": "ifTestEntry",
+          "module": "IF-MIB",
+          "object": "ifEntry"
+        }
+      },
+      "ifTestId": {
+        "name": "ifTestId",
+        "oid": "1.3.6.1.2.1.31.1.3.1.1",
+        "class": "objecttype",
+        "syntax": {
+          "type": "TestAndIncr",
+          "class": "type"
+        },
+        "maxaccess": "read-write"
+      },
+      ...
+   }
+
+In general, JSON MIB captures all aspects of original (ASN.1) MIB contents
+and layout. The snippet above is just an example, here is the complete
+`IF-MIB.json <http://mibs.snmplabs.com/json/fulltext/IF-MIB.json>`_
+file.
+
 Specifying MIB source
 ---------------------
 
@@ -229,31 +284,65 @@ the *mibdump.py* tool may create new (or update existing) document containing
 MIB information in a form that is convenient for querying cornerstone
 properties of MIB files.
 
-For example, building JSON index for `IF-MIB` would emit something like
-this:
+For example, building JSON index for
+`IP-MIB.json <http://mibs.snmplabs.com/json/asn1/IP-MIB>`_,
+`TCP-MIB.json <http://mibs.snmplabs.com/json/asn1/TCP-MIB>`_ and
+`UDP-MIB.json <http://mibs.snmplabs.com/json/asn1/UDP-MIB>`_
+MIB modules would emit something like this:
 
 .. code-block:: json
 
    {
-     "compliance": {
-       "1.3.6.1.2.1.31.2.2.1": [
-         "IF-MIB"
-       ]
-     },
-     "identity": {
-       "1.3.6.1.2.1.31": [
-         "IF-MIB"
-       ],
-     },
-     "oids": {
-       "1.3.6.1.2.1.2": [
-         "IF-MIB"
-       ]
+      "compliance": {
+         "1.3.6.1.2.1.48.2.1.1": [
+           "IP-MIB"
+         ],
+         "1.3.6.1.2.1.49.2.1.1": [
+           "TCP-MIB"
+         ],
+         "1.3.6.1.2.1.50.2.1.1": [
+           "UDP-MIB"
+         ]
+      },
+      "identity": {
+          "1.3.6.1.2.1.48": [
+            "IP-MIB"
+          ],
+          "1.3.6.1.2.1.49": [
+            "TCP-MIB"
+          ],
+          "1.3.6.1.2.1.50": [
+            "UDP-MIB"
+          ]
+      },
+      "oids": {
+          "1.3.6.1.2.1.4": [
+            "IP-MIB"
+          ],
+          "1.3.6.1.2.1.5": [
+            "IP-MIB"
+          ],
+          "1.3.6.1.2.1.6": [
+            "TCP-MIB"
+          ],
+          "1.3.6.1.2.1.7": [
+            "UDP-MIB"
+          ],
+          "1.3.6.1.2.1.49": [
+            "TCP-MIB"
+          ],
+          "1.3.6.1.2.1.50": [
+            "UDP-MIB"
+          ]
+      }
    }
 
 With this example, *compliance* and *identity* keys point to
 *MODULE-COMPLIANCE* and *MODULE-IDENTITY* MIB objects, *oids*
-list top-level OIDs branches defined in MIB modules.
+list top-level OIDs branches defined in MIB modules. Full index
+build over thousands of MIBs could be seen
+`here <http://mibs.snmplabs.com/json/index.json>`_.
+
 
 Minor speedups
 --------------
