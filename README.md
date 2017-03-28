@@ -190,5 +190,5 @@ If something does not work as expected,
 [open an issue](https://github.com/etingof/pysmi/issues) at GitHub or
 post your question [on Stack Overflow](http://stackoverflow.com/questions/ask).
 
-Copyright (c) 2015-2017, [Ilya Etingof](mailto://etingof@gmail.com).
+Copyright (c) 2015-2017, [Ilya Etingof](mailto:etingof@gmail.com).
 All rights reserved.
