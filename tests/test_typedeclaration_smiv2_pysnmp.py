@@ -155,7 +155,7 @@ END
 
 typesMap = (
     # TODO: Integer/Integer32?
-    ('TestTypeInteger', 'Integer'),
+    ('TestTypeInteger', 'Integer32'),
     ('TestTypeOctetString', 'OctetString'),
     ('TestTypeObjectIdentifier', 'ObjectIdentifier'),
     ('TestTypeIpAddress', 'IpAddress'),
@@ -166,11 +166,11 @@ typesMap = (
     ('TestTypeOpaque', 'Opaque'),
     ('TestTypeCounter64', 'Counter64'),
     ('TestTypeUnsigned32', 'Unsigned32'),
-    ('TestTypeTestTypeEnum', 'Integer'),
+    ('TestTypeTestTypeEnum', 'Integer32'),
     ('TestTypeSizeRangeConstraint', 'OctetString'),
     ('TestTypeSizeConstraint', 'OctetString'),
-    ('TestTypeRangeConstraint', 'Integer'),
-    ('TestTypeSingleValueConstraint', 'Integer')
+    ('TestTypeRangeConstraint', 'Integer32'),
+    ('TestTypeSingleValueConstraint', 'Integer32')
 )
 
 
