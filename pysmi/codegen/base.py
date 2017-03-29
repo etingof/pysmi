@@ -5,6 +5,7 @@
 # License: http://pysmi.sf.net/license.html
 #
 import sys
+from pysmi import error
 
 
 if sys.version_info[0] > 2:
