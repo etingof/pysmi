@@ -297,7 +297,7 @@ class SmiV2Parser(AbstractParser):
                 p[0] = ('typeDeclarationRHS', p[2],  # display
                         #  p[4], # status
                         #  (p[5], p[6]), # description
-                        #  p[7], # reference
+                        p[7],  # reference
                         p[9])  # syntax
             else:
                 p[0] = ('typeDeclarationRHS', p[1])
@@ -366,7 +366,7 @@ class SmiV2Parser(AbstractParser):
                 #  p[2], # OBJECT_IDENTITY
                 #  p[4], # status
                 (p[5], p[6]),  # description
-                #  p[7], # reference
+                p[7],  # reference
                 p[10])  # objectIdentifier
 
     def p_objectTypeClause(self, p):
@@ -378,7 +378,7 @@ class SmiV2Parser(AbstractParser):
                 p[6],  # MaxOrPIBAccessPart
                 #  p[8], # status
                 p[9],  # descriptionClause
-                #  p[10], # reference
+                p[10],  # reference
                 p[11],  # augmentions
                 p[12],  # index
                 p[13],  # DefValPart
@@ -398,7 +398,7 @@ class SmiV2Parser(AbstractParser):
                 p[4],  # objectIdentifier
                 p[5],  # VarPart
                 p[6],  # description
-                #  p[7], # reference
+                p[7],  # reference
                 p[9])  # NUMBER
 
     def p_VarPart(self, p):
@@ -438,13 +438,14 @@ class SmiV2Parser(AbstractParser):
 
     def p_notificationTypeClause(self, p):
         """notificationTypeClause : LOWERCASE_IDENTIFIER NOTIFICATION_TYPE NotificationObjectsPart STATUS Status DESCRIPTION Text ReferPart COLON_COLON_EQUAL '{' NotificationName '}'"""
-        p[0] = ('notificationTypeClause', p[1],  # id
+        p[0] = ('notificationTypeClause',
+                p[1],  # id
                 #  p[2], # NOTIFICATION_TYPE
                 p[3],  # NotificationObjectsPart
                 #  p[5], # status
                 (p[6], p[7]),  # description
-                #  p[8], # reference
-                p[11])  # NoficationName aka objectIdentifier
+                p[8],  # reference
+                p[11])  # NotificationName aka objectIdentifier
 
     def p_moduleIdentityClause(self, p):
         """moduleIdentityClause : LOWERCASE_IDENTIFIER MODULE_IDENTITY SubjectCategoriesPart LAST_UPDATED ExtUTCTime ORGANIZATION Text CONTACT_INFO Text DESCRIPTION Text RevisionPart COLON_COLON_EQUAL '{' objectIdentifier '}'"""
@@ -775,8 +776,8 @@ class SmiV2Parser(AbstractParser):
     def p_ReferPart(self, p):
         """ReferPart : REFERENCE Text
                      | empty"""
-        #    if p[1]:
-        #      p[0] = (p[1], p[2])
+        if p[1]:
+            p[0] = (p[1], p[2])
 
     def p_RevisionPart(self, p):
         """RevisionPart : Revisions
@@ -892,29 +893,32 @@ class SmiV2Parser(AbstractParser):
 
     def p_objectGroupClause(self, p):
         """objectGroupClause : LOWERCASE_IDENTIFIER OBJECT_GROUP ObjectGroupObjectsPart STATUS Status DESCRIPTION Text ReferPart COLON_COLON_EQUAL '{' objectIdentifier '}'"""
-        p[0] = ('objectGroupClause', p[1],  # id
+        p[0] = ('objectGroupClause',
+                p[1],  # id
                 p[3],  # objects
                 #  p[5], # status
                 (p[6], p[7]),  # description
-                #  p[8], # reference
+                p[8],  # reference
                 p[11])  # objectIdentifier
 
     def p_notificationGroupClause(self, p):
         """notificationGroupClause : LOWERCASE_IDENTIFIER NOTIFICATION_GROUP NotificationsPart STATUS Status DESCRIPTION Text ReferPart COLON_COLON_EQUAL '{' objectIdentifier '}'"""
-        p[0] = ('notificationGroupClause', p[1],  # id
+        p[0] = ('notificationGroupClause',
+                p[1],  # id
                 p[3],  # notifications
                 #  p[5], # status
                 (p[6], p[7]),  # description
-                #  p[8], # reference
+                p[8],  # reference
                 p[11])  # objectIdentifier
 
     def p_moduleComplianceClause(self, p):
         """moduleComplianceClause : LOWERCASE_IDENTIFIER MODULE_COMPLIANCE STATUS Status DESCRIPTION Text ReferPart ComplianceModulePart COLON_COLON_EQUAL '{' objectIdentifier '}'"""
-        p[0] = ('moduleComplianceClause', p[1],  # id
+        p[0] = ('moduleComplianceClause',
+                p[1],  # id
                 #  p[2], # MODULE_COMPLIANCE
                 #  p[4], # status
                 (p[5], p[6]),  # description
-                #  p[7], # reference
+                p[7],  # reference
                 p[8],  # ComplianceModules
                 p[11])  # objectIdentifier
 
@@ -1028,7 +1032,7 @@ class SmiV2Parser(AbstractParser):
                 #   (p[3], p[4]), # product release
                 #   p[6], # status capabilities
                 (p[7], p[8]),  # description
-                #   p[9], # reference
+                p[9],  # reference
                 #   p[10], # module capabilities
                 p[13])  # objectIdentifier
 
@@ -1331,8 +1335,8 @@ class LowcaseIdentifier(object):
                 p[3],  # NotificationObjectsPart
                 #  p[5], # status
                 (p[6], p[7]),  # description
-                #  p[8], # ReferPart
-                p[11])  # NoficationName aka objectIdentifier
+                p[8],   # Reference
+                p[11])  # NotificationName aka objectIdentifier
 
 
 # noinspection PyIncorrectDocstring,PyIncorrectDocstring
@@ -1347,7 +1351,7 @@ class CurlyBracesInEnterprises(object):
                 p[3],  # EnterprisePart (objectIdentifier)
                 p[4],  # VarPart
                 p[5],  # description
-                #  p[6], # reference
+                p[6],  # reference
                 p[8])  # NUMBER
 
     @staticmethod

@@ -228,7 +228,7 @@ class JsonCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genAgentCapabilities(self, data):
-        name, description, oid = data
+        name, description, reference, oid = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -242,6 +242,9 @@ class JsonCodeGen(AbstractCodeGen):
 
         if self.genRules['text'] and description:
             outDict['description'] = description
+
+        if reference:
+            outDict['reference'] = reference
 
         self.regSym(name, outDict, parentOid)
 
@@ -280,7 +283,7 @@ class JsonCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genModuleCompliance(self, data):
-        name, description, compliances, oid = data
+        name, description, reference, compliances, oid = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -298,13 +301,16 @@ class JsonCodeGen(AbstractCodeGen):
         if self.genRules['text'] and description:
             outDict['description'] = description
 
+        if reference:
+            outDict['reference'] = reference
+
         self.regSym(name, outDict, parentOid, moduleCompliance=True)
 
         return outDict
 
     # noinspection PyUnusedLocal
     def genNotificationGroup(self, data):
-        name, objects, description, oid = data
+        name, objects, description, reference, oid = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -321,13 +327,16 @@ class JsonCodeGen(AbstractCodeGen):
         if self.genRules['text'] and description:
             outDict['description'] = description
 
+        if reference:
+            outDict['reference'] = reference
+
         self.regSym(name, outDict, parentOid)
 
         return outDict
 
     # noinspection PyUnusedLocal
     def genNotificationType(self, data):
-        name, objects, description, oid = data
+        name, objects, description, reference, oid = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -344,13 +353,16 @@ class JsonCodeGen(AbstractCodeGen):
         if self.genRules['text'] and description:
             outDict['description'] = description
 
+        if reference:
+            outDict['reference'] = reference
+
         self.regSym(name, outDict, parentOid)
 
         return outDict
 
     # noinspection PyUnusedLocal
     def genObjectGroup(self, data):
-        name, objects, description, oid = data
+        name, objects, description, reference, oid = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -366,13 +378,16 @@ class JsonCodeGen(AbstractCodeGen):
         if self.genRules['text'] and description:
             outDict['description'] = description
 
+        if reference:
+            outDict['reference'] = reference
+
         self.regSym(name, outDict, parentOid)
 
         return outDict
 
     # noinspection PyUnusedLocal
     def genObjectIdentity(self, data):
-        name, description, oid = data
+        name, description, reference, oid = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -387,13 +402,16 @@ class JsonCodeGen(AbstractCodeGen):
         if self.genRules['text'] and description:
             outDict['description'] = description
 
+        if reference:
+            outDict['reference'] = reference
+
         self.regSym(name, outDict, parentOid)
 
         return outDict
 
     # noinspection PyUnusedLocal
     def genObjectType(self, data):
-        name, syntax, units, maxaccess, description, augmention, index, defval, oid = data
+        name, syntax, units, maxaccess, description, reference, augmention, index, defval, oid = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -418,6 +436,8 @@ class JsonCodeGen(AbstractCodeGen):
             outDict['maxaccess'] = maxaccess
         if indexStr:
             outDict['indices'] = indexStr
+        if reference:
+            outDict['reference'] = reference
         if augmention:
             augmention = self.transOpers(augmention)
             outDict['augmention'] = OrderedDict()
@@ -439,7 +459,7 @@ class JsonCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genTrapType(self, data):
-        name, enterprise, variables, description, value = data
+        name, enterprise, variables, description, reference, value = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -456,6 +476,9 @@ class JsonCodeGen(AbstractCodeGen):
 
         if self.genRules['text'] and description:
             outDict['description'] = description
+
+        if reference:
+            outDict['reference'] = reference
 
         self.regSym(name, outDict, parentOid)
 
@@ -790,7 +813,7 @@ class JsonCodeGen(AbstractCodeGen):
 
         else:
             # Textual convention
-            display, syntax = data
+            display, reference, syntax = data
             parentType, attrs = syntax
 
             outDict = OrderedDict()
@@ -798,6 +821,8 @@ class JsonCodeGen(AbstractCodeGen):
             outDict['class'] = 'textualconvention'
             if display:
                 outDict['displayhint'] = display
+            if reference:
+                outDict['reference'] = reference
 
         return parentType, outDict
 

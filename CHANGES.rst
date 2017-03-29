@@ -1,7 +1,10 @@
 Revision 0.1.1, 29-03-2017
 --------------------------
 
+* Generate REFERENCE and STATUS fields of various SMI objects
 * Fix to the `ordereddict` conditional dependency
+* Missing test module recovered
+* Failing tests fixed
 
 Revision 0.1.0, 25-03-2017
 --------------------------

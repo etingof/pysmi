@@ -290,7 +290,7 @@ class PySnmpCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genAgentCapabilities(self, data, classmode=False):
-        name, description, oid = data
+        name, description, reference, oid = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -300,6 +300,9 @@ class PySnmpCodeGen(AbstractCodeGen):
 
         if self.genRules['text']:
             outStr += self.ifTextStr + name + description + '\n'
+
+        if reference:
+            outStr += name + reference + '\n'
 
         self.regSym(name, outStr, oidStr)
 
@@ -329,7 +332,7 @@ class PySnmpCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genModuleCompliance(self, data, classmode=False):
-        name, description, compliances, oid = data
+        name, description, reference, compliances, oid = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -341,13 +344,16 @@ class PySnmpCodeGen(AbstractCodeGen):
         if self.genRules['text']:
             outStr += self.ifTextStr + name + description + '\n'
 
+        if reference:
+            outStr += name + reference + '\n'
+
         self.regSym(name, outStr, oidStr)
 
         return outStr
 
     # noinspection PyUnusedLocal
     def genNotificationGroup(self, data, classmode=False):
-        name, objects, description, oid = data
+        name, objects, description, reference, oid = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -364,13 +370,16 @@ class PySnmpCodeGen(AbstractCodeGen):
         if self.genRules['text']:
             outStr += self.ifTextStr + name + description + '\n'
 
+        if reference:
+            outStr += name + reference + '\n'
+
         self.regSym(name, outStr, oidStr)
 
         return outStr
 
     # noinspection PyUnusedLocal
     def genNotificationType(self, data, classmode=False):
-        name, objects, description, oid = data
+        name, objects, description, reference, oid = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -387,13 +396,16 @@ class PySnmpCodeGen(AbstractCodeGen):
         if self.genRules['text']:
             outStr += self.ifTextStr + name + description + '\n'
 
+        if reference:
+            outStr += name + reference + '\n'
+
         self.regSym(name, outStr, oidStr)
 
         return outStr
 
     # noinspection PyUnusedLocal
     def genObjectGroup(self, data, classmode=False):
-        name, objects, description, oid = data
+        name, objects, description, reference, oid = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -407,8 +419,11 @@ class PySnmpCodeGen(AbstractCodeGen):
         outStr = name + ' = ObjectGroup(' + oidStr + ')' + label
         outStr += '.setObjects(*(' + objStr + '))\n'
 
-        if self.genRules['text']:
+        if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
+
+        if reference:
+            outStr += name + reference + '\n'
 
         self.regSym(name, outStr, oidStr)
 
@@ -416,7 +431,7 @@ class PySnmpCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genObjectIdentity(self, data, classmode=False):
-        name, description, oid = data
+        name, description, reference, oid = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -424,8 +439,11 @@ class PySnmpCodeGen(AbstractCodeGen):
         oidStr, parentOid = oid
         outStr = name + ' = ObjectIdentity(' + oidStr + ')' + label + '\n'
 
-        if self.genRules['text']:
+        if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
+
+        if reference:
+            outStr += name + reference + '\n'
 
         self.regSym(name, outStr, oidStr)
 
@@ -433,7 +451,7 @@ class PySnmpCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genObjectType(self, data, classmode=False):
-        name, syntax, units, maxaccess, description, augmention, index, defval, oid = data
+        name, syntax, units, maxaccess, description, reference, augmention, index, defval, oid = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -456,6 +474,9 @@ class PySnmpCodeGen(AbstractCodeGen):
         outStr += indexStr or ''
         outStr += '\n'
 
+        if reference:
+            outStr += name + reference + '\n'
+
         if augmention:
             augmention = self.transOpers(augmention)
             outStr += augmention + '.registerAugmentions(("' + self.moduleName[0] + '", "' + name + '"))\n'
@@ -475,7 +496,7 @@ class PySnmpCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genTrapType(self, data, classmode=False):
-        name, enterprise, variables, description, value = data
+        name, enterprise, variables, description, reference, value = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -489,8 +510,12 @@ class PySnmpCodeGen(AbstractCodeGen):
 
         outStr = name + ' = NotificationType(' + enterpriseStr + ' + (0,' + str(value) + '))' + label
         outStr += '.setObjects(*(' + varStr + '))\n'
-        if self.genRules['text']:
+
+        if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
+
+        if reference:
+            outStr += name + reference + '\n'
 
         self.regSym(name, outStr, enterpriseStr)
 
@@ -656,6 +681,11 @@ class PySnmpCodeGen(AbstractCodeGen):
     def genDescription(self, data, classmode=False):
         text = data[0]
         return '.setDescription(' + dorepr(text) + ')'
+
+    # noinspection PyMethodMayBeStatic,PyUnusedLocal
+    def genReference(self, data, classmode=False):
+        text = data[0]
+        return classmode and self.indent + 'reference = ' + dorepr(text) + '\n' or '.setReference(' + dorepr(text) + ')'
 
     def genEnumSpec(self, data, classmode=False):
         items = data[0]
@@ -845,12 +875,14 @@ class PySnmpCodeGen(AbstractCodeGen):
 
         else:
             # Textual convention
-            display, syntax = data
+            display, reference, syntax = data
             parentType, attrs = syntax
 
             if parentType in self._snmpTypes:
                 parentType = 'TextualConvention, ' + parentType
+
             attrs = (display or '') + attrs
+            attrs = (reference or '') + attrs
 
         attrs = attrs or self.indent + 'pass\n'
 
@@ -883,6 +915,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         'DISPLAY-HINT': genDisplayHint,
         'DEFVAL': genDefVal,
         'DESCRIPTION': genDescription,
+        'REFERENCE': genReference,
         'enumSpec': genEnumSpec,
         'INDEX': genTableIndex,
         'integerSubType': genIntegerSubType,
