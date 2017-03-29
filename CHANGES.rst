@@ -1,17 +1,22 @@
+Revision 0.1.1, 29-03-2017
+--------------------------
+
+* Fix to the `ordereddict` conditional dependency
+
 Revision 0.1.0, 25-03-2017
 --------------------------
 
-- JSON code generating backend implemented
-- Experimental JSON OID->MIB indices generation implemented
-- Package structure flattened for easier use
-- Minor refactoring to the test suite
-- Source code statically analyzed, hardened and PEP8-ized
-- Files closed explicitly to mute ResourceWarnings
-- Fixed to Python 2.4 (and aged ply) compatibility
-- Added a workaround to avoid generating pysnmp TextualConvention classes
+* JSON code generating backend implemented
+* Experimental JSON OID->MIB indices generation implemented
+* Package structure flattened for easier use
+* Minor refactoring to the test suite
+* Source code statically analyzed, hardened and PEP8-ized
+* Files closed explicitly to mute ResourceWarnings
+* Fixed to Python 2.4 (and aged ply) compatibility
+* Added a workaround to avoid generating pysnmp TextualConvention classes
   inheriting from TextualConvention (when MIB defines a TEXTUAL-CONVENTION
   based on another TEXTUAL-CONVENTION as SYNTAX)
-- Author's e-mail changed, copyright extended to year 2017
+* Author's e-mail changed, copyright extended to year 2017
 
 Revision 0.0.7, 12-02-2016
 --------------------------
