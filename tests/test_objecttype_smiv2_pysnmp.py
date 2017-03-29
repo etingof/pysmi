@@ -48,7 +48,7 @@ END
 
         self.ctx = {'mibBuilder': mibBuilder}
 
-        exec (codeobj, self.ctx, self.ctx)
+        exec(codeobj, self.ctx, self.ctx)
 
     def testObjectTypeSymbol(self):
         self.assertTrue(
@@ -140,7 +140,7 @@ END
 
         self.ctx = {'mibBuilder': MibBuilder()}
 
-        exec (codeobj, self.ctx, self.ctx)
+        exec(codeobj, self.ctx, self.ctx)
 
     def testObjectTypeSyntax(self):
         self.assertEqual(
@@ -179,7 +179,7 @@ END
 
         self.ctx = {'mibBuilder': MibBuilder()}
 
-        exec (codeobj, self.ctx, self.ctx)
+        exec(codeobj, self.ctx, self.ctx)
 
     def testObjectTypeSyntax(self):
         self.assertEqual(
@@ -215,7 +215,7 @@ END
 
         self.ctx = {'mibBuilder': MibBuilder()}
 
-        exec (codeobj, self.ctx, self.ctx)
+        exec(codeobj, self.ctx, self.ctx)
 
     def testObjectTypeSyntax(self):
         self.assertEqual(
@@ -251,7 +251,7 @@ END
 
         self.ctx = {'mibBuilder': MibBuilder()}
 
-        exec (codeobj, self.ctx, self.ctx)
+        exec(codeobj, self.ctx, self.ctx)
 
     def testObjectTypeSyntax(self):
         self.assertEqual(
@@ -287,7 +287,7 @@ END
 
         self.ctx = {'mibBuilder': MibBuilder()}
 
-        exec (codeobj, self.ctx, self.ctx)
+        exec(codeobj, self.ctx, self.ctx)
 
     def testObjectTypeSyntax(self):
         self.assertEqual(
@@ -323,7 +323,7 @@ END
 
         self.ctx = {'mibBuilder': MibBuilder()}
 
-        exec (codeobj, self.ctx, self.ctx)
+        exec(codeobj, self.ctx, self.ctx)
 
     def testObjectTypeSyntax(self):
         self.assertEqual(
@@ -358,7 +358,7 @@ END
 
         self.ctx = {'mibBuilder': MibBuilder()}
 
-        exec (codeobj, self.ctx, self.ctx)
+        exec(codeobj, self.ctx, self.ctx)
 
     def testObjectTypeSyntax(self):
         self.assertEqual(
@@ -419,7 +419,7 @@ END
 
         self.ctx = {'mibBuilder': MibBuilder()}
 
-        exec (codeobj, self.ctx, self.ctx)
+        exec(codeobj, self.ctx, self.ctx)
 
     def testObjectTypeTableClass(self):
         self.assertEqual(
@@ -494,7 +494,7 @@ END
 
         self.ctx = {'mibBuilder': MibBuilder()}
 
-        exec (codeobj, self.ctx, self.ctx)
+        exec(codeobj, self.ctx, self.ctx)
 
     def testObjectTypeTableRowIndex(self):
         self.assertEqual(
@@ -556,7 +556,7 @@ END
 
         self.ctx = {'mibBuilder': MibBuilder()}
 
-        exec (codeobj, self.ctx, self.ctx)
+        exec(codeobj, self.ctx, self.ctx)
 
     def testObjectTypeTableRowIndex(self):
         self.assertEqual(
@@ -636,7 +636,7 @@ END
 
         self.ctx = {'mibBuilder': MibBuilder()}
 
-        exec (codeobj, self.ctx, self.ctx)
+        exec(codeobj, self.ctx, self.ctx)
 
     def testObjectTypeTableRowAugmention(self):
         # XXX provide getAugmentation() method

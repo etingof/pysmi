@@ -57,7 +57,7 @@ END
 
         self.ctx = {'mibBuilder': mibBuilder}
 
-        exec (codeobj, self.ctx, self.ctx)
+        exec(codeobj, self.ctx, self.ctx)
 
     def testTrapTypeSymbol(self):
         self.assertTrue(

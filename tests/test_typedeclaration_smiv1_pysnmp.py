@@ -58,7 +58,7 @@ END
 
         self.ctx = {'mibBuilder': mibBuilder}
 
-        exec (codeobj, self.ctx, self.ctx)
+        exec(codeobj, self.ctx, self.ctx)
 
     def protoTestSymbol(self, symbol, klass):
         self.assertTrue(

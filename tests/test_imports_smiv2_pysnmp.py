@@ -38,7 +38,7 @@ END
 
         self.ctx = {'mibBuilder': MibBuilder()}
 
-        exec (codeobj, self.ctx, self.ctx)
+        exec(codeobj, self.ctx, self.ctx)
 
     def testModuleImportsRequiredMibs(self):
         self.assertEqual(
