@@ -459,6 +459,8 @@ class SmiV2Parser(AbstractParser):
                 p[12],  # RevisionPart
                 p[15])  # objectIdentifier
 
+    # Subject categories: RFC3159
+
     def p_SubjectCategoriesPart(self, p):
         """SubjectCategoriesPart : SUBJECT_CATEGORIES '{' SubjectCategories '}'
                                  | empty"""
@@ -486,6 +488,8 @@ class SmiV2Parser(AbstractParser):
         #  p[0] = ('CategoryID', p[1])
         # elif n == 5:
         #  p[0] = ('CategoryID', p[3])
+
+    # ...subject categories
 
     def p_ObjectSyntax(self, p):
         """ObjectSyntax : SimpleSyntax
@@ -792,8 +796,8 @@ class SmiV2Parser(AbstractParser):
 
     def p_Revision(self, p):
         """Revision : REVISION ExtUTCTime DESCRIPTION Text"""
-        p[0] = p[2]  # revision time
-        #  (p[3], p[4]) # description
+        p[0] = (p[2],  # revision time
+                (p[3], p[4]))  # description
 
     def p_NotificationObjectsPart(self, p):
         """NotificationObjectsPart : OBJECTS '{' Objects '}'
@@ -986,7 +990,7 @@ class SmiV2Parser(AbstractParser):
 
     def p_ComplianceGroup(self, p):
         """ComplianceGroup : GROUP objectIdentifier DESCRIPTION Text"""
-        p[0] = p[2][1][0]  # objectIdentifier? Maybe name?
+        p[0] = p[2][1][0]  # objectIdentifier
         #        p[1], # GROUP
         #        (p[3], p[4])) # description
 
@@ -1025,7 +1029,7 @@ class SmiV2Parser(AbstractParser):
         """agentCapabilitiesClause : LOWERCASE_IDENTIFIER AGENT_CAPABILITIES PRODUCT_RELEASE Text STATUS Status DESCRIPTION Text ReferPart ModulePart_Capabilities COLON_COLON_EQUAL '{' objectIdentifier '}'"""
         p[0] = ('agentCapabilitiesClause', p[1],  # id
                 #   p[2], # AGENT_CAPABILITIES
-                #   (p[3], p[4]), # product release
+                (p[3], p[4]),  # product release
                 p[6],  # status
                 (p[7], p[8]),  # description
                 p[9],  # reference

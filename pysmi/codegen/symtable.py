@@ -200,7 +200,7 @@ class SymtableCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genAgentCapabilities(self, data, classmode=False):
-        origName, status, description, reference, oid = data
+        origName, release, status, description, reference, oid = data
 
         pysmiName = self.transOpers(origName)
 
@@ -423,6 +423,9 @@ class SymtableCodeGen(AbstractCodeGen):
     def genStatus(self, data, classmode=False):
         return ''
 
+    def genProductRelease(self, data, classmode=False):
+        return ''
+
     def genEnumSpec(self, data, classmode=False):
         return self.genBits(data, classmode=classmode)[1]
 
@@ -565,6 +568,7 @@ class SymtableCodeGen(AbstractCodeGen):
         'DESCRIPTION': genDescription,
         'REFERENCE': genReference,
         'Status': genStatus,
+        'PRODUCT-RELEASE': genProductRelease,
         'enumSpec': genEnumSpec,
         'INDEX': genIndex,
         'integerSubType': genIntegerSubType,

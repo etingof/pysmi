@@ -290,7 +290,7 @@ class PySnmpCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genAgentCapabilities(self, data, classmode=False):
-        name, status, description, reference, oid = data
+        name, release, status, description, reference, oid = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -298,9 +298,13 @@ class PySnmpCodeGen(AbstractCodeGen):
         oidStr, parentOid = oid
         outStr = name + ' = AgentCapabilities(' + oidStr + ')' + label + '\n'
 
-# TODO: pysnmp does not implement .setStatus()
-#        if status:
-#            outStr += name + status + '\n'
+# TODO: pysnmp does not implement .setProductRelease()
+#       if release:
+#           outStr += name + release + '\n'
+
+        # TODO: pysnmp does not implement .setStatus()
+#       if status:
+#           outStr += name + status + '\n'
 
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
@@ -717,6 +721,11 @@ class PySnmpCodeGen(AbstractCodeGen):
         text = data[0]
         return classmode and self.indent + 'status = ' + dorepr(text) + '\n' or '.setStatus(' + dorepr(text) + ')'
 
+    # noinspection PyMethodMayBeStatic
+    def genProductRelease(self, data, classmode=False):
+        text = data[0]
+        return classmode and self.indent + 'release = ' + dorepr(text) + '\n' or '.setRelease(' + dorepr(text) + ')'
+
     def genEnumSpec(self, data, classmode=False):
         items = data[0]
         singleval = [str(item[1]) + ',' for item in items]
@@ -868,8 +877,14 @@ class PySnmpCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genRevisions(self, data, classmode=False):
-        times = self.genTime(data[0])
-        return '.setRevisions(("' + '", "'.join(times) + '",))'
+        times = self.genTime([x[0] for x in data[0]])
+        return '.setRevisions((%s,))' % ', '.join([dorepr(x) for x in times])
+
+# TODO: push description data to pysnmp
+#        descriptions = [dorepr(x[1][1]) for x in data[0]]
+#        revisions = ', '.join(['(\'%s\', %s)' % x for x in zip(times, descriptions)])
+#        text += '.setRevisionsDescriptions((%s,))' % descriptions
+#        return text
 
     def genRow(self, data, classmode=False):
         row = data[0]
@@ -949,6 +964,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         'DESCRIPTION': genDescription,
         'REFERENCE': genReference,
         'Status': genStatus,
+        'PRODUCT-RELEASE': genProductRelease,
         'enumSpec': genEnumSpec,
         'INDEX': genTableIndex,
         'integerSubType': genIntegerSubType,

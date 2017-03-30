@@ -82,6 +82,12 @@ END
             ('2000-01-10 00:00',),
             'bad REVISIONS'
         )
+# TODO: pysnmp does not implement .getRevisionsDescriptions()
+#        self.assertEqual(
+#            self.ctx['testModule'].getRevisionsDescriptions(),
+#            ('Initial version published as RFC 2742.',),
+#            'bad REVISIONS'
+#        )
 
     def testModuleIdentityContactInfo(self):
         self.assertEqual(

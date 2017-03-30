@@ -1,7 +1,9 @@
 Revision 0.1.1, 29-03-2017
 --------------------------
 
-* Generate REFERENCE and STATUS fields of various SMI objects
+* Generate REFERENCE and STATUS fields at various SMI objects
+* Generate DESCRIPTION field followed REVISION field at MODULE-IDENTITY objects
+* Generate PRODUCT-RELEASE field at AGENT-CAPABILITIES objects
 * Fix to the `ordereddict` conditional dependency
 * Missing test module recovered
 * Failing tests fixed
