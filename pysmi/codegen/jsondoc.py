@@ -584,11 +584,11 @@ class JsonCodeGen(AbstractCodeGen):
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def genContactInfo(self, data):
         text = data[0]
-        return re.sub('\s+', ' ', text)
+        return self.textFilter('contact-info', text)
 
     # noinspection PyUnusedLocal
     def genDisplayHint(self, data):
-        return re.sub('\s+', ' ', data[0])
+        return data[0]
 
     # noinspection PyUnusedLocal
     def genDefVal(self, data, objname=None):
@@ -667,18 +667,15 @@ class JsonCodeGen(AbstractCodeGen):
 
     # noinspection PyMethodMayBeStatic
     def genDescription(self, data):
-        text = data[0]
-        return re.sub('\s+', ' ', text)
+        return self.textFilter('description', data[0])
 
     # noinspection PyMethodMayBeStatic
     def genReference(self, data):
-        text = data[0]
-        return re.sub('\s+', ' ', text)
+        return self.textFilter('reference', data[0])
 
     # noinspection PyMethodMayBeStatic
     def genStatus(self, data):
-        text = data[0]
-        return re.sub('\s+', ' ', text)
+        return data[0]
 
     def genEnumSpec(self, data):
         items = data[0]
@@ -726,8 +723,7 @@ class JsonCodeGen(AbstractCodeGen):
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def genMaxAccess(self, data):
-        access = data[0]
-        return access
+        return data[0]
 
     def genOctetStringSubType(self, data):
         sizes = []
@@ -792,17 +788,15 @@ class JsonCodeGen(AbstractCodeGen):
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def genLastUpdated(self, data):
-        text = data[0]
-        return re.sub('\s+', ' ', text)
+        return data[0]
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def genOrganization(self, data):
-        text = data[0]
-        return re.sub('\s+', ' ', text)
+        return self.textFilter('organization', data[0])
 
     # noinspection PyUnusedLocal
     def genRevisions(self, data):
-        times = self.genTime(data[0])
+        times = self.genTime([x[0] for x in data[0]])
         return times
 
     def genRow(self, data):
@@ -866,7 +860,7 @@ class JsonCodeGen(AbstractCodeGen):
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def genUnits(self, data):
         text = data[0]
-        return re.sub('\s+', ' ', text)
+        return self.textFilter('units', text)
 
     handlersTable = {
         'agentCapabilitiesClause': genAgentCapabilities,
@@ -914,6 +908,7 @@ class JsonCodeGen(AbstractCodeGen):
 
     def genCode(self, ast, symbolTable, **kwargs):
         self.genRules['text'] = kwargs.get('genTexts', False)
+        self.textFilter = kwargs.get('textFilter') or (lambda symbol, text: re.sub('\s+', ' ', text))
         self.symbolTable = symbolTable
         self._rows.clear()
         self._cols.clear()

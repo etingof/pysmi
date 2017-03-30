@@ -33,6 +33,7 @@ nodepsFlag = False
 rebuildFlag = False
 dryrunFlag = False
 genMibTextsFlag = False
+keepTextsLayout = False
 pyCompileFlag = True
 pyOptimizationLevel = 0
 ignoreErrorsFlag = False
@@ -61,6 +62,7 @@ Usage: %s [--help]
       [--dry-run]
       [--no-mib-writes]
       [--generate-mib-texts]
+      [--keep-texts-layout]
       [ mibfile [ mibfile [...]]]
 Where:
     url      - file, http, https, ftp, sftp schemes are supported. 
@@ -79,7 +81,7 @@ try:
         'destination-format=', 'destination-directory=', 'cache-directory=',
         'no-dependencies', 'no-python-compile', 'python-optimization-level=',
         'ignore-errors', 'build-index', 'rebuild', 'dry-run', 'no-mib-writes',
-        'generate-mib-texts', 'disable-fuzzy-source']
+        'generate-mib-texts', 'disable-fuzzy-source', 'keep-texts-layout']
     )
 
 except getopt.GetoptError:
@@ -171,6 +173,9 @@ Software documentation and support at http://pysmi.sf.net
 
     if opt[0] == '--disable-fuzzy-source':
         doFuzzyMatchingFlag = False
+
+    if opt[0] == '--keep-texts-layout':
+        keepTextsLayout = True
 
 if inputMibs:
     mibSources.extend(list(set(['file://' + os.path.abspath(os.path.dirname(x))
@@ -286,7 +291,8 @@ Byte-compile Python modules: %s (optimization level %s)
 Ignore compilation errors: %s
 Generate OID->MIB index: %s
 Generate texts in MIBs: %s
-Try various filenames while searching for MIB module: %s
+Keep original texts layout: %s
+Try various file names while searching for MIB module: %s
 """ % (', '.join(sorted(mibSources)),
        ', '.join(sorted([x[0] for x in mibBorrowers if x[1] == genMibTextsFlag])),
        ', '.join(mibSearchers),
@@ -304,6 +310,7 @@ Try various filenames while searching for MIB module: %s
        ignoreErrorsFlag and 'yes' or 'no',
        buildIndexFlag and 'yes' or 'no',
        genMibTextsFlag and 'yes' or 'no',
+       keepTextsLayout and 'yes' or 'no',
        doFuzzyMatchingFlag and 'yes' or 'no'))
 
 # Initialize compiler infrastructure
@@ -325,13 +332,15 @@ try:
 
     mibCompiler.addBorrowers(*borrowers)
 
-    processed = mibCompiler.compile(*inputMibs,
-                                    **dict(noDeps=nodepsFlag,
-                                           rebuild=rebuildFlag,
-                                           dryRun=dryrunFlag,
-                                           genTexts=genMibTextsFlag,
-                                           writeMibs=writeMibsFlag,
-                                           ignoreErrors=ignoreErrorsFlag))
+    processed = mibCompiler.compile(
+        *inputMibs, **dict(noDeps=nodepsFlag,
+                           rebuild=rebuildFlag,
+                           dryRun=dryrunFlag,
+                           genTexts=genMibTextsFlag,
+                           textFilter=keepTextsLayout and (lambda symbol, text: text) or None,
+                           writeMibs=writeMibsFlag,
+                           ignoreErrors=ignoreErrorsFlag)
+    )
 
     if buildIndexFlag:
         mibCompiler.buildIndex(

@@ -33,6 +33,7 @@ into various formats.
          [--dry-run]
          [--no-mib-writes]
          [--generate-mib-texts]
+         [--keep-texts-layout]
          [mibfile [mibfile [...]]]
    Where:
        url      - file, http, https, ftp, sftp schemes are supported.
@@ -276,6 +277,11 @@ To save space and CPU time, PySMI does not by default include those texts
 into transformed MIBs. However this can be reverted by adding
 --generate-mib-texts option.
 
+When MIB texts are generated, whitespaces and new lines are stripped by
+default. Sometimes that breaks down ASCII art should it occur in MIB texts.
+To preserve original text formatting, --keep-texts-layout option may
+be used.
+
 Building MIB indices
 --------------------
 
@@ -342,7 +348,6 @@ With this example, *compliance* and *identity* keys point to
 list top-level OIDs branches defined in MIB modules. Full index
 build over thousands of MIBs could be seen
 `here <http://mibs.snmplabs.com/json/index.json>`_.
-
 
 Minor speedups
 --------------

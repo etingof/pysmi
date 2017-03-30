@@ -1,9 +1,11 @@
-Revision 0.1.1, 29-03-2017
+Revision 0.1.1, 30-03-2017
 --------------------------
 
 * Generate REFERENCE and STATUS fields at various SMI objects
 * Generate DESCRIPTION field followed REVISION field at MODULE-IDENTITY objects
 * Generate PRODUCT-RELEASE field at AGENT-CAPABILITIES objects
+* Generated Python source aligned with PEP8
+* MIB texts cleaned up by default, --keep-texts-layout preserves original formatting
 * Fix to the `ordereddict` conditional dependency
 * Missing test module recovered
 * Failing tests fixed

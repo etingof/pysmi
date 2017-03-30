@@ -355,7 +355,8 @@ class MibCompiler(object):
                     mibTree,
                     symbolTableMap,
                     comments=comments,
-                    genTexts=options.get('genTexts')
+                    genTexts=options.get('genTexts'),
+                    textFilter=options.get('textFilter')
                 )
 
                 builtMibs[mibname] = fileInfo, mibInfo, mibData

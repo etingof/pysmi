@@ -50,6 +50,7 @@ Byte-compile Python modules: no (optimization level no)
 Ignore compilation errors: no
 Generate OID->MIB index: no
 Generate texts in MIBs: yes
+Keep original texts layout: no
 Try various filenames while searching for MIB module: yes
 Created/updated MIBs: IANAifType-MIB, IF-MIB, SNMPv2-MIB
 Pre-compiled MIBs borrowed: 

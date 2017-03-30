@@ -5,6 +5,7 @@
 # License: http://pysmi.sf.net/license.html
 #
 import sys
+import re
 from time import strptime, strftime
 from keyword import iskeyword
 from pysmi.mibinfo import MibInfo
@@ -150,7 +151,7 @@ class PySnmpCodeGen(AbstractCodeGen):
     def genImports(self, imports):
         outStr = ''
 
-        # convertion to SNMPv2
+        # conversion to SNMPv2
         toDel = []
         for module in list(imports):
 
@@ -190,8 +191,10 @@ class PySnmpCodeGen(AbstractCodeGen):
                 self._seenSyms.update([self.transOpers(s) for s in symbols])
                 self._importMap.update([(self.transOpers(s), module) for s in symbols])
 
-                outStr += '( %s, ) = mibBuilder.importSymbols("%s")\n' % (
-                    ', '.join([self.transOpers(s) for s in symbols]), '", "'.join((module,) + symbols))
+                outStr += ', '.join([self.transOpers(s) for s in symbols])
+                if len(symbols) < 2:
+                    outStr += ','
+                outStr += ' = mibBuilder.importSymbols("%s")\n' % ('", "'.join((module,) + symbols))
 
         return outStr, tuple(sorted(imports))
 
@@ -326,12 +329,21 @@ class PySnmpCodeGen(AbstractCodeGen):
         oidStr, parentOid = oid
         revisions = revisions or ''
 
-        outStr = name + ' = ModuleIdentity(' + oidStr + ')' + label + revisions + '\n'
+        outStr = name + ' = ModuleIdentity(' + oidStr + ')' + label + '\n'
 
-        if self.genRules['text']:
+        if self.genRules['text'] and revisions:
+            outStr += self.ifTextStr + name + revisions + '\n'
+
+        if self.genRules['text'] and lastUpdated:
             outStr += self.ifTextStr + name + lastUpdated + '\n'
+
+        if self.genRules['text'] and organization:
             outStr += self.ifTextStr + name + organization + '\n'
+
+        if self.genRules['text'] and contactInfo:
             outStr += self.ifTextStr + name + contactInfo + '\n'
+
+        if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
 
         self.regSym(name, outStr, oidStr, moduleIdentity=True)
@@ -349,15 +361,15 @@ class PySnmpCodeGen(AbstractCodeGen):
         outStr = name + ' = ModuleCompliance(' + oidStr + ')' + label
         outStr += compliances + '\n'
 
-# TODO: pysnmp does not implement .setStatus()
-#        if status:
-#            outStr += name + status + '\n'
+# TODO: pysnmp does not implement .setStatus
+#        if self.genRules['text'] and status:
+#            outStr += self.ifTextStr + name + status + '\n'
 
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
 
-        if reference:
-            outStr += name + reference + '\n'
+        if self.genRules['text'] and reference:
+            outStr += self.ifTextStr + name + reference + '\n'
 
         self.regSym(name, outStr, oidStr)
 
@@ -373,20 +385,20 @@ class PySnmpCodeGen(AbstractCodeGen):
         oidStr, parentOid = oid
 
         if objects:
-            objects = ['("' + self.moduleName[0] + '", "' + self.transOpers(obj) + '"),' for obj in objects]
+            objects = ['("' + self.moduleName[0] + '", "' + self.transOpers(obj) + '")' for obj in objects]
 
-        objStr = ' '.join(objects)
+        objStr = ', '.join(objects)
         outStr = name + ' = NotificationGroup(' + oidStr + ')' + label
-        outStr += '.setObjects(*(' + objStr + '))\n'
+        outStr += '.setObjects(' + objStr + ')\n'
 
 # TODO: pysnmp does not implement .setStatus
-#        if status:
-#            outStr += name + status + '\n'
+#        if self.genRules['text'] and status:
+#            outStr += self.ifTextStr + name + status + '\n'
 
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
 
-        if reference:
+        if self.genRules['text'] and reference:
             outStr += name + reference + '\n'
 
         self.regSym(name, outStr, oidStr)
@@ -403,20 +415,20 @@ class PySnmpCodeGen(AbstractCodeGen):
         oidStr, parentOid = oid
 
         if objects:
-            objects = ['("' + self.moduleName[0] + '", "' + self.transOpers(obj) + '"),' for obj in objects]
+            objects = ['("' + self.moduleName[0] + '", "' + self.transOpers(obj) + '")' for obj in objects]
 
-        objStr = ' '.join(objects)
+        objStr = ', '.join(objects)
         outStr = name + ' = NotificationType(' + oidStr + ')' + label
-        outStr += '.setObjects(*(' + objStr + '))\n'
+        outStr += '.setObjects(' + objStr + ')\n'
 
-        if status:
-            outStr += name + status + '\n'
+        if self.genRules['text'] and status:
+            outStr += self.ifTextStr + name + status + '\n'
 
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
 
-        if reference:
-            outStr += name + reference + '\n'
+        if self.genRules['text'] and reference:
+            outStr += self.ifTextStr + name + reference + '\n'
 
         self.regSym(name, outStr, oidStr)
 
@@ -432,21 +444,21 @@ class PySnmpCodeGen(AbstractCodeGen):
         oidStr, parentOid = oid
 
         if objects:
-            objects = ['("' + self.moduleName[0] + '", "' + self.transOpers(obj) + '"),' for obj in objects]
+            objects = ['("' + self.moduleName[0] + '", "' + self.transOpers(obj) + '")' for obj in objects]
 
-        objStr = ' '.join(objects)
+        objStr = ', '.join(objects)
         outStr = name + ' = ObjectGroup(' + oidStr + ')' + label
-        outStr += '.setObjects(*(' + objStr + '))\n'
+        outStr += '.setObjects(' + objStr + ')\n'
 
-# TODO: pysnmp does not implement .setStatus()
-#        if status:
-#            outStr += name + status + '\n'
+# TODO: pysnmp does not implement .setStatus
+#        if self.genRules['text'] and status:
+#            outStr += self.ifTextStr + name + status + '\n'
 
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
 
         if reference:
-            outStr += name + reference + '\n'
+            outStr += self.ifTextStr + name + reference + '\n'
 
         self.regSym(name, outStr, oidStr)
 
@@ -462,14 +474,14 @@ class PySnmpCodeGen(AbstractCodeGen):
         oidStr, parentOid = oid
         outStr = name + ' = ObjectIdentity(' + oidStr + ')' + label + '\n'
 
-        if status:
-            outStr += name + status + '\n'
+        if self.genRules['text'] and status:
+            outStr += self.ifTextStr + name + status + '\n'
 
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
 
-        if reference:
-            outStr += name + reference + '\n'
+        if self.genRules['text'] and reference:
+            outStr += self.ifTextStr + name + reference + '\n'
 
         self.regSym(name, outStr, oidStr)
 
@@ -500,16 +512,16 @@ class PySnmpCodeGen(AbstractCodeGen):
         outStr += indexStr or ''
         outStr += '\n'
 
-        if reference:
-            outStr += name + reference + '\n'
+        if self.genRules['text'] and reference:
+            outStr += self.ifTextStr + name + reference + '\n'
 
         if augmention:
             augmention = self.transOpers(augmention)
             outStr += augmention + '.registerAugmentions(("' + self.moduleName[0] + '", "' + name + '"))\n'
             outStr += name + '.setIndexNames(*' + augmention + '.getIndexNames())\n'
 
-        if status:
-            outStr += name + status + '\n'
+        if self.genRules['text'] and status:
+            outStr += self.ifTextStr + name + status + '\n'
 
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
@@ -533,18 +545,18 @@ class PySnmpCodeGen(AbstractCodeGen):
         enterpriseStr, parentOid = enterprise
 
         if variables:
-            variables = ['("' + self.moduleName[0] + '", "' + self.transOpers(var) + '"),' for var in variables]
+            variables = ['("' + self.moduleName[0] + '", "' + self.transOpers(var) + '")' for var in variables]
 
-        varStr = ' '.join(variables)
+        varStr = ', '.join(variables)
 
         outStr = name + ' = NotificationType(' + enterpriseStr + ' + (0,' + str(value) + '))' + label
-        outStr += '.setObjects(*(' + varStr + '))\n'
+        outStr += '.setObjects(' + varStr + ')\n'
 
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
 
-        if reference:
-            outStr += name + reference + '\n'
+        if self.genRules['text'] and reference:
+            outStr += self.ifTextStr + name + reference + '\n'
 
         self.regSym(name, outStr, enterpriseStr)
 
@@ -593,12 +605,12 @@ class PySnmpCodeGen(AbstractCodeGen):
     def genBits(self, data, classmode=False):
         bits = data[0]
 
-        namedval = ['("' + bit[0] + '", ' + str(bit[1]) + '),' for bit in bits]
+        namedval = ['("' + bit[0] + '", ' + str(bit[1]) + ')' for bit in bits]
 
         numFuncCalls = len(namedval) / 255 + 1
         funcCalls = ''
         for idx in range(int(numFuncCalls)):
-            funcCalls += 'NamedValues(' + ' '.join(namedval[255 * idx:255 * (idx + 1)]) + ') + '
+            funcCalls += 'NamedValues(' + ', '.join(namedval[255 * idx:255 * (idx + 1)]) + ') + '
 
         funcCalls = funcCalls[:-3]
 
@@ -612,11 +624,11 @@ class PySnmpCodeGen(AbstractCodeGen):
 
         for complianceModule in data[0]:
             name = complianceModule[0] or self.moduleName[0]
-            compliances += ['("' + name + '", "' + self.transOpers(compl) + '"),' for compl in complianceModule[1]]
+            compliances += ['("' + name + '", "' + self.transOpers(compl) + '")' for compl in complianceModule[1]]
 
-        complStr = ' '.join(compliances)
+        complStr = ', '.join(compliances)
 
-        return '.setObjects(*(' + complStr + '))'
+        return '.setObjects(' + complStr + ')'
 
     # noinspection PyUnusedLocal
     def genConceptualTable(self, data, classmode=False):
@@ -629,7 +641,7 @@ class PySnmpCodeGen(AbstractCodeGen):
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def genContactInfo(self, data, classmode=False):
-        text = data[0]
+        text = self.textFilter('contact-info', data[0])
         return '.setContactInfo(' + dorepr(text) + ')'
 
     # noinspection PyUnusedLocal
@@ -708,12 +720,12 @@ class PySnmpCodeGen(AbstractCodeGen):
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def genDescription(self, data, classmode=False):
-        text = data[0]
+        text = self.textFilter('description', data[0])
         return classmode and self.indent + 'description = ' + dorepr(text) + '\n' or '.setDescription(' + dorepr(text) + ')'
 
     # noinspection PyMethodMayBeStatic
     def genReference(self, data, classmode=False):
-        text = data[0]
+        text = self.textFilter('reference', data[0])
         return classmode and self.indent + 'reference = ' + dorepr(text) + '\n' or '.setReference(' + dorepr(text) + ')'
 
     # noinspection PyMethodMayBeStatic
@@ -728,8 +740,8 @@ class PySnmpCodeGen(AbstractCodeGen):
 
     def genEnumSpec(self, data, classmode=False):
         items = data[0]
-        singleval = [str(item[1]) + ',' for item in items]
-        outStr = classmode and self.indent + 'subtypeSpec = %s.subtypeSpec+' or '.subtype(subtypeSpec='
+        singleval = [str(item[1]) for item in items]
+        outStr = classmode and self.indent + 'subtypeSpec = %s.subtypeSpec + ' or '.subtype(subtypeSpec='
         numFuncCalls = len(singleval) / 255 + 1
         singleCall = numFuncCalls == 1 or False
         funcCalls = ''
@@ -737,9 +749,9 @@ class PySnmpCodeGen(AbstractCodeGen):
         outStr += not singleCall and 'ConstraintsUnion(' or ''
 
         for idx in range(int(numFuncCalls)):
-            funcCalls += 'SingleValueConstraint(' + ' '.join(singleval[255 * idx:255 * (idx + 1)]) + '), '
-
-        funcCalls = funcCalls[:-2]
+            if funcCalls:
+                funcCalls += ', '
+            funcCalls += 'SingleValueConstraint(' + ', '.join(singleval[255 * idx:255 * (idx + 1)]) + ')'
 
         outStr += funcCalls
         outStr += not singleCall and (classmode and ')\n' or '))') or (not classmode and ')' or '\n')
@@ -780,13 +792,13 @@ class PySnmpCodeGen(AbstractCodeGen):
     def genIntegerSubType(self, data, classmode=False):
         singleRange = len(data[0]) == 1
 
-        outStr = classmode and self.indent + 'subtypeSpec = %s.subtypeSpec+' or '.subtype(subtypeSpec='
+        outStr = classmode and self.indent + 'subtypeSpec = %s.subtypeSpec + ' or '.subtype(subtypeSpec='
         outStr += not singleRange and 'ConstraintsUnion(' or ''
 
         for rng in data[0]:
             vmin, vmax = len(rng) == 1 and (rng[0], rng[0]) or rng
             vmin, vmax = str(self.str2int(vmin)), str(self.str2int(vmax))
-            outStr += 'ValueRangeConstraint(' + vmin + ',' + vmax + ')' + (not singleRange and ',' or '')
+            outStr += 'ValueRangeConstraint(' + vmin + ', ' + vmax + ')' + (not singleRange and ', ' or '')
 
         outStr += not singleRange and (classmode and ')' or '))') or (not classmode and ')' or '\n')
 
@@ -800,14 +812,14 @@ class PySnmpCodeGen(AbstractCodeGen):
     def genOctetStringSubType(self, data, classmode=False):
         singleRange = len(data[0]) == 1
 
-        outStr = classmode and self.indent + 'subtypeSpec = %s.subtypeSpec+' or '.subtype(subtypeSpec='
+        outStr = classmode and self.indent + 'subtypeSpec = %s.subtypeSpec + ' or '.subtype(subtypeSpec='
         outStr += not singleRange and 'ConstraintsUnion(' or ''
 
         for rng in data[0]:
             vmin, vmax = len(rng) == 1 and (rng[0], rng[0]) or rng
             vmin, vmax = str(self.str2int(vmin)), str(self.str2int(vmax))
-            outStr += ('ValueSizeConstraint(' + vmin + ',' + vmax + ')' +
-                       (not singleRange and ',' or ''))
+            outStr += ('ValueSizeConstraint(' + vmin + ', ' + vmax + ')' +
+                       (not singleRange and ', ' or ''))
 
         outStr += not singleRange and (classmode and ')' or '))') or (not classmode and ')' or '\n')
 
@@ -872,7 +884,7 @@ class PySnmpCodeGen(AbstractCodeGen):
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def genOrganization(self, data, classmode=False):
-        text = data[0]
+        text = self.textFilter('organization', data[0])
         return '.setOrganization(' + dorepr(text) + ')'
 
     # noinspection PyUnusedLocal
@@ -881,7 +893,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         return '.setRevisions((%s,))' % ', '.join([dorepr(x) for x in times])
 
 # TODO: push description data to pysnmp
-#        descriptions = [dorepr(x[1][1]) for x in data[0]]
+#        descriptions = [dorepr(self.textFilter(x[1][1])) for x in data[0]]
 #        revisions = ', '.join(['(\'%s\', %s)' % x for x in zip(times, descriptions)])
 #        text += '.setRevisionsDescriptions((%s,))' % descriptions
 #        return text
@@ -926,10 +938,17 @@ class PySnmpCodeGen(AbstractCodeGen):
             if parentType in self._snmpTypes:
                 parentType = 'TextualConvention, ' + parentType
 
-            attrs = (display or '') + attrs
-            attrs = (status or '') + attrs
-            attrs = (description or '') + attrs
-            attrs = (reference or '') + attrs
+            if self.genRules['text'] and display:
+                attrs = display + attrs
+
+            if self.genRules['text'] and status:
+                attrs = status + attrs
+
+            if self.genRules['text'] and description:
+                attrs = description + attrs
+
+            if self.genRules['text'] and reference:
+                attrs = reference + attrs
 
         attrs = attrs or self.indent + 'pass\n'
 
@@ -938,7 +957,7 @@ class PySnmpCodeGen(AbstractCodeGen):
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def genUnits(self, data, classmode=False):
         text = data[0]
-        return '.setUnits(' + dorepr(text) + ')'
+        return '.setUnits(' + dorepr(self.textFilter('units', text)) + ')'
 
     handlersTable = {
         'agentCapabilitiesClause': genAgentCapabilities,
@@ -987,6 +1006,7 @@ class PySnmpCodeGen(AbstractCodeGen):
 
     def genCode(self, ast, symbolTable, **kwargs):
         self.genRules['text'] = kwargs.get('genTexts', False)
+        self.textFilter = kwargs.get('textFilter') or (lambda symbol, text: re.sub('\s+', ' ', text))
         self.symbolTable = symbolTable
         self._rows.clear()
         self._cols.clear()
