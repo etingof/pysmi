@@ -228,7 +228,7 @@ class JsonCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genAgentCapabilities(self, data):
-        name, description, reference, oid = data
+        name, status, description, reference, oid = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -239,6 +239,9 @@ class JsonCodeGen(AbstractCodeGen):
         outDict['name'] = name
         outDict['oid'] = oidStr
         outDict['class'] = 'agentcapabilities'
+
+        if status:
+            outDict['status'] = status
 
         if self.genRules['text'] and description:
             outDict['description'] = description
@@ -283,7 +286,7 @@ class JsonCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genModuleCompliance(self, data):
-        name, description, reference, compliances, oid = data
+        name, status, description, reference, compliances, oid = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -298,6 +301,9 @@ class JsonCodeGen(AbstractCodeGen):
         if compliances:
             outDict['modulecompliance'] = compliances
 
+        if status:
+            outDict['status'] = status
+
         if self.genRules['text'] and description:
             outDict['description'] = description
 
@@ -310,7 +316,7 @@ class JsonCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genNotificationGroup(self, data):
-        name, objects, description, reference, oid = data
+        name, objects, status, description, reference, oid = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -324,6 +330,9 @@ class JsonCodeGen(AbstractCodeGen):
         if objects:
             outDict['objects'] = [{'module': self.moduleName[0], 'object': self.transOpers(obj)} for obj in objects]
 
+        if status:
+            outDict['status'] = status
+
         if self.genRules['text'] and description:
             outDict['description'] = description
 
@@ -336,7 +345,7 @@ class JsonCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genNotificationType(self, data):
-        name, objects, description, reference, oid = data
+        name, objects, status, description, reference, oid = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -350,6 +359,9 @@ class JsonCodeGen(AbstractCodeGen):
         if objects:
             outDict['objects'] = [{'module': self.moduleName[0], 'object': self.transOpers(obj)} for obj in objects]
 
+        if status:
+            outDict['status'] = status
+
         if self.genRules['text'] and description:
             outDict['description'] = description
 
@@ -362,7 +374,7 @@ class JsonCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genObjectGroup(self, data):
-        name, objects, description, reference, oid = data
+        name, objects, status, description, reference, oid = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -374,6 +386,9 @@ class JsonCodeGen(AbstractCodeGen):
 
         if objects:
             outDict['objects'] = [{'module': self.moduleName[0], 'object': self.transOpers(obj)} for obj in objects]
+
+        if status:
+            outDict['status'] = status
 
         if self.genRules['text'] and description:
             outDict['description'] = description
@@ -387,7 +402,7 @@ class JsonCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genObjectIdentity(self, data):
-        name, description, reference, oid = data
+        name, status, description, reference, oid = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -398,6 +413,9 @@ class JsonCodeGen(AbstractCodeGen):
         outDict['name'] = name
         outDict['oid'] = oidStr
         outDict['class'] = 'objectidentity'
+
+        if status:
+            outDict['status'] = status
 
         if self.genRules['text'] and description:
             outDict['description'] = description
@@ -411,7 +429,7 @@ class JsonCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genObjectType(self, data):
-        name, syntax, units, maxaccess, description, reference, augmention, index, defval, oid = data
+        name, syntax, units, maxaccess, status, description, reference, augmention, index, defval, oid = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -444,6 +462,8 @@ class JsonCodeGen(AbstractCodeGen):
             outDict['augmention']['name'] = name
             outDict['augmention']['module'] = self.moduleName[0]
             outDict['augmention']['object'] = augmention
+        if status:
+            outDict['status'] = status
 
         if self.genRules['text'] and description:
             outDict['description'] = description
@@ -642,8 +662,18 @@ class JsonCodeGen(AbstractCodeGen):
 
         return {'default': outDict}
 
-    # noinspection PyMethodMayBeStatic,PyUnusedLocal
+    # noinspection PyMethodMayBeStatic
     def genDescription(self, data):
+        text = data[0]
+        return re.sub('\s+', ' ', text)
+
+    # noinspection PyMethodMayBeStatic
+    def genReference(self, data):
+        text = data[0]
+        return re.sub('\s+', ' ', text)
+
+    # noinspection PyMethodMayBeStatic
+    def genStatus(self, data):
         text = data[0]
         return re.sub('\s+', ' ', text)
 
@@ -813,7 +843,7 @@ class JsonCodeGen(AbstractCodeGen):
 
         else:
             # Textual convention
-            display, reference, syntax = data
+            display, status, description, reference, syntax = data
             parentType, attrs = syntax
 
             outDict = OrderedDict()
@@ -821,6 +851,10 @@ class JsonCodeGen(AbstractCodeGen):
             outDict['class'] = 'textualconvention'
             if display:
                 outDict['displayhint'] = display
+            if status:
+                outDict['status'] = status
+            if self.genRules['text'] and description:
+                outDict['description'] = description
             if reference:
                 outDict['reference'] = reference
 
@@ -853,6 +887,8 @@ class JsonCodeGen(AbstractCodeGen):
         'DISPLAY-HINT': genDisplayHint,
         'DEFVAL': genDefVal,
         'DESCRIPTION': genDescription,
+        'REFERENCE': genReference,
+        'Status': genStatus,
         'enumSpec': genEnumSpec,
         'INDEX': genTableIndex,
         'integerSubType': genIntegerSubType,

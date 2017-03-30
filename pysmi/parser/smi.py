@@ -295,8 +295,8 @@ class SmiV2Parser(AbstractParser):
         if p[1]:
             if p[1] == 'TEXTUAL-CONVENTION':
                 p[0] = ('typeDeclarationRHS', p[2],  # display
-                        #  p[4], # status
-                        #  (p[5], p[6]), # description
+                        p[4],  # status
+                        (p[5], p[6]),  # description
                         p[7],  # reference
                         p[9])  # syntax
             else:
@@ -364,7 +364,7 @@ class SmiV2Parser(AbstractParser):
         """objectIdentityClause : LOWERCASE_IDENTIFIER OBJECT_IDENTITY STATUS Status DESCRIPTION Text ReferPart COLON_COLON_EQUAL '{' objectIdentifier '}'"""
         p[0] = ('objectIdentityClause', p[1],  # id
                 #  p[2], # OBJECT_IDENTITY
-                #  p[4], # status
+                p[4],  # status
                 (p[5], p[6]),  # description
                 p[7],  # reference
                 p[10])  # objectIdentifier
@@ -376,7 +376,7 @@ class SmiV2Parser(AbstractParser):
                 p[4],  # syntax
                 p[5],  # UnitsPart
                 p[6],  # MaxOrPIBAccessPart
-                #  p[8], # status
+                p[8],  # status
                 p[9],  # descriptionClause
                 p[10],  # reference
                 p[11],  # augmentions
@@ -442,7 +442,7 @@ class SmiV2Parser(AbstractParser):
                 p[1],  # id
                 #  p[2], # NOTIFICATION_TYPE
                 p[3],  # NotificationObjectsPart
-                #  p[5], # status
+                p[5],  # status
                 (p[6], p[7]),  # description
                 p[8],  # reference
                 p[11])  # NotificationName aka objectIdentifier
@@ -673,11 +673,7 @@ class SmiV2Parser(AbstractParser):
 
     def p_Status(self, p):
         """Status : LOWERCASE_IDENTIFIER"""
-        #  p[0] = ('Status', p[1])
-
-    def p_Status_Capabilities(self, p):
-        """Status_Capabilities : LOWERCASE_IDENTIFIER"""
-        p[0] = ('Status_Capabilities', p[1])
+        p[0] = ('Status', p[1])
 
     def p_DisplayPart(self, p):
         """DisplayPart : DISPLAY_HINT Text
@@ -896,7 +892,7 @@ class SmiV2Parser(AbstractParser):
         p[0] = ('objectGroupClause',
                 p[1],  # id
                 p[3],  # objects
-                #  p[5], # status
+                p[5],  # status
                 (p[6], p[7]),  # description
                 p[8],  # reference
                 p[11])  # objectIdentifier
@@ -906,7 +902,7 @@ class SmiV2Parser(AbstractParser):
         p[0] = ('notificationGroupClause',
                 p[1],  # id
                 p[3],  # notifications
-                #  p[5], # status
+                p[5],  # status
                 (p[6], p[7]),  # description
                 p[8],  # reference
                 p[11])  # objectIdentifier
@@ -916,7 +912,7 @@ class SmiV2Parser(AbstractParser):
         p[0] = ('moduleComplianceClause',
                 p[1],  # id
                 #  p[2], # MODULE_COMPLIANCE
-                #  p[4], # status
+                p[4],  # status
                 (p[5], p[6]),  # description
                 p[7],  # reference
                 p[8],  # ComplianceModules
@@ -1026,11 +1022,11 @@ class SmiV2Parser(AbstractParser):
             p[0] = (p[1], p[2])
 
     def p_agentCapabilitiesClause(self, p):
-        """agentCapabilitiesClause : LOWERCASE_IDENTIFIER AGENT_CAPABILITIES PRODUCT_RELEASE Text STATUS Status_Capabilities DESCRIPTION Text ReferPart ModulePart_Capabilities COLON_COLON_EQUAL '{' objectIdentifier '}'"""
+        """agentCapabilitiesClause : LOWERCASE_IDENTIFIER AGENT_CAPABILITIES PRODUCT_RELEASE Text STATUS Status DESCRIPTION Text ReferPart ModulePart_Capabilities COLON_COLON_EQUAL '{' objectIdentifier '}'"""
         p[0] = ('agentCapabilitiesClause', p[1],  # id
                 #   p[2], # AGENT_CAPABILITIES
                 #   (p[3], p[4]), # product release
-                #   p[6], # status capabilities
+                p[6],  # status
                 (p[7], p[8]),  # description
                 p[9],  # reference
                 #   p[10], # module capabilities
@@ -1333,7 +1329,7 @@ class LowcaseIdentifier(object):
         p[0] = ('notificationTypeClause', p[1],  # id
                 #  p[2], # NOTIFICATION_TYPE
                 p[3],  # NotificationObjectsPart
-                #  p[5], # status
+                p[5],  # status
                 (p[6], p[7]),  # description
                 p[8],   # Reference
                 p[11])  # NotificationName aka objectIdentifier

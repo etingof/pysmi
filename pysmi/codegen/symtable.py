@@ -200,7 +200,7 @@ class SymtableCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genAgentCapabilities(self, data, classmode=False):
-        origName, description, reference, oid = data
+        origName, status, description, reference, oid = data
 
         pysmiName = self.transOpers(origName)
 
@@ -224,7 +224,7 @@ class SymtableCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genModuleCompliance(self, data, classmode=False):
-        origName, description, reference, compliances, oid = data
+        origName, status, description, reference, compliances, oid = data
 
         pysmiName = self.transOpers(origName)
 
@@ -236,7 +236,7 @@ class SymtableCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genNotificationGroup(self, data, classmode=False):
-        origName, objects, description, reference, oid = data
+        origName, objects, status, description, reference, oid = data
 
         pysmiName = self.transOpers(origName)
 
@@ -248,7 +248,7 @@ class SymtableCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genNotificationType(self, data, classmode=False):
-        origName, objects, description, reference, oid = data
+        origName, objects, status, description, reference, oid = data
 
         pysmiName = self.transOpers(origName)
 
@@ -260,7 +260,7 @@ class SymtableCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genObjectGroup(self, data, classmode=False):
-        origName, objects, description, reference, oid = data
+        origName, objects, status, description, reference, oid = data
 
         pysmiName = self.transOpers(origName)
 
@@ -272,7 +272,7 @@ class SymtableCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genObjectIdentity(self, data, classmode=False):
-        origName, description, reference, oid = data
+        origName, status, description, reference, oid = data
 
         pysmiName = self.transOpers(origName)
 
@@ -284,7 +284,7 @@ class SymtableCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genObjectType(self, data, classmode=False):
-        origName, syntax, units, maxaccess, description, reference, augmention, index, defval, oid = data
+        origName, syntax, units, maxaccess, status, description, reference, augmention, index, defval, oid = data
 
         pysmiName = self.transOpers(origName)
 
@@ -420,6 +420,9 @@ class SymtableCodeGen(AbstractCodeGen):
     def genReference(self, data, classmode=False):
         return ''
 
+    def genStatus(self, data, classmode=False):
+        return ''
+
     def genEnumSpec(self, data, classmode=False):
         return self.genBits(data, classmode=classmode)[1]
 
@@ -529,7 +532,7 @@ class SymtableCodeGen(AbstractCodeGen):
 
         else:
             # Textual convention
-            display, reference, syntax = data
+            display, status, description, reference, syntax = data
             parentType, attrs = syntax
 
         return parentType, attrs
@@ -561,6 +564,7 @@ class SymtableCodeGen(AbstractCodeGen):
         'DEFVAL': genDefVal,
         'DESCRIPTION': genDescription,
         'REFERENCE': genReference,
+        'Status': genStatus,
         'enumSpec': genEnumSpec,
         'INDEX': genIndex,
         'integerSubType': genIntegerSubType,
