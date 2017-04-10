@@ -59,6 +59,7 @@ if sys.version_info[:2] < (2, 4):
     print("ERROR: this package requires Python 2.4 or later!")
     sys.exit(1)
 
+
 try:
     from setuptools import setup, Command
 
@@ -69,17 +70,26 @@ except ImportError:
         if 'egg' in arg:
             howto_install_setuptools()
             sys.exit(1)
+
     from distutils.core import setup, Command
 
     params = {}
 
-if sys.version_info[:2] < (2, 6):
-    params['install_requires'] = ['ply==3.4', 'simplejson==2.1']
-else:
-    params['install_requires'] = ['ply']
+    if sys.version_info[:2] < (2, 6):
+        params['requires'] = ['ply(==3.4)', 'simplejson(==2.1)']
+    else:
+        params['requires'] = ['ply']
 
-if sys.version_info[:2] < (2, 7):
-    params['install_requires'].append('ordereddict')
+    if sys.version_info[:2] < (2, 7):
+        params['requires'].append('ordereddict')
+else:
+    if sys.version_info[:2] < (2, 6):
+        params['install_requires'] = ['ply==3.4', 'simplejson==2.1']
+    else:
+        params['install_requires'] = ['ply']
+
+    if sys.version_info[:2] < (2, 7):
+        params['install_requires'].append('ordereddict')
 
 doclines = [x.strip() for x in (__doc__ or '').split('\n') if x]
 
