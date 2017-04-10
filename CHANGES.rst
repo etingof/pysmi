@@ -1,6 +1,9 @@
+
 Revision 0.1.2, XX-04-2017
 --------------------------
 
+* Fixed missing STATUS/DISPLAY-HINT/REFERENCE/etc fields generation at pysnmp
+  backend when running in the non-full-text mode
 
 Revision 0.1.1, 30-03-2017
 --------------------------

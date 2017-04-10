@@ -331,10 +331,10 @@ class PySnmpCodeGen(AbstractCodeGen):
 
         outStr = name + ' = ModuleIdentity(' + oidStr + ')' + label + '\n'
 
-        if self.genRules['text'] and revisions:
+        if revisions:
             outStr += self.ifTextStr + name + revisions + '\n'
 
-        if self.genRules['text'] and lastUpdated:
+        if lastUpdated:
             outStr += self.ifTextStr + name + lastUpdated + '\n'
 
         if self.genRules['text'] and organization:
@@ -362,13 +362,13 @@ class PySnmpCodeGen(AbstractCodeGen):
         outStr += compliances + '\n'
 
 # TODO: pysnmp does not implement .setStatus
-#        if self.genRules['text'] and status:
+#        if status:
 #            outStr += self.ifTextStr + name + status + '\n'
 
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
 
-        if self.genRules['text'] and reference:
+        if reference:
             outStr += self.ifTextStr + name + reference + '\n'
 
         self.regSym(name, outStr, oidStr)
@@ -392,13 +392,13 @@ class PySnmpCodeGen(AbstractCodeGen):
         outStr += '.setObjects(' + objStr + ')\n'
 
 # TODO: pysnmp does not implement .setStatus
-#        if self.genRules['text'] and status:
+#        if status:
 #            outStr += self.ifTextStr + name + status + '\n'
 
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
 
-        if self.genRules['text'] and reference:
+        if reference:
             outStr += name + reference + '\n'
 
         self.regSym(name, outStr, oidStr)
@@ -421,13 +421,13 @@ class PySnmpCodeGen(AbstractCodeGen):
         outStr = name + ' = NotificationType(' + oidStr + ')' + label
         outStr += '.setObjects(' + objStr + ')\n'
 
-        if self.genRules['text'] and status:
+        if status:
             outStr += self.ifTextStr + name + status + '\n'
 
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
 
-        if self.genRules['text'] and reference:
+        if reference:
             outStr += self.ifTextStr + name + reference + '\n'
 
         self.regSym(name, outStr, oidStr)
@@ -474,13 +474,13 @@ class PySnmpCodeGen(AbstractCodeGen):
         oidStr, parentOid = oid
         outStr = name + ' = ObjectIdentity(' + oidStr + ')' + label + '\n'
 
-        if self.genRules['text'] and status:
+        if status:
             outStr += self.ifTextStr + name + status + '\n'
 
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
 
-        if self.genRules['text'] and reference:
+        if reference:
             outStr += self.ifTextStr + name + reference + '\n'
 
         self.regSym(name, outStr, oidStr)
@@ -512,7 +512,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         outStr += indexStr or ''
         outStr += '\n'
 
-        if self.genRules['text'] and reference:
+        if reference:
             outStr += self.ifTextStr + name + reference + '\n'
 
         if augmention:
@@ -520,7 +520,7 @@ class PySnmpCodeGen(AbstractCodeGen):
             outStr += augmention + '.registerAugmentions(("' + self.moduleName[0] + '", "' + name + '"))\n'
             outStr += name + '.setIndexNames(*' + augmention + '.getIndexNames())\n'
 
-        if self.genRules['text'] and status:
+        if status:
             outStr += self.ifTextStr + name + status + '\n'
 
         if self.genRules['text'] and description:
@@ -555,7 +555,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
 
-        if self.genRules['text'] and reference:
+        if reference:
             outStr += self.ifTextStr + name + reference + '\n'
 
         self.regSym(name, outStr, enterpriseStr)
@@ -938,16 +938,16 @@ class PySnmpCodeGen(AbstractCodeGen):
             if parentType in self._snmpTypes:
                 parentType = 'TextualConvention, ' + parentType
 
-            if self.genRules['text'] and display:
+            if display:
                 attrs = display + attrs
 
-            if self.genRules['text'] and status:
+            if status:
                 attrs = status + attrs
 
             if self.genRules['text'] and description:
                 attrs = description + attrs
 
-            if self.genRules['text'] and reference:
+            if reference:
                 attrs = reference + attrs
 
         attrs = attrs or self.indent + 'pass\n'
