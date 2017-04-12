@@ -4,6 +4,7 @@ Revision 0.1.2, XX-04-2017
 
 * The @mib@ magic in reader's URL template made optional. If it is not present,
   MIB module name is just appended to URL template
+* Send User-Agent containing pysmi and Python versions as well as platform name.
 * Fixed missing STATUS/DISPLAY-HINT/REFERENCE/etc fields generation at pysnmp
   backend when running in the non-full-text mode
 
