@@ -27,6 +27,8 @@ class HttpReader(AbstractReader):
         by name and return their contents to caller.
     """
 
+    MIB_MAGIC = '@mib@'
+
     def __init__(self, host, port, locationTemplate, timeout=5, ssl=False):
         """Create an instance of *HttpReader* bound to specific URL.
 
@@ -43,8 +45,6 @@ class HttpReader(AbstractReader):
         self._port = port
         self._locationTemplate = decode(locationTemplate)
         self._timeout = timeout
-        if '@mib@' not in locationTemplate:
-            raise error.PySmiError('@mib@ placeholder not specified in location at %s' % self)
 
     def __str__(self):
         return '%s{"%s://%s:%s%s"}' % (
@@ -64,7 +64,10 @@ class HttpReader(AbstractReader):
         debug.logger & debug.flagReader and debug.logger('looking for MIB %s' % mibname)
 
         for mibalias, mibfile in self.getMibVariants(mibname):
-            location = self._locationTemplate.replace('@mib@', mibfile)
+            if self.MIB_MAGIC in self._locationTemplate:
+                location = self._locationTemplate.replace(self.MIB_MAGIC, mibfile)
+            else:
+                location = self._locationTemplate + mibfile
 
             debug.logger & debug.flagReader and debug.logger(
                 'trying to fetch MIB from %s://%s:%s%s' % (self._schema, self._host, self._port, location))
