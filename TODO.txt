@@ -18,6 +18,7 @@
 * implement xml/html/yaml codegeneration backend
 * write a tool to fetch canonical MIB name from MIB file, rename MIB file, split merged MIBs onto individual files
 * write a tool to turn IANA assigned numbers into JSON
+* introduce cached MIBs invalidation feature -- may be useful when we screw up and produce bad MIBs
 * json codegen:
   - make schema configurable
   - further simplify/review codegen code
