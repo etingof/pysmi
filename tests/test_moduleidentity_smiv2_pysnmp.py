@@ -92,7 +92,7 @@ END
     def testModuleIdentityContactInfo(self):
         self.assertEqual(
             self.ctx['testModule'].getContactInfo(),
-            'WG-email:   agentx@dorothy.bmc.com',
+            'WG-email: agentx@dorothy.bmc.com',
             'bad CONTACT-INFO'
         )
 
