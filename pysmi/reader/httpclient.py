@@ -16,6 +16,7 @@ except ImportError:
 from pysmi.reader.base import AbstractReader
 from pysmi.mibinfo import MibInfo
 from pysmi.compat import decode
+from pysmi import __version__ as pysmi_version
 from pysmi import error
 from pysmi import debug
 
@@ -35,7 +36,10 @@ class HttpReader(AbstractReader):
            Args:
                host (str): domain name or IP address of web server
                port (int): TCP port web server is listening
-               locationTemplate (str): location part of the URL containing @mib@ magic placeholder to be replaced with MIB name fetch.
+               locationTemplate (str): location part of the URL optionally containing @mib@
+               magic placeholder to be replaced with MIB name. If @mib@ magic is not present,
+               MIB name is appended to `locationTemplate`
+
            Keyword Args:
                timeout (int): response timeout
                ssl (bool): access HTTPS web site
@@ -45,6 +49,10 @@ class HttpReader(AbstractReader):
         self._port = port
         self._locationTemplate = decode(locationTemplate)
         self._timeout = timeout
+        self._user_agent = 'pysmi-%s; python-%s.%s.%s; %s' % (
+            pysmi_version, sys.version_info.major, sys.version_info.minor,
+            sys.version_info.micro, sys.platform
+        )
 
     def __str__(self):
         return '%s{"%s://%s:%s%s"}' % (
@@ -52,7 +60,8 @@ class HttpReader(AbstractReader):
 
     def getData(self, mibname):
         headers = {
-            'Accept': 'text/plain'
+            'Accept': 'text/plain',
+            'User-Agent': self._user_agent
         }
         if sys.version_info[:2] < (2, 6):
             conn = httplib.HTTPConnection(self._host, self._port)
