@@ -7,7 +7,7 @@ Revision 0.1.2, 12-04-2017
 * Send User-Agent containing pysmi and Python versions as well as platform name.
 * Fixed missing STATUS/DISPLAY-HINT/REFERENCE/etc fields generation at pysnmp
   backend when running in the non-full-text mode
-* Fixed broken `ordereddict` dependency on Python 2.6
+* Fixed broken `ordereddict` dependency on Python 2.6-
 
 Revision 0.1.1, 30-03-2017
 --------------------------
