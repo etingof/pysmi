@@ -73,7 +73,8 @@ class PySnmpCodeGen(AbstractCodeGen):
                 'ASN1-REFINEMENT')
     baseMibs = ('SNMP-FRAMEWORK-MIB',
                 'SNMP-TARGET-MIB',
-                'TRANSPORT-ADDRESS-MIB') + AbstractCodeGen.baseMibs
+                'TRANSPORT-ADDRESS-MIB',
+                'INET-ADDRESS-MIB') + AbstractCodeGen.baseMibs
 
     baseTypes = ['Integer', 'Integer32', 'Bits', 'ObjectIdentifier', 'OctetString']
 
