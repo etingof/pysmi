@@ -80,12 +80,14 @@ would hold information such as:
       "ifTestTable": {
         "name": "ifTestTable",
         "oid": "1.3.6.1.2.1.31.1.3",
+        "nodetype": "table",
         "class": "objecttype",
         "maxaccess": "not-accessible"
       },
       "ifTestEntry": {
         "name": "ifTestEntry",
         "oid": "1.3.6.1.2.1.31.1.3.1",
+        "nodetype": "row",
         "class": "objecttype",
         "maxaccess": "not-accessible",
         "augmention": {
@@ -97,6 +99,7 @@ would hold information such as:
       "ifTestId": {
         "name": "ifTestId",
         "oid": "1.3.6.1.2.1.31.1.3.1.1",
+        "nodetype": "column",
         "class": "objecttype",
         "syntax": {
           "type": "TestAndIncr",
