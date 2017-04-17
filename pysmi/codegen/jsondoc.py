@@ -445,6 +445,12 @@ class JsonCodeGen(AbstractCodeGen):
         outDict = OrderedDict()
         outDict['name'] = name
         outDict['oid'] = oidStr
+
+        if syntax[0]:
+            nodetype = syntax[0] == 'Bits' and 'scalar' or syntax[0]  # Bits hack
+            nodetype = name in self.symbolTable[self.moduleName[0]]['_symtable_cols'] and 'column' or nodetype
+            outDict['nodetype'] = nodetype
+
         outDict['class'] = 'objecttype'
 
         if syntax[1]:
@@ -559,7 +565,7 @@ class JsonCodeGen(AbstractCodeGen):
         for name, bit in sorted(bits, key=lambda x: x[1]):
             outDict['bits'][name] = bit
 
-        return 'MibScalar', outDict
+        return 'scalar', outDict
 
     # noinspection PyUnusedLocal
     def genCompliances(self, data):
@@ -579,7 +585,7 @@ class JsonCodeGen(AbstractCodeGen):
             row = row[1][:-2]
             self._rows.add(row)
 
-        return 'MibTable', ''
+        return 'table', ''
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def genContactInfo(self, data):
@@ -802,8 +808,9 @@ class JsonCodeGen(AbstractCodeGen):
     def genRow(self, data):
         row = data[0]
         row = self.transOpers(row)
+
         return row in self.symbolTable[self.moduleName[0]]['_symtable_rows'] and (
-             'MibTableRow', '') or self.genSimpleSyntax(data)
+             'row', '') or self.genSimpleSyntax(data)
 
     # noinspection PyUnusedLocal
     def genSequence(self, data):
@@ -825,7 +832,7 @@ class JsonCodeGen(AbstractCodeGen):
         if subtype:
             outDict['constraints'] = subtype
 
-        return 'MibScalar', outDict
+        return 'scalar', outDict
 
     # noinspection PyUnusedLocal
     def genTypeDeclarationRHS(self, data):

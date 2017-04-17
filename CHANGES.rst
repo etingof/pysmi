@@ -3,6 +3,7 @@ Revision 0.1.3, XX-04-2017
 --------------------------
 
 * INET-ADDRESS-MIB configured as pre-built at pysnmp codegen
+* JSON codegen produces "nodetype" element for OBJECT-TYPE
 
 Revision 0.1.2, 12-04-2017
 --------------------------
