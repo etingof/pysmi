@@ -1,9 +1,10 @@
 
-Revision 0.1.3, XX-04-2017
+Revision 0.1.3, XX-05-2017
 --------------------------
 
 * INET-ADDRESS-MIB configured as pre-built at pysnmp codegen
 * JSON codegen produces "nodetype" element for OBJECT-TYPE
+* Fix to mibdump.py --destination-directory option
 
 Revision 0.1.2, 12-04-2017
 --------------------------

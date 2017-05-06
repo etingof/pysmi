@@ -71,7 +71,8 @@ class PySnmpCodeGen(AbstractCodeGen):
     fakeMibs = ('ASN1',
                 'ASN1-ENUMERATION',
                 'ASN1-REFINEMENT')
-    baseMibs = ('SNMP-FRAMEWORK-MIB',
+    baseMibs = ('PYSNMP-USM-MIB',
+                'SNMP-FRAMEWORK-MIB',
                 'SNMP-TARGET-MIB',
                 'TRANSPORT-ADDRESS-MIB',
                 'INET-ADDRESS-MIB') + AbstractCodeGen.baseMibs

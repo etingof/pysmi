@@ -28,6 +28,7 @@ mibSearchers = []
 mibStubs = []
 mibBorrowers = []
 dstFormat = None
+dstDirectory = None
 cacheDirectory = ''
 nodepsFlag = False
 rebuildFlag = False
@@ -205,11 +206,12 @@ if dstFormat == 'pysnmp':
         mibBorrowers = [('http://mibs.snmplabs.com/pysnmp/notexts/@mib@', False),
                         ('http://mibs.snmplabs.com/pysnmp/fulltexts/@mib@', True)]
 
-    dstDirectory = os.path.expanduser("~")
-    if sys.platform[:3] == 'win':
-        dstDirectory = os.path.join(dstDirectory, 'PySNMP Configuration', 'mibs')
-    else:
-        dstDirectory = os.path.join(dstDirectory, '.pysnmp', 'mibs')
+    if not dstDirectory:
+        dstDirectory = os.path.expanduser("~")
+        if sys.platform[:3] == 'win':
+            dstDirectory = os.path.join(dstDirectory, 'PySNMP Configuration', 'mibs')
+        else:
+            dstDirectory = os.path.join(dstDirectory, '.pysnmp', 'mibs')
 
     # Compiler infrastructure
 
@@ -236,7 +238,8 @@ elif dstFormat == 'json':
         mibBorrowers = [('http://mibs.snmplabs.com/json/notexts/@mib@', False),
                         ('http://mibs.snmplabs.com/json/fulltexts/@mib@', True)]
 
-    dstDirectory = os.path.join('.')
+    if not dstDirectory:
+        dstDirectory = os.path.join('.')
 
     # Compiler infrastructure
 
@@ -257,7 +260,8 @@ elif dstFormat == 'null':
         mibBorrowers = [('http://mibs.snmplabs.com/null/notexts/@mib@', False),
                         ('http://mibs.snmplabs.com/null/fulltexts/@mib@', True)]
 
-    dstDirectory = ''
+    if not dstDirectory:
+        dstDirectory = ''
 
     # Compiler infrastructure
 
