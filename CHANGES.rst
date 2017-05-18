@@ -1,5 +1,5 @@
 
-Revision 0.1.3, XX-05-2017
+Revision 0.1.3, 19-05-2017
 --------------------------
 
 * INET-ADDRESS-MIB configured as pre-built at pysnmp codegen
