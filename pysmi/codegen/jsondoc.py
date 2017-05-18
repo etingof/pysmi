@@ -331,7 +331,7 @@ class JsonCodeGen(AbstractCodeGen):
         outDict['class'] = 'notificationgroup'
 
         if objects:
-            outDict['objects'] = [{'module': self.moduleName[0], 'object': self.transOpers(obj)} for obj in objects]
+            outDict['objects'] = [{'module': self._importMap.get(obj, self.moduleName[0]), 'object': self.transOpers(obj)} for obj in objects]
 
         if status:
             outDict['status'] = status
@@ -360,7 +360,7 @@ class JsonCodeGen(AbstractCodeGen):
         outDict['class'] = 'notificationtype'
 
         if objects:
-            outDict['objects'] = [{'module': self.moduleName[0], 'object': self.transOpers(obj)} for obj in objects]
+            outDict['objects'] = [{'module': self._importMap.get(obj, self.moduleName[0]), 'object': self.transOpers(obj)} for obj in objects]
 
         if status:
             outDict['status'] = status
@@ -388,7 +388,7 @@ class JsonCodeGen(AbstractCodeGen):
                                'class': 'objectgroup'})
 
         if objects:
-            outDict['objects'] = [{'module': self.moduleName[0], 'object': self.transOpers(obj)} for obj in objects]
+            outDict['objects'] = [{'module': self._importMap.get(obj, self.moduleName[0]), 'object': self.transOpers(obj)} for obj in objects]
 
         if status:
             outDict['status'] = status
@@ -501,7 +501,7 @@ class JsonCodeGen(AbstractCodeGen):
         outDict['class'] = 'notificationtype'
 
         if variables:
-            outDict['objects'] = [{'module': self.moduleName[0], 'object': self.transOpers(obj)} for obj in variables]
+            outDict['objects'] = [{'module': self._importMap.get(obj, self.moduleName[0]), 'object': self.transOpers(obj)} for obj in variables]
 
         if self.genRules['text'] and description:
             outDict['description'] = description

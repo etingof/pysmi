@@ -387,7 +387,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         oidStr, parentOid = oid
 
         if objects:
-            objects = ['("' + self.moduleName[0] + '", "' + self.transOpers(obj) + '")' for obj in objects]
+            objects = ['("' + self._importMap.get(obj, self.moduleName[0]) + '", "' + self.transOpers(obj) + '")' for obj in objects]
 
         objStr = ', '.join(objects)
         outStr = name + ' = NotificationGroup(' + oidStr + ')' + label
@@ -417,7 +417,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         oidStr, parentOid = oid
 
         if objects:
-            objects = ['("' + self.moduleName[0] + '", "' + self.transOpers(obj) + '")' for obj in objects]
+            objects = ['("' + self._importMap.get(obj, self.moduleName[0]) + '", "' + self.transOpers(obj) + '")' for obj in objects]
 
         objStr = ', '.join(objects)
         outStr = name + ' = NotificationType(' + oidStr + ')' + label
@@ -446,7 +446,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         oidStr, parentOid = oid
 
         if objects:
-            objects = ['("' + self.moduleName[0] + '", "' + self.transOpers(obj) + '")' for obj in objects]
+            objects = ['("' + self._importMap.get(obj, self.moduleName[0]) + '", "' + self.transOpers(obj) + '")' for obj in objects]
 
         objStr = ', '.join(objects)
         outStr = name + ' = ObjectGroup(' + oidStr + ')' + label
@@ -519,7 +519,7 @@ class PySnmpCodeGen(AbstractCodeGen):
 
         if augmention:
             augmention = self.transOpers(augmention)
-            outStr += augmention + '.registerAugmentions(("' + self.moduleName[0] + '", "' + name + '"))\n'
+            outStr += augmention + '.registerAugmentions(("' + self._importMap.get(name, self.moduleName[0]) + '", "' + name + '"))\n'
             outStr += name + '.setIndexNames(*' + augmention + '.getIndexNames())\n'
 
         if status:
@@ -547,7 +547,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         enterpriseStr, parentOid = enterprise
 
         if variables:
-            variables = ['("' + self.moduleName[0] + '", "' + self.transOpers(var) + '")' for var in variables]
+            variables = ['("' + self._importMap.get(var, self.moduleName[0]) + '", "' + self.transOpers(var) + '")' for var in variables]
 
         varStr = ', '.join(variables)
 
