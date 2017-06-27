@@ -273,7 +273,7 @@ class MibCompiler(object):
             else:
                 exc = error.PySmiError('MIB source %s not found' % mibname)
                 exc.mibname = mibname
-                debug.logger & debug.flagCompiler and debug.logger('no %s found everywhare' % mibname)
+                debug.logger & debug.flagCompiler and debug.logger('no %s found everywhere' % mibname)
 
                 if mibname not in failedMibs:
                     failedMibs[mibname] = exc
