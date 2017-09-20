@@ -20,7 +20,7 @@ try:
 except ImportError:
     from io import StringIO
 
-from pysmi.reader.zipreader import ZipReader
+from pysmi.reader import ZipReader
 
 
 class ZipReaderTestCase(unittest.TestCase):
@@ -170,6 +170,8 @@ class ZipReaderTestCase(unittest.TestCase):
 
     def testGetDataFromFile(self):
 
+        filename = None
+
         try:
             fd, filename = tempfile.mkstemp()
             os.write(fd, self.zipContents)
@@ -181,14 +183,18 @@ class ZipReaderTestCase(unittest.TestCase):
 
             assert data == 'A\n'
 
-        finally:
+        except Exception:
+            pass
+
+        if filename:
             try:
                 os.remove(filename)
 
-            except:
+            except Exception:
                 pass
 
     def testGetInnerZipData(self):
+        filename = None
 
         try:
             fd, filename = tempfile.mkstemp()
@@ -201,13 +207,15 @@ class ZipReaderTestCase(unittest.TestCase):
 
             assert data == 'C\n'
 
-        finally:
+        except Exception:
+            pass
+
+        if filename:
             try:
                 os.remove(filename)
 
-            except:
+            except Exception:
                 pass
-
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
 

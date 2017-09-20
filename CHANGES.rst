@@ -1,4 +1,9 @@
 
+Revision 0.2.1, XX-06-2017
+--------------------------
+
+- ZIP archive reader implemented
+
 Revision 0.2.2, 13-11-2017
 --------------------------
 
