@@ -46,14 +46,14 @@ Usage: %s [--help]
       [--version]
       [--quiet]
       [--debug=<%s>]
-      [--mib-source=<url>]
+      [--mib-source=<URI>]
+      [--mib-searcher=<PATH|PACKAGE>]
+      [--mib-stub=<MIB-NAME>]
+      [--mib-borrower=<PATH>]
+      [--destination-format=<FORMAT>]
+      [--destination-directory=<DIRECTORY>]
+      [--cache-directory=<DIRECTORY>]
       [--disable-fuzzy-source]
-      [--mib-searcher=<path|package>]
-      [--mib-stub=<mibname>]
-      [--mib-borrower=<path>]
-      [--destination-format=<format>]
-      [--destination-directory=<directory>]
-      [--cache-directory=<directory>]
       [--no-dependencies]
       [--no-python-compile]
       [--python-optimization-level]
@@ -64,12 +64,13 @@ Usage: %s [--help]
       [--no-mib-writes]
       [--generate-mib-texts]
       [--keep-texts-layout]
-      [ mibfile [ mibfile [...]]]
+      <MIB-NAME> [MIB-NAME [...]]]
 Where:
-    url      - file, http, https, ftp, sftp schemes are supported. 
-               Use @mib@ placeholder token in URL location to refer
-               to MIB module name requested.
-    format   - pysnmp, json, null""" % (
+    URI      - file, zip, http, https, ftp, sftp schemes are supported. 
+               Use @mib@ placeholder token in URI to refer directly to
+               the required MIB module when source does not support
+               directory listing (e.g. HTTP).
+    FORMAT   - pysnmp, json, null""" % (
     sys.argv[0],
     '|'.join([x for x in sorted(debug.flagMap)])
 )

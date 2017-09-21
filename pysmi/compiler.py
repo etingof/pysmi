@@ -288,7 +288,7 @@ class MibCompiler(object):
         # See what MIBs need generating
         #
 
-        for mibname in parsedMibs.copy():
+        for mibname in tuple(parsedMibs):
             fileInfo, mibInfo, mibTree = parsedMibs[mibname]
 
             debug.logger & debug.flagCompiler and debug.logger('checking if %s requires updating' % mibname)

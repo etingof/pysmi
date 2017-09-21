@@ -11,19 +11,23 @@ into various formats.
 
 .. code-block:: bash
 
-   $ *mibdump.py*.py --help
-   Usage: *mibdump.py*.py [--help]
+   $ mibdump.py --help
+   Synopsis:
+     SNMP SMI/MIB files conversion tool
+   Documentation:
+     http://pysmi.sourceforge.net
+   Usage: mibdump.py [--help]
          [--version]
          [--quiet]
          [--debug=<all|borrower|codegen|compiler|grammar|lexer|parser|reader|searcher|writer>]
-         [--mib-source=<url>]
+         [--mib-source=<URI>]
+         [--mib-searcher=<PATH|PACKAGE>]
+         [--mib-stub=<MIB-NAME>]
+         [--mib-borrower=<PATH>]
+         [--destination-format=<FORMAT>]
+         [--destination-directory=<DIRECTORY>]
+         [--cache-directory=<DIRECTORY>]
          [--disable-fuzzy-source]
-         [--mib-searcher=<path|package>]
-         [--mib-stub=<mibname>]
-         [--mib-borrower=<path>]
-         [--destination-format=<format>]
-         [--destination-directory=<directory>]
-         [--cache-directory=<directory>]
          [--no-dependencies]
          [--no-python-compile]
          [--python-optimization-level]
@@ -34,12 +38,14 @@ into various formats.
          [--no-mib-writes]
          [--generate-mib-texts]
          [--keep-texts-layout]
-         [mibfile [mibfile [...]]]
+         <MIB-NAME> [MIB-NAME [...]]]
    Where:
-       url      - file, http, https, ftp, sftp schemes are supported.
-                  Use @mib@ placeholder token in URL location to refer
-                  to MIB module name requested.
-       format   - pysnmp (default), json, null
+       URI      - file, zip, http, https, ftp, sftp schemes are supported.
+                  Use @mib@ placeholder token in URI to refer directly to
+                  the required MIB module when source does not support
+                  directory listing (e.g. HTTP).
+       FORMAT   - pysnmp, json, null
+
 
 When JSON destination format is requested, for each MIB module *mibdump.py*
 will produce a JSON document containing all MIB objects. For example,
@@ -106,7 +112,10 @@ methods are supported:
 
 * Local files. This could be a top-level directory where MIB files are
   located. Subdirectories will be automatically traversed as well. 
-  Example: file:///usr/share/snmp .
+  Example: file:///usr/share/snmp
+* ZIP archives containing MIB files. Subdirectories and embedded ZIP
+  archives will be automatically traversed.
+  Example: zip://mymibs.zip
 * HTTP/HTTPS. A fully specified URL where MIB module name is specified by
   a @mib@ placeholder. When specific MIB is looked up, PySMI will replace
   that placeholder with MIB module name it is looking for. 
