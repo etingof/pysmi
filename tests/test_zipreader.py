@@ -20,7 +20,7 @@ try:
 except ImportError:
     from io import StringIO
 
-from pysmi.reader import ZipReader
+from pysmi.reader.zipreader import ZipReader
 
 
 class ZipReaderTestCase(unittest.TestCase):

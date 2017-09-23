@@ -108,11 +108,9 @@ class ZipReader(AbstractReader):
             if (member.filename.endswith('.zip') or
                     member.filename.endswith('.ZIP')):
 
-                fp = archive.open(member.filename)
-                innerZipBlob = FileLike(fp.read(), name=self._name)
-                fp.close()
+                innerZipBlob = archive.read(member.filename)
 
-                innerMembers = self._readZipDirectory(innerZipBlob)
+                innerMembers = self._readZipDirectory(FileLike(innerZipBlob, member.filename))
 
                 for innerFilename, ref in innerMembers.items():
 
@@ -139,9 +137,7 @@ class ZipReader(AbstractReader):
             archive = zipfile.ZipFile(fileObj)
 
             try:
-                fp = archive.open(filename)
-                dataObj = fp.read()
-                fp.close()
+                dataObj = archive.read(filename)
 
             except Exception:
                 debug.logger & debug.flagReader and debug.logger('ZIP read component %s read error: %s' % (fileObj.name, sys.exc_info()[1]))
