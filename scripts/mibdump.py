@@ -298,12 +298,12 @@ Generate OID->MIB index: %s
 Generate texts in MIBs: %s
 Keep original texts layout: %s
 Try various file names while searching for MIB module: %s
-""" % (', '.join(sorted(mibSources)),
-       ', '.join(sorted([x[0] for x in mibBorrowers if x[1] == genMibTextsFlag])),
+""" % (', '.join(mibSources),
+       ', '.join([x[0] for x in mibBorrowers if x[1] == genMibTextsFlag]),
        ', '.join(mibSearchers),
        dstDirectory,
        ', '.join(sorted(mibStubs)),
-       ', '.join(sorted(inputMibs)),
+       ', '.join(inputMibs),
        dstFormat,
        cacheDirectory or 'not used',
        nodepsFlag and 'no' or 'yes',

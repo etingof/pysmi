@@ -1,5 +1,5 @@
 
-Revision 0.2.1, XX-06-2017
+Revision 0.2.1, XX-09-2017
 --------------------------
 
 * ZIP archive reader implemented

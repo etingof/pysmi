@@ -43,8 +43,8 @@ def getReadersFromUrls(*sourceUrls, **options):
 
         if mibSource.scheme in ('', 'file', 'zip'):
             scheme = mibSource.scheme
-            if not scheme and (mibSource.path.endswith('.zip') or
-                               mibSource.path.endswith('.ZIP')):
+            if scheme != 'file' and (mibSource.path.endswith('.zip') or
+                                     mibSource.path.endswith('.ZIP')):
                 scheme = 'zip'
 
             else:

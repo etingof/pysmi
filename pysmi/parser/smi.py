@@ -1150,7 +1150,7 @@ class SmiV2Parser(AbstractParser):
 # The classes that follow serve a purpose of encapsulating assorted functions
 # into a namespace. The namespace type is not universally supported across all
 # Python versions we want to run on, thus the hack with `staticmethod` decorator
-#  and `self` first parameter.
+# and `self` first parameter.
 #
 
 #
