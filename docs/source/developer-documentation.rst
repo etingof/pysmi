@@ -26,8 +26,8 @@ indicate the outcome of MIB transformation operation.
 Fetching ASN.1 MIBs
 -------------------
 
-PySMI offers three distinct transport mechanisms for fetching MIBs by name
-from specific locations. In all cases MIB module name to file name match 
+PySMI offers a handful of distinct transport mechanisms for fetching MIBs by
+name from specific locations. In all cases MIB module name to file name match
 may not be exact -- some name fuzzying can be performed to mitigate 
 possible changes to MIB file name.
 
@@ -35,6 +35,12 @@ possible changes to MIB file name.
 the host running PySMI.
 
 .. autoclass:: pysmi.reader.localfile.FileReader
+  :members:
+
+*ZipReader* class instance looks up MIB files in local ZIP archive.
+ZIP subdirectories and embedded ZIP archives would be traversed.
+
+.. autoclass:: pysmi.reader.zipreader.ZipReader
   :members:
 
 *HttpReader* class instance tries to download MIB files using configured URL.

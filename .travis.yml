@@ -12,12 +12,11 @@ python:
   - "pypy"
   - "pypy3"
 install:
-  - pip install -r requirements.txt
-  - pip install pysnmp
+  - pip install -r requirements.txt -r test-requirements.txt
   - pip install codecov
-  - python setup.py install
+  - pip install --no-deps .
 script:
-  - python tests/__main__.py
+  - PYTHONPATH=.:$PYTHONPATH python tests/__main__.py
 after_success:
-  - coverage run --omit=*test* tests/__main__.py
+  - PYTHONPATH=.:$PYTHONPATH coverage run --omit=*test* tests/__main__.py
   - codecov

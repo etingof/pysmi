@@ -13,6 +13,7 @@ except ImportError:
     # noinspection PyUnresolvedReferences
     from urllib import parse as urlparse
 from pysmi.reader.localfile import FileReader
+from pysmi.reader.zipreader import ZipReader
 from pysmi.reader.httpclient import HttpReader
 from pysmi.reader.ftpclient import FtpReader
 from pysmi import error
@@ -32,10 +33,27 @@ def getReadersFromUrls(*sourceUrls, **options):
             for k, v in zip(('scheme', 'netloc', 'path', 'params',
                              'query', 'fragment', 'username', 'password',
                              'hostname', 'port'), mibSource + ('', '', '', None)):
+                if k == 'scheme':
+                    if mibSource.path.endswith('.zip') or mibSource.path.endswith('.ZIP'):
+                        v = 'zip'
+                    else:
+                        v = 'file'
+
                 setattr(mibSource, k, v)
 
-        if not mibSource.scheme or mibSource.scheme == 'file':
-            readers.append(FileReader(mibSource.path).setOptions(**options))
+        if mibSource.scheme in ('', 'file', 'zip'):
+            scheme = mibSource.scheme
+            if not scheme and (mibSource.path.endswith('.zip') or
+                               mibSource.path.endswith('.ZIP')):
+                scheme = 'zip'
+
+            else:
+                scheme = 'file'
+
+            if scheme == 'file':
+                readers.append(FileReader(mibSource.path).setOptions(**options))
+            else:
+                readers.append(ZipReader(mibSource.path).setOptions(**options))
 
         elif mibSource.scheme in ('http', 'https'):
             readers.append(HttpReader(mibSource.hostname or mibSource.netloc, mibSource.port or 80, mibSource.path,

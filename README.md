@@ -18,7 +18,8 @@ Features
 * Understands SMIv1, SMIv2 and de-facto SMI dialects
 * Turns MIBs into pysnmp classes and JSON documents
 * Maintains an index of MIB objects over many MIB modules
-* Automatically downloads ASN.1 MIBs from various sources
+* Automatically pulls ASN.1 MIBs from local directories, ZIP archives,
+  HTTP and FTP servers
 * 100% Python, works with Python 2.4 up to Python 3.6
 
 Rendered PySMI documentation can be found at [pysmi site](http://pysmi.sf.net).

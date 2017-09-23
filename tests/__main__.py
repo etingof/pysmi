@@ -11,7 +11,8 @@ except ImportError:
     import unittest
 
 suite = unittest.TestLoader().loadTestsFromNames(
-    ['test_agentcapabilities_smiv2_pysnmp',
+    ['test_zipreader',
+     'test_agentcapabilities_smiv2_pysnmp',
      'test_imports_smiv2_pysnmp',
      'test_modulecompliance_smiv2_pysnmp',
      'test_moduleidentity_smiv2_pysnmp',
