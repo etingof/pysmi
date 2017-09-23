@@ -15,7 +15,7 @@
 * create a command-line tool for splitting MIBs stored in a single file
 * create a MIB querying tool: get MIB module's OIDs, enterprise IDs,
   canonical name(s); search MIB objects by regexp; build source .index
-* implement xml/html/yaml codegeneration backend
+* implement asn1/xml/html/yaml codegeneration backend
 * write a tool to fetch canonical MIB name from MIB file, rename MIB file, split merged MIBs onto individual files
 * write a tool to turn IANA assigned numbers into JSON
 * introduce cached MIBs invalidation feature -- may be useful when we screw up and produce bad MIBs
@@ -30,3 +30,5 @@
   - write a tool to split json index onto separate documents
   - index NOTIFICATION-TYPE's
   - add example script on index build
+  - split indices on individual maps to reduce size
+  - build indices incrementally

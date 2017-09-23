@@ -37,28 +37,33 @@ To turn ASN.1 MIB into a JSON document, call *mibdump.py* tool like this:
 $ mibdump.py --generate-mib-texts  --destination-format json IF-MIB
 Source MIB repositories: file:///usr/share/snmp/mibs, http://mibs.snmplabs.com/asn1/@mib@
 Borrow missing/failed MIBs from: http://mibs.snmplabs.com/json/fulltexts/@mib@
-Existing/compiled MIB locations: 
+Existing/compiled MIB locations:
 Compiled MIBs destination directory: .
-MIBs excluded from code generation: RFC-1212, RFC-1215, RFC1065-SMI, RFC1155-SMI,
-RFC1158-MIB, RFC1213-MIB, SNMPv2-CONF, SNMPv2-SMI, SNMPv2-TC, SNMPv2-TM
+MIBs excluded from code generation: RFC-1212, RFC-1215, RFC1065-SMI, RFC1155-SMI, RFC1158-MIB,
+                                    RFC1213-MIB, SNMPv2-CONF, SNMPv2-SMI, SNMPv2-TC, SNMPv2-TM
 MIBs to compile: IF-MIB
+MIBs repositories to compile:
 Destination format: json
 Parser grammar cache directory: not used
-Also compile all relevant MIBs: yes
-Rebuild MIBs regardless of age: yes
-Do not create/update MIBs: no
+Also compile dependencies: yes
+Rebuild MIBs regardless of age: no
+Dry run mode: no
+Create/update MIBs: yes
 Byte-compile Python modules: no (optimization level no)
 Ignore compilation errors: no
 Generate OID->MIB index: no
 Generate texts in MIBs: yes
 Keep original texts layout: no
-Try various filenames while searching for MIB module: yes
+Try various file names while searching for MIB module: yes
+Progress: SNMPv2-CONF (untouched), IF-MIB (compiled), SNMPv2-MIB (compiled),
+          SNMPv2-SMI (untouched), IANAifType-MIB (compiled), SNMPv2-TC (untouched)
 Created/updated MIBs: IANAifType-MIB, IF-MIB, SNMPv2-MIB
-Pre-compiled MIBs borrowed: 
 Up to date MIBs: SNMPv2-CONF, SNMPv2-SMI, SNMPv2-TC
-Missing source MIBs: 
-Ignored MIBs: 
-Failed MIBs: 
+Just parsed MIBs:
+Pre-compiled MIBs borrowed:
+Missing source MIBs:
+Failed but ignored MIBs:
+Failed MIBs:
 ```
 
 JSON document build from

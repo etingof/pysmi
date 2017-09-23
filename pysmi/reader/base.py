@@ -10,7 +10,8 @@ import os
 class AbstractReader(object):
     maxMibSize = 10000000  # MIBs can't be that large
     fuzzyMatching = True  # try different file names while searching for MIB
-    originalMatching = uppercaseMatching = lowcaseMatching = True
+    originalMatching = uppercaseMatching = lowcaseMatching = ignoreErrors = True
+
     exts = ['',
             os.path.extsep + 'txt',
             os.path.extsep + 'mib',
@@ -50,5 +51,5 @@ class AbstractReader(object):
     def getData(self, filename):
         raise NotImplementedError()
 
-    def dataGenerator(self, pattern):
+    def dataGenerator(self):
         return iter(())

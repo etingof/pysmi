@@ -45,6 +45,7 @@ class MibStatus(str):
         return n
 
 
+statusParsed = MibStatus('parsed')
 statusCompiled = MibStatus('compiled')
 statusUntouched = MibStatus('untouched')
 statusFailed = MibStatus('failed')
@@ -183,8 +184,375 @@ class MibCompiler(object):
 
         return self
 
+    def _compileFileContents(self, fileContents, context, depth=0, **options):
+
+        processed = {}
+
+        try:
+            symbolTableMap = context['symbols']
+
+        except KeyError:
+            symbolTableMap = context['symbols'] = {}
+
+        fileInfo, fileData = fileContents
+
+        debug.logger & debug.flagCompiler and debug.logger(
+            'compiling MIB file %s, stack depth %d' % (fileInfo.name, depth))
+
+        try:
+            mibTrees = self._parser.parse(fileData)
+
+        except error.PySmiError:
+            exc_class, exc, tb = sys.exc_info()
+            exc.mibname = fileInfo.name
+            exc.msg += ' at MIB %s' % fileInfo.name
+
+            processed[fileInfo.name] = statusFailed.setOptions(
+                path=fileInfo.path,
+                file=fileInfo.file,
+                alias=fileInfo.name,
+                error=exc
+            )
+            return processed
+
+        for mibTree in mibTrees:
+
+            try:
+                mibInfo, symbolTable = self._symbolgen.genCode(
+                    mibTree, symbolTableMap
+                )
+
+            except error.PySmiError:
+                exc_class, exc, tb = sys.exc_info()
+                exc.mibname = fileInfo.name
+                exc.msg += ' at MIB %s' % fileInfo.name
+
+                debug.logger & debug.flagCompiler and debug.logger('%serror %s' % (
+                    options.get('ignoreErrors') and 'ignoring ' or 'failing on ', exc))
+
+                processed[fileInfo.name] = statusFailed.setOptions(
+                    path=fileInfo.path,
+                    file=fileInfo.file,
+                    alias=fileInfo.name,
+                    error=exc
+                )
+
+                continue
+
+            # By this moment we know canonical MIB name
+            if fileInfo.name in processed:
+                del processed[fileInfo.name]
+
+            if mibInfo.name not in symbolTable:
+                symbolTableMap[mibInfo.name] = symbolTable
+
+            debug.logger & debug.flagCompiler and debug.logger(
+                '%s (%s) read from %s, immediate dependencies: %s' % (
+                    mibInfo.name, fileInfo.name, fileInfo.path, ', '.join(mibInfo.imported) or '<none>'))
+
+            for mibname in mibInfo.imported:
+                if mibname in symbolTableMap:
+                    continue
+
+                processed.update(
+                    self.compileOne(mibname, context, depth + 1, **options)
+                )
+
+                if mibname not in symbolTableMap:
+                    processed[mibInfo.name] = statusFailed.setOptions(
+                        path=fileInfo.path,
+                        file=fileInfo.file,
+                        alias=fileInfo.name,
+                        error=error.PySmiError(msg='failed dependency %s' % mibname)
+                    )
+
+                    debug.logger & debug.flagCompiler and debug.logger(
+                        'failing on unresolved dependency %s of %s from %s, %s' % (
+                            mibname, mibInfo.name, fileInfo.name, fileInfo.path)
+                    )
+
+                    return processed
+
+            processed[mibInfo.name] = statusParsed.setOptions(
+                path=fileInfo.path,
+                file=fileInfo.file,
+                alias=fileInfo.name
+            )
+
+            if depth and options.get('noDeps'):
+                return processed
+
+            #
+            # See if we have this MIB already built and available
+            #
+
+            debug.logger & debug.flagCompiler and debug.logger('checking if %s requires updating' % mibInfo.name)
+
+            for searcher in self._searchers:
+                try:
+                    searcher.fileExists(mibInfo.name, fileInfo.mtime, rebuild=options.get('rebuild'))
+
+                except error.PySmiFileNotFoundError:
+                    debug.logger & debug.flagCompiler and debug.logger(
+                        'no compiled MIB %s available through %s' % (mibInfo.name, searcher))
+                    continue
+
+                except error.PySmiFileNotModifiedError:
+                    debug.logger & debug.flagCompiler and debug.logger(
+                        'will be using existing compiled MIB %s found by %s' % (mibInfo.name, searcher))
+                    processed[mibInfo.name] = statusUntouched.setOptions(
+                        path=fileInfo.path,
+                        file=fileInfo.file,
+                        alias=fileInfo.name
+                    )
+                    return processed
+
+                except error.PySmiError:
+                    exc_class, exc, tb = sys.exc_info()
+                    exc.searcher = searcher
+                    exc.mibname = mibInfo.name
+                    exc.msg += ' at MIB %s' % mibInfo.name
+                    debug.logger & debug.flagCompiler and debug.logger('error from %s: %s' % (searcher, exc))
+                    continue
+
+            else:
+                debug.logger & debug.flagCompiler and debug.logger(
+                    'no suitable compiled MIB %s found anywhere' % mibInfo.name)
+
+            debug.logger & debug.flagCompiler and debug.logger(
+                'no compiled MIB %s available anywhere' % mibInfo.name)
+
+            #
+            # Generate code for parsed MIB
+            #
+
+            debug.logger & debug.flagCompiler and debug.logger('compiling %s read from %s' % (mibInfo.name, fileInfo.path))
+
+            comments = [
+                'ASN.1 source %s' % fileInfo.path,
+                'Produced by %s-%s at %s' % (packageName, packageVersion, time.asctime()),
+                'On host %s platform %s version %s by user %s' % (
+                    hasattr(os, 'uname') and os.uname()[1] or '?', hasattr(os, 'uname') and os.uname()[0] or '?',
+                    hasattr(os, 'uname') and os.uname()[2] or '?',
+                    hasattr(os, 'getuid') and getpwuid(os.getuid())[0] or '?'),
+                'Using Python version %s' % sys.version.split('\n')[0]
+            ]
+
+            try:
+                mibInfo, mibData = self._codegen.genCode(
+                    mibTree,
+                    symbolTableMap,
+                    comments=comments,
+                    genTexts=options.get('genTexts'),
+                    textFilter=options.get('textFilter')
+                )
+
+                debug.logger & debug.flagCompiler and debug.logger(
+                    '%s read from %s and compiled by %s' % (mibInfo.name, fileInfo.path, self._writer))
+
+            except error.PySmiError:
+                exc_class, exc, tb = sys.exc_info()
+                exc.handler = self._codegen
+                exc.mibname = mibInfo.name
+                exc.msg += ' at MIB %s' % mibInfo.name
+
+                debug.logger & debug.flagCompiler and debug.logger('error from %s: %s' % (self._codegen, exc))
+
+                processed[mibInfo.name] = statusFailed.setOptions(error=exc)
+
+            else:
+                processed[mibInfo.name] = statusCompiled.setOptions(
+                    path=fileInfo.path,
+                    file=fileInfo.file,
+                    alias=fileInfo.name,
+                    oid=mibInfo.oid,
+                    oids=mibInfo.oids,
+                    identity=mibInfo.identity,
+                    enterprise=mibInfo.enterprise,
+                    compliance=mibInfo.compliance,
+                )
+
+            #
+            # Try to borrow pre-compiled MIB if compilation fails
+            #
+
+            if processed[mibInfo.name] == statusFailed:
+
+                for borrower in self._borrowers:
+                    debug.logger & debug.flagCompiler and debug.logger('trying to borrow %s from %s' % (mibInfo.name, borrower))
+                    try:
+                        fileInfo, fileData = borrower.getData(
+                            mibInfo.name,
+                            genTexts=options.get('genTexts')
+                        )
+
+                        mibInfo, mibData = MibInfo(name=mibInfo.name, imported=[]), fileData
+
+                        debug.logger & debug.flagCompiler and debug.logger('%s borrowed with %s' % (mibInfo.name, borrower))
+                        break
+
+                    except error.PySmiError:
+                        debug.logger & debug.flagCompiler and debug.logger('error from %s: %s' % (borrower, sys.exc_info()[1]))
+
+                else:
+                    return processed
+
+                #
+                # We can borrow this MIB, but doo we want to?
+                #
+
+                debug.logger & debug.flagCompiler and debug.logger(
+                    'checking if failed MIB %s requires borrowing' % mibInfo.name)
+
+                for searcher in self._searchers:
+                    try:
+                        searcher.fileExists(mibInfo.name, fileInfo.mtime, rebuild=options.get('rebuild'))
+
+                    except error.PySmiFileNotFoundError:
+                        debug.logger & debug.flagCompiler and debug.logger(
+                            'no compiled MIB %s available through %s' % (mibInfo.name, searcher))
+                        continue
+
+                    except error.PySmiFileNotModifiedError:
+                        debug.logger & debug.flagCompiler and debug.logger(
+                            'will be using existing compiled MIB %s found by %s' % (mibInfo.name, searcher))
+                        processed[mibInfo.name] = statusUntouched
+                        return processed
+
+                    except error.PySmiError:
+                        exc_class, exc, tb = sys.exc_info()
+                        exc.searcher = searcher
+                        exc.mibname = mibInfo.name
+                        exc.msg += ' at MIB %s' % mibInfo.name
+
+                        debug.logger & debug.flagCompiler and debug.logger('error from %s: %s' % (searcher, exc))
+
+                        continue
+
+                debug.logger & debug.flagCompiler and debug.logger('will use borrowed MIB %s' % mibInfo.name)
+
+                processed[mibInfo.name] = statusBorrowed.setOptions(
+                    path=fileInfo.path,
+                    file=fileInfo.file,
+                    alias=fileInfo.name
+                )
+
+            #
+            # Store compiled or borrowed MIB
+            #
+
+            if not options.get('writeMibs', True):
+                return processed
+
+            try:
+                self._writer.putData(
+                    mibInfo.name, mibData, dryRun=options.get('dryRun')
+                )
+
+            except error.PySmiError:
+                exc_class, exc, tb = sys.exc_info()
+                exc.handler = self._codegen
+                exc.mibname = mibInfo.name
+                exc.msg += ' at MIB %s' % mibInfo.name
+
+                debug.logger & debug.flagCompiler and debug.logger('error %s from %s' % (exc, self._writer))
+
+                processed[mibInfo.name] = statusFailed.setOptions(
+                    path=fileInfo.path,
+                    file=fileInfo.file,
+                    alias=fileInfo.name,
+                    error=exc
+                )
+
+            debug.logger & debug.flagCompiler and debug.logger('%s stored by %s' % (mibInfo.name, self._writer))
+
+        return processed
+
+    def compileOne(self, mibname, context, depth=0, **options):
+        """Transform one MIB and (optionally) its dependencies.
+
+        The *compileOne* method should be invoked when *MibCompiler* object
+        is operational meaning at least *sources* are specified.
+
+        Once called with a MIB module name, *compile* will:
+
+        * fetch ASN.1 MIB module with given name by calling *sources*
+        * make sure no such transformed MIB already exists (with *searchers*)
+        * parse ASN.1 MIB text with *parser*
+        * perform actual MIB transformation into target format with *code generator*
+        * may attempt to borrow pre-transformed MIB through *borrowers*
+        * write transformed MIB through *writer*
+
+        Args:
+            mibname: ASN.1 MIBs name
+            options: options that affect the way PySMI components work
+
+        Returns:
+            A dictionary of MIB module names processed (keys) and *MibStatus*
+            class instances (values)
+
+        """
+        processed = {}
+
+        for source in self._sources:
+
+            debug.logger & debug.flagCompiler and debug.logger('trying source %s' % source)
+
+            try:
+                fileInfo, fileData = source.getData(mibname)
+
+                processed.update(
+                    self._compileFileContents((fileInfo, fileData), context, depth, **options)
+                )
+
+                return processed
+
+            except error.PySmiReaderFileNotFoundError:
+                debug.logger & debug.flagCompiler and debug.logger('no %s found at %s' % (mibname, source))
+
+            except error.PySmiError:
+                exc_class, exc, tb = sys.exc_info()
+                exc.source = source
+                exc.mibname = mibname
+                exc.msg += ' at MIB %s' % mibname
+
+                debug.logger & debug.flagCompiler and debug.logger('%serror %s from %s' % (
+                    options.get('ignoreErrors') and 'ignoring ' or 'failing on ', exc, source))
+
+                processed[mibname] = statusFailed.setOptions(error=exc)
+
+        exc = error.PySmiError('MIB source %s not found' % mibname)
+        exc.mibname = mibname
+        debug.logger & debug.flagCompiler and debug.logger('no %s found everywhere' % mibname)
+
+        if mibname not in processed:
+            processed[mibname] = statusMissing
+
+        return processed
+
+    def compileNext(self, *mibSources, **options):
+        """Read MIBs one-by-one, transform read MIB and (optionally) its dependencies.
+
+        Args:
+            mibSources: list of reader objects to read MIBs from
+            options: options that affect the way PySMI components work
+
+        Returns:
+            A generator which, when called, returns a dictionary of MIB module names
+            just processed (keys) and *MibStatus* class instances (values)
+
+        """
+        mibDataGenerator = itertools.chain(
+            *[source.dataGenerator() for source in mibSources]
+        )
+
+        context = {}
+
+        for fileContents in mibDataGenerator:
+            yield self._compileFileContents(fileContents, context, **options)
+
     def compile(self, *mibnames, **options):
-        """Transform requested and possibly referred MIBs.
+        """Transform requested and, optionally, dependencies MIBs.
 
         The *compile* method should be invoked when *MibCompiler* object
         is operational meaning at least *sources* are specified.
@@ -211,411 +579,22 @@ class MibCompiler(object):
             class instances (values)
 
         """
-        processed = {}
-        parsedMibs = {}
-        failedMibs = {}
-        borrowedMibs = {}
-        builtMibs = {}
-        symbolTableMap = {}
+        result = {}
+        context = {}
 
-        #
-        # Main MIB compilation loop
-        #
+        for mibname in mibnames:
+            processed = self.compileOne(mibname, context, **options)
 
-        if options.get('regExpMibs', False):
-            mibDataGenerator = itertools.chain(
-                *[source.dataGenerator(mibname) for source in self._sources
-                  for mibname in mibnames]
-            )
-            mibsToParse = []
+            result.update(processed)
 
-        else:
-            mibDataGenerator = None
-            mibsToParse = list(mibnames)
-
-        mibDependencies = []
-
-        debug.logger & debug.flagCompiler and debug.logger(
-            'MIBs to compile (#%d) %s' % (len(mibnames), ', '.join(mibnames)))
-
-        while mibsToParse or mibDataGenerator:
-
-            #
-            # Parse one of remaining MIBs and its dependencies
-            #
-
-            if mibDataGenerator:
-
-                try:
-                    fileInfo, fileData = next(mibDataGenerator)
-
-                    debug.logger & debug.flagCompiler and debug.logger(
-                        'starting compilation cycle for requested MIB file %s' % fileInfo.name)
-
-                    for mibTree in self._parser.parse(fileData):
-
-                        mibInfo, symbolTable = self._symbolgen.genCode(
-                            mibTree, symbolTableMap
-                        )
-
-                        if fileInfo.name in failedMibs:
-                            del failedMibs[fileInfo.name]
-
-                        if mibInfo.name not in symbolTableMap:
-                            symbolTableMap[mibInfo.name] = symbolTable
-                            parsedMibs[mibInfo.name] = fileInfo, mibInfo, mibTree
-                            mibDependencies.extend(mibInfo.imported)
-
-                            debug.logger & debug.flagCompiler and debug.logger(
-                                '%s (%s) read from %s, immediate dependencies: %s' % (
-                                    mibInfo.name, fileInfo.name, fileInfo.path, ', '.join(mibInfo.imported) or '<none>'))
-
-                except StopIteration:
-                    mibDataGenerator = None
-                    continue
-
-                except error.PySmiError:
-                    exc_class, exc, tb = sys.exc_info()
-                    exc.source = source
-                    exc.mibname = fileInfo.name
-                    exc.msg += ' at MIB %s' % fileInfo.name
-
-                    debug.logger & debug.flagCompiler and debug.logger('%serror %s from %s' % (
-                        options.get('ignoreErrors') and 'ignoring ' or 'failing on ', exc, source))
-
-                    failedMibs[fileInfo.name] = exc
-
-                    processed[fileInfo.name] = statusFailed.setOptions(error=exc)
-
-            else:
-                mibname = mibsToParse.pop(0)
-                mibDependencies.append(mibname)
-
-                debug.logger & debug.flagCompiler and debug.logger(
-                    'starting compilation cycle for requested MIB file %s' % mibname)
-
-            while mibDependencies:
-
-                mibname = mibDependencies.pop()
-
-                if mibname in parsedMibs:
-                    debug.logger & debug.flagCompiler and debug.logger('MIB %s already parsed' % mibname)
-                    continue
-
-                if mibname in failedMibs:
-                    debug.logger & debug.flagCompiler and debug.logger('MIB %s already failed' % mibname)
-                    continue
-
-                for source in self._sources:
-                    debug.logger & debug.flagCompiler and debug.logger('trying source %s' % source)
-
-                    try:
-                        fileInfo, fileData = source.getData(mibname)
-
-                        for mibTree in self._parser.parse(fileData):
-
-                            mibInfo, symbolTable = self._symbolgen.genCode(
-                                mibTree, symbolTableMap
-                            )
-
-                            if mibname in failedMibs:
-                                del failedMibs[mibname]
-
-                            if mibInfo.name not in symbolTableMap:
-                                symbolTableMap[mibInfo.name] = symbolTable
-                                parsedMibs[mibInfo.name] = fileInfo, mibInfo, mibTree
-                                mibDependencies.extend(mibInfo.imported)
-
-                                debug.logger & debug.flagCompiler and debug.logger(
-                                    '%s (%s) read from %s, immediate dependencies: %s' % (
-                                        mibInfo.name, mibname, fileInfo.path, ', '.join(mibInfo.imported) or '<none>'))
-
-                        break
-
-                    except error.PySmiReaderFileNotFoundError:
-                        debug.logger & debug.flagCompiler and debug.logger('no %s found at %s' % (mibname, source))
-                        continue
-
-                    except error.PySmiError:
-                        exc_class, exc, tb = sys.exc_info()
-                        exc.source = source
-                        exc.mibname = mibname
-                        exc.msg += ' at MIB %s' % mibname
-
-                        debug.logger & debug.flagCompiler and debug.logger('%serror %s from %s' % (
-                            options.get('ignoreErrors') and 'ignoring ' or 'failing on ', exc, source))
-
-                        failedMibs[mibname] = exc
-
-                        processed[mibname] = statusFailed.setOptions(error=exc)
-
-                else:
-                    exc = error.PySmiError('MIB source %s not found' % mibname)
-                    exc.mibname = mibname
-                    debug.logger & debug.flagCompiler and debug.logger('no %s found everywhere' % mibname)
-
-                    if mibname not in failedMibs:
-                        failedMibs[mibname] = exc
-
-                    if mibname not in processed:
-                        processed[mibname] = statusMissing
-
-            debug.logger & debug.flagCompiler and debug.logger(
-                'MIBs parsed %s, MIBs failed %s' % (len(parsedMibs), len(failedMibs)))
-
-            #
-            # See what MIBs need generating
-            #
-
-            for mibname in tuple(parsedMibs):
-                fileInfo, mibInfo, mibTree = parsedMibs[mibname]
-
-                debug.logger & debug.flagCompiler and debug.logger('checking if %s requires updating' % mibname)
-
-                for searcher in self._searchers:
-                    try:
-                        searcher.fileExists(mibname, fileInfo.mtime, rebuild=options.get('rebuild'))
-
-                    except error.PySmiFileNotFoundError:
-                        debug.logger & debug.flagCompiler and debug.logger(
-                            'no compiled MIB %s available through %s' % (mibname, searcher))
-                        continue
-
-                    except error.PySmiFileNotModifiedError:
-                        debug.logger & debug.flagCompiler and debug.logger(
-                            'will be using existing compiled MIB %s found by %s' % (mibname, searcher))
-                        del parsedMibs[mibname]
-                        processed[mibname] = statusUntouched
-                        break
-
-                    except error.PySmiError:
-                        exc_class, exc, tb = sys.exc_info()
-                        exc.searcher = searcher
-                        exc.mibname = mibname
-                        exc.msg += ' at MIB %s' % mibname
-                        debug.logger & debug.flagCompiler and debug.logger('error from %s: %s' % (searcher, exc))
-                        continue
-
-                else:
-                    debug.logger & debug.flagCompiler and debug.logger(
-                        'no suitable compiled MIB %s found anywhere' % mibname)
-
-                    if options.get('noDeps') and mibname not in mibnames:
-                        debug.logger & debug.flagCompiler and debug.logger(
-                            'excluding imported MIB %s from code generation' % mibname)
-                        del parsedMibs[mibname]
-                        processed[mibname] = statusUntouched
-                        continue
-
-            debug.logger & debug.flagCompiler and debug.logger(
-                'MIBs to build %s, MIBs failed %s' % (len(parsedMibs), len(failedMibs)))
-
-            #
-            # Generate code for parsed MIBs
-            #
-
-            for mibname in tuple(parsedMibs):
-                fileInfo, mibInfo, mibTree = parsedMibs[mibname]
-
-                debug.logger & debug.flagCompiler and debug.logger('compiling %s read from %s' % (mibname, fileInfo.path))
-
-                comments = [
-                    'ASN.1 source %s' % fileInfo.path,
-                    'Produced by %s-%s at %s' % (packageName, packageVersion, time.asctime()),
-                    'On host %s platform %s version %s by user %s' % (
-                        hasattr(os, 'uname') and os.uname()[1] or '?', hasattr(os, 'uname') and os.uname()[0] or '?',
-                        hasattr(os, 'uname') and os.uname()[2] or '?',
-                        hasattr(os, 'getuid') and getpwuid(os.getuid())[0] or '?'),
-                    'Using Python version %s' % sys.version.split('\n')[0]
-                ]
-
-                try:
-                    mibInfo, mibData = self._codegen.genCode(
-                        mibTree,
-                        symbolTableMap,
-                        comments=comments,
-                        genTexts=options.get('genTexts'),
-                        textFilter=options.get('textFilter')
-                    )
-
-                    builtMibs[mibname] = fileInfo, mibInfo, mibData
-                    del parsedMibs[mibname]
-
-                    debug.logger & debug.flagCompiler and debug.logger(
-                        '%s read from %s and compiled by %s' % (mibname, fileInfo.path, self._writer))
-
-                except error.PySmiError:
-                    exc_class, exc, tb = sys.exc_info()
-                    exc.handler = self._codegen
-                    exc.mibname = mibname
-                    exc.msg += ' at MIB %s' % mibname
-
-                    debug.logger & debug.flagCompiler and debug.logger('error from %s: %s' % (self._codegen, exc))
-
-                    processed[mibname] = statusFailed.setOptions(error=exc)
-
-                    failedMibs[mibname] = exc
-                    del parsedMibs[mibname]
-
-            debug.logger & debug.flagCompiler and debug.logger(
-                'MIBs built %s, MIBs failed %s' % (len(builtMibs), len(failedMibs)))
-
-            #
-            # Try to borrow pre-compiled MIBs for failed ones
-            #
-
-            for mibname in tuple(failedMibs):
-                if options.get('noDeps') and mibname not in mibnames:
-                    debug.logger & debug.flagCompiler and debug.logger('excluding imported MIB %s from borrowing' % mibname)
-                    continue
-
-                for borrower in self._borrowers:
-                    debug.logger & debug.flagCompiler and debug.logger('trying to borrow %s from %s' % (mibname, borrower))
-                    try:
-                        fileInfo, fileData = borrower.getData(
-                            mibname,
-                            genTexts=options.get('genTexts')
-                        )
-
-                        borrowedMibs[mibname] = fileInfo, MibInfo(name=mibname, imported=[]), fileData
-
-                        del failedMibs[mibname]
-
-                        debug.logger & debug.flagCompiler and debug.logger('%s borrowed with %s' % (mibname, borrower))
-                        break
-
-                    except error.PySmiError:
-                        debug.logger & debug.flagCompiler and debug.logger('error from %s: %s' % (borrower, sys.exc_info()[1]))
-
-            debug.logger & debug.flagCompiler and debug.logger(
-                'MIBs available for borrowing %s, MIBs failed %s' % (len(borrowedMibs), len(failedMibs)))
-
-            #
-            # See what MIBs need borrowing
-            #
-
-            for mibname in tuple(borrowedMibs):
-                debug.logger & debug.flagCompiler and debug.logger('checking if failed MIB %s requires borrowing' % mibname)
-
-                fileInfo, mibInfo, mibData = borrowedMibs[mibname]
-
-                for searcher in self._searchers:
-                    try:
-                        searcher.fileExists(mibname, fileInfo.mtime, rebuild=options.get('rebuild'))
-
-                    except error.PySmiFileNotFoundError:
-                        debug.logger & debug.flagCompiler and debug.logger(
-                            'no compiled MIB %s available through %s' % (mibname, searcher))
-                        continue
-
-                    except error.PySmiFileNotModifiedError:
-                        debug.logger & debug.flagCompiler and debug.logger(
-                            'will be using existing compiled MIB %s found by %s' % (mibname, searcher))
-                        del borrowedMibs[mibname]
-                        processed[mibname] = statusUntouched
-                        break
-
-                    except error.PySmiError:
-                        exc_class, exc, tb = sys.exc_info()
-                        exc.searcher = searcher
-                        exc.mibname = mibname
-                        exc.msg += ' at MIB %s' % mibname
-
-                        debug.logger & debug.flagCompiler and debug.logger('error from %s: %s' % (searcher, exc))
-
-                        continue
-                else:
-                    debug.logger & debug.flagCompiler and debug.logger(
-                        'no suitable compiled MIB %s found anywhere' % mibname)
-
-                    if options.get('noDeps') and mibname not in mibnames:
-                        debug.logger & debug.flagCompiler and debug.logger(
-                            'excluding imported MIB %s from borrowing' % mibname)
-                        processed[mibname] = statusUntouched
-
+            for mibname in tuple(processed):
+                if processed[mibname] == statusFailed:
+                    if options.get('ignoreErrors'):
+                        processed[mibname] = statusUnprocessed
                     else:
-                        debug.logger & debug.flagCompiler and debug.logger('will borrow MIB %s' % mibname)
-                        builtMibs[mibname] = borrowedMibs[mibname]
+                        return result
 
-                        processed[mibname] = statusBorrowed.setOptions(
-                            path=fileInfo.path, file=fileInfo.file,
-                            alias=fileInfo.name
-                        )
-
-                    del borrowedMibs[mibname]
-
-            debug.logger & debug.flagCompiler and debug.logger(
-                'MIBs built %s, MIBs failed %s' % (len(builtMibs), len(failedMibs)))
-
-            #
-            # We could attempt to ignore missing/failed MIBs
-            #
-
-            if failedMibs and not options.get('ignoreErrors'):
-                debug.logger & debug.flagCompiler and debug.logger('failing with problem MIBs %s' % ', '.join(failedMibs))
-
-                for mibname in builtMibs:
-                    processed[mibname] = statusUnprocessed
-
-                continue
-
-            debug.logger & debug.flagCompiler and debug.logger(
-                'proceeding with built MIBs %s, failed MIBs %s' % (', '.join(builtMibs), ', '.join(failedMibs)))
-
-            #
-            # Store compiled MIBs
-            #
-
-            for mibname in tuple(builtMibs):
-                fileInfo, mibInfo, mibData = builtMibs[mibname]
-
-                try:
-                    if options.get('writeMibs', True):
-                        self._writer.putData(
-                            mibname, mibData, dryRun=options.get('dryRun')
-                        )
-
-                    debug.logger & debug.flagCompiler and debug.logger('%s stored by %s' % (mibname, self._writer))
-
-                    del builtMibs[mibname]
-
-                    if mibname not in processed:
-                        processed[mibname] = statusCompiled.setOptions(
-                            path=fileInfo.path,
-                            file=fileInfo.file,
-                            alias=fileInfo.name,
-                            oid=mibInfo.oid,
-                            oids=mibInfo.oids,
-                            identity=mibInfo.identity,
-                            enterprise=mibInfo.enterprise,
-                            compliance=mibInfo.compliance,
-                        )
-
-                except error.PySmiError:
-                    exc_class, exc, tb = sys.exc_info()
-                    exc.handler = self._codegen
-                    exc.mibname = mibname
-                    exc.msg += ' at MIB %s' % mibname
-
-                    debug.logger & debug.flagCompiler and debug.logger('error %s from %s' % (exc, self._writer))
-
-                    processed[mibname] = statusFailed.setOptions(error=exc)
-                    failedMibs[mibname] = exc
-                    del builtMibs[mibname]
-
-            debug.logger & debug.flagCompiler and debug.logger(
-                'MIBs in symbol table (#%d) %s' % (len(symbolTableMap), ', '.join(symbolTableMap)))
-
-            if len(symbolTableMap) > self.MAX_SYMTABLE_SIZE:
-                removeKeys = tuple(symbolTableMap)
-                removeKeys = removeKeys[:self.MAX_SYMTABLE_SIZE/10]
-                for key in removeKeys:
-                    del symbolTableMap[key]
-
-        debug.logger & debug.flagCompiler and debug.logger(
-            'MIBs written: %s' % ', '.join([x for x in processed if processed[x] in ('compiled', 'borrowed')]))
-
-        return processed
+        return result
 
     def buildIndex(self, processedMibs, **options):
         comments = [

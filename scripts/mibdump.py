@@ -27,7 +27,6 @@ doFuzzyMatchingFlag = True
 mibSearchers = []
 mibStubs = []
 mibBorrowers = []
-regExpMibs = False
 dstFormat = None
 dstDirectory = None
 cacheDirectory = ''
@@ -54,7 +53,6 @@ Usage: %s [--help]
       [--destination-format=<FORMAT>]
       [--destination-directory=<DIRECTORY>]
       [--cache-directory=<DIRECTORY>]
-      [--regexp-mibs]
       [--disable-fuzzy-source]
       [--no-dependencies]
       [--no-python-compile]
@@ -66,24 +64,26 @@ Usage: %s [--help]
       [--no-mib-writes]
       [--generate-mib-texts]
       [--keep-texts-layout]
-      <MIB-NAME> [MIB-NAME [...]]]
+      <MIB|URI> [<MIB|URI> [...]]]
 Where:
-    URI      - file, zip, http, https, ftp, sftp schemes are supported. 
-               Use @mib@ placeholder token in URI to refer directly to
-               the required MIB module when source does not support
-               directory listing (e.g. HTTP).
-    FORMAT   - pysnmp, json, null""" % (
+    URI         - file, zip, http, https, ftp, sftp schemes are supported.
+                  Use @mib@ placeholder token in URI to refer directly to
+                  the required MIB module when source does not support
+                  directory listing (e.g. HTTP).
+    FORMAT      - pysnmp, json, null
+    MIB or URI  - Either MIB module name or a URI pointing to a MIB source.
+                  In the latter case all MIBs will be pulled and compiled.""" % (
     sys.argv[0],
     '|'.join([x for x in sorted(debug.flagMap)])
 )
 
 try:
-    opts, inputMibs = getopt.getopt(
+    opts, inputMibsOrURIs = getopt.getopt(
         sys.argv[1:], 'hv',
         ['help', 'version', 'quiet', 'debug=',
         'mib-source=', 'mib-searcher=', 'mib-stub=', 'mib-borrower=',
         'destination-format=', 'destination-directory=', 'cache-directory=',
-        'regexp-mibs', 'no-dependencies', 'no-python-compile',
+        'no-dependencies', 'no-python-compile',
         'python-optimization-level=', 'ignore-errors', 'build-index', 'rebuild',
         'dry-run', 'no-mib-writes', 'generate-mib-texts', 'disable-fuzzy-source',
         'keep-texts-layout']
@@ -144,9 +144,6 @@ Software documentation and support at http://pysmi.sf.net
     if opt[0] == '--cache-directory':
         cacheDirectory = opt[1]
 
-    if opt[0] == '--regexp-mibs':
-        regExpMibs = True
-
     if opt[0] == '--no-dependencies':
         nodepsFlag = True
 
@@ -185,15 +182,30 @@ Software documentation and support at http://pysmi.sf.net
     if opt[0] == '--keep-texts-layout':
         keepTextsLayout = True
 
-if inputMibs:
-    mibSources.extend(list(set(['file://' + os.path.abspath(os.path.dirname(x))
-                                for x in inputMibs
-                                if os.path.sep in x])))
-    if not regExpMibs:
-        inputMibs = [os.path.basename(os.path.splitext(x)[0]) for x in inputMibs]
+options = dict(
+    noDeps=nodepsFlag,
+    rebuild=rebuildFlag,
+    dryRun=dryrunFlag,
+    genTexts=genMibTextsFlag,
+    textFilter=keepTextsLayout and (lambda symbol, text: text) or None,
+    writeMibs=writeMibsFlag,
+    ignoreErrors=ignoreErrorsFlag,
+    fuzzyMatching=doFuzzyMatchingFlag
+)
+
+if inputMibsOrURIs:
+    inputMibs = [os.path.basename(os.path.splitext(x)[0])
+                 for x in inputMibsOrURIs
+                 if '://' not in x]
+    if inputMibs:
+        mibSources.extend(list(set(['file://' + os.path.abspath(os.path.dirname(x))
+                                    for x in inputMibs
+                                    if os.path.sep in x])))
+
+    inputURIs = getReadersFromUrls(*[uri for uri in inputMibsOrURIs if '://' in uri], **options)
 
 else:
-    sys.stderr.write('ERROR: MIB modules names not specified\r\n%s\r\n' % helpMessage)
+    sys.stderr.write('ERROR: MIB names / URIs not specified\r\n%s\r\n' % helpMessage)
     sys.exit(-1)
 
 if not mibSources:
@@ -293,9 +305,9 @@ Existing/compiled MIB locations: %s
 Compiled MIBs destination directory: %s
 MIBs excluded from code generation: %s
 MIBs to compile: %s
+MIBs repositories to compile: %s
 Destination format: %s
 Parser grammar cache directory: %s
-MIB names are regular expressions: %s
 Also compile dependencies: %s
 Rebuild MIBs regardless of age: %s
 Dry run mode: %s
@@ -312,9 +324,9 @@ Try various file names while searching for MIB module: %s
        dstDirectory,
        ', '.join(sorted(mibStubs)),
        ', '.join(inputMibs),
+       ', '.join([str(source) for source in inputURIs]),
        dstFormat,
        cacheDirectory or 'not used',
-       regExpMibs and 'yes' or 'no',
        nodepsFlag and 'no' or 'yes',
        rebuildFlag and 'yes' or 'no',
        dryrunFlag and 'yes' or 'no',
@@ -337,31 +349,32 @@ mibCompiler = MibCompiler(
 
 try:
     mibCompiler.addSources(
-        *getReadersFromUrls(
-            *mibSources, **dict(fuzzyMatching=doFuzzyMatchingFlag)
-        )
+        *getReadersFromUrls(*mibSources, **options)
     )
 
     mibCompiler.addSearchers(*searchers)
 
     mibCompiler.addBorrowers(*borrowers)
 
-    processed = mibCompiler.compile(
-        *inputMibs, **dict(noDeps=nodepsFlag,
-                           rebuild=rebuildFlag,
-                           dryRun=dryrunFlag,
-                           genTexts=genMibTextsFlag,
-                           textFilter=keepTextsLayout and (lambda symbol, text: text) or None,
-                           writeMibs=writeMibsFlag,
-                           ignoreErrors=ignoreErrorsFlag,
-                           regExpMibs=regExpMibs)
-    )
+    processed = {}
+
+    context = {}
+
+    for inputMib in inputMibs:
+        step = mibCompiler.compileOne(inputMib, context, **options)
+        if verboseFlag:
+            sys.stderr.write('Progress: %s\n' % ', '.join(['%s (%s)' % items for items in step.items()]))
+        processed.update(step)
+
+    if inputURIs:
+        for step in mibCompiler.compileNext(*inputURIs, **options):
+            if verboseFlag:
+                sys.stderr.write('Progress: %s\n' % ', '.join(['%s (%s)' % items for items in step.items()]))
+            processed.update(step)
 
     if buildIndexFlag:
         mibCompiler.buildIndex(
-            processed,
-            dryRun=dryrunFlag,
-            ignoreErrors=ignoreErrorsFlag
+            processed, **options
         )
 
 except error.PySmiError:
@@ -373,17 +386,20 @@ else:
         sys.stderr.write('%sreated/updated MIBs: %s\r\n' % (dryrunFlag and 'Would be c' or 'C', ', '.join(
             ['%s%s' % (x, x != processed[x].alias and ' (%s)' % processed[x].alias or '') for x in sorted(processed) if processed[x] == 'compiled'])))
 
-        sys.stderr.write('Pre-compiled MIBs %sborrowed: %s\r\n' % (dryrunFlag and 'Would be ' or '', ', '.join(
-            ['%s (%s)' % (x, processed[x].path) for x in sorted(processed) if processed[x] == 'borrowed'])))
-
         sys.stderr.write(
             'Up to date MIBs: %s\r\n' % ', '.join(['%s' % x for x in sorted(processed) if processed[x] == 'untouched']))
+
+        sys.stderr.write('Just parsed MIBs: %s\r\n' % (', '.join(
+            ['%s%s' % (x, x != processed[x].alias and ' (%s)' % processed[x].alias or '') for x in sorted(processed) if processed[x] == 'parsed'])))
+
+        sys.stderr.write('Pre-compiled MIBs %sborrowed: %s\r\n' % (dryrunFlag and 'Would be ' or '', ', '.join(
+            ['%s (%s)' % (x, processed[x].path) for x in sorted(processed) if processed[x] == 'borrowed'])))
 
         sys.stderr.write('Missing source MIBs: %s\r\n' % ', '.join(
             ['%s' % x for x in sorted(processed) if processed[x] == 'missing']))
 
         sys.stderr.write(
-            'Ignored MIBs: %s\r\n' % ', '.join(['%s' % x for x in sorted(processed) if processed[x] == 'unprocessed']))
+            'Failed but ignored MIBs: %s\r\n' % ', '.join(['%s' % x for x in sorted(processed) if processed[x] == 'unprocessed']))
 
         sys.stderr.write('Failed MIBs: %s\r\n' % ', '.join(
             ['%s (%s)' % (x, processed[x].error) for x in sorted(processed) if processed[x] == 'failed']))

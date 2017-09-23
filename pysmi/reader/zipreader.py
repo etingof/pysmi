@@ -7,7 +7,6 @@
 import os
 import sys
 import time
-import re
 import datetime
 import zipfile
 from pysmi.reader.base import AbstractReader
@@ -76,20 +75,26 @@ class ZipReader(AbstractReader):
     """
     useIndexFile = False
 
-    def __init__(self, path, ignoreErrors=True):
-        self._name = path
-        self._members = {}
-        self._pendingError = None
+    def __init__(self, name):
+        self._name = name
+        self._members = None
 
-        try:
-            self._members = self._readZipDirectory(fileObj=open(path, 'rb'))
+    @property
+    def members(self):
+        if self._members is None:
+            try:
+                self._members = self._readZipDirectory(fileObj=open(self._name, 'rb'))
 
-        except Exception:
-            debug.logger & debug.flagReader and debug.logger(
-                'ZIP file %s open failure: %s' % (self._name, sys.exc_info()[1]))
+            except Exception:
+                debug.logger & debug.flagReader and debug.logger(
+                    'ZIP file %s open failure: %s' % (self._name, sys.exc_info()[1]))
 
-            if not ignoreErrors:
-                self._pendingError = error.PySmiError('file %s access error: %s' % (self._name, sys.exc_info()[1]))
+                if not self.ignoreErrors:
+                    raise error.PySmiError('file %s access error: %s' % (self._name, sys.exc_info()[1]))
+
+                self._members = {}
+
+        return self._members
 
     def _readZipDirectory(self, fileObj):
 
@@ -152,10 +157,7 @@ class ZipReader(AbstractReader):
     def getData(self, mibname):
         debug.logger & debug.flagReader and debug.logger('looking for MIB %s at %s' % (mibname, self._name))
 
-        if self._pendingError:
-            raise self._pendingError
-
-        if not self._members:
+        if not self.members:
             raise error.PySmiReaderFileNotFoundError('source MIB %s not found' % mibname, reader=self)
 
         for mibalias, mibfile in self.getMibVariants(mibname):
@@ -163,7 +165,7 @@ class ZipReader(AbstractReader):
             debug.logger & debug.flagReader and debug.logger('trying MIB %s' % mibfile)
 
             try:
-                refs = self._members[mibfile]
+                refs = self.members[mibfile]
 
             except KeyError:
                 continue
@@ -185,19 +187,13 @@ class ZipReader(AbstractReader):
 
         raise error.PySmiReaderFileNotFoundError('source MIB %s not found' % mibname, reader=self)
 
-    def dataGenerator(self, pattern):
-        debug.logger & debug.flagReader and debug.logger('looking for MIB %s at %s' % (pattern, self._name))
+    def dataGenerator(self):
+        debug.logger & debug.flagReader and debug.logger(
+            'iterating over MIB source %s' % self)
 
-        if self._pendingError:
-            raise self._pendingError
+        for mibfile in self.members:
 
-        regExp = re.compile(pattern)
-
-        for mibfile in self._members:
-            if not regExp.match(mibfile):
-                continue
-
-            refs = self._members[mibfile]
+            refs = self.members[mibfile]
 
             mibData, mtime = self._readZipFile(refs)
 

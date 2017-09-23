@@ -11,7 +11,7 @@ into various formats.
 
 .. code-block:: bash
 
-   $ mibdump.py --help
+   $ mibdump.py -h
    Synopsis:
      SNMP SMI/MIB files conversion tool
    Documentation:
@@ -38,13 +38,15 @@ into various formats.
          [--no-mib-writes]
          [--generate-mib-texts]
          [--keep-texts-layout]
-         <MIB-NAME> [MIB-NAME [...]]]
+         <MIB|URI> [<MIB|URI> [...]]]
    Where:
-       URI      - file, zip, http, https, ftp, sftp schemes are supported.
-                  Use @mib@ placeholder token in URI to refer directly to
-                  the required MIB module when source does not support
-                  directory listing (e.g. HTTP).
-       FORMAT   - pysnmp, json, null
+       URI         - file, zip, http, https, ftp, sftp schemes are supported.
+                     Use @mib@ placeholder token in URI to refer directly to
+                     the required MIB module when source does not support
+                     directory listing (e.g. HTTP).
+       FORMAT      - pysnmp, json, null
+       MIB or URI  - Either MIB module name or a URI pointing to a MIB source.
+                     In the latter case all MIBs will be pulled and compiled.
 
 
 When JSON destination format is requested, for each MIB module *mibdump.py*
@@ -138,8 +140,8 @@ By default *mibdump.py* will search:
 Once another --mib-source option is given, those defaults will not be used
 and should be manually given to *mibdump.py* if needed.
 
-Fuzzying MIB module names
--------------------------
+Fuzzing MIB module names
+------------------------
 
 There is no single convention on how MIB module files should be named. By
 default *mibdump.py* will try a handful of guesses when trying to find a file
@@ -149,9 +151,18 @@ named after MIB module, try adding different extensions to a file (.mib,
 If nothing matches, *mibdump.py* will consider that probed --mib-source
 does not contain MIB module it is looking for.
 
-There is a small chance, though, that fuzzy natching may result in getting
-a wrong MIB. If that happens, you can disable the above fuzzyness by
+There is a small chance, though, that fuzzy matching may result in getting
+a wrong MIB. If that happens, you can disable the above fuzziness by
 giving *mibdump.py* the --disable-fuzzy-source flag.
+
+Mass processing MIB files
+-------------------------
+
+Besides applying transformation on specific MIB modules, you can
+point pysmi to a MIB source in form of a URI. The library will then
+read all MIB modules from that source one by one and converting each
+into target format. That way may be especially handy when your MIB
+files names differ from canonical MIB modules names.
 
 Avoiding excessive transformation
 ---------------------------------
