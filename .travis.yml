@@ -15,7 +15,6 @@ install:
   - pip install -r requirements.txt -r test-requirements.txt
   - pip install codecov
   - pip install --no-deps .
-  - python setup.py install
 script:
   - PYTHONPATH=.:$PYTHONPATH python tests/__main__.py
 after_success:
