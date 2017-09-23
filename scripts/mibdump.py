@@ -27,6 +27,7 @@ doFuzzyMatchingFlag = True
 mibSearchers = []
 mibStubs = []
 mibBorrowers = []
+regExpMibs = False
 dstFormat = None
 dstDirectory = None
 cacheDirectory = ''
@@ -53,6 +54,7 @@ Usage: %s [--help]
       [--destination-format=<FORMAT>]
       [--destination-directory=<DIRECTORY>]
       [--cache-directory=<DIRECTORY>]
+      [--regexp-mibs]
       [--disable-fuzzy-source]
       [--no-dependencies]
       [--no-python-compile]
@@ -81,9 +83,10 @@ try:
         ['help', 'version', 'quiet', 'debug=',
         'mib-source=', 'mib-searcher=', 'mib-stub=', 'mib-borrower=',
         'destination-format=', 'destination-directory=', 'cache-directory=',
-        'no-dependencies', 'no-python-compile', 'python-optimization-level=',
-        'ignore-errors', 'build-index', 'rebuild', 'dry-run', 'no-mib-writes',
-        'generate-mib-texts', 'disable-fuzzy-source', 'keep-texts-layout']
+        'regexp-mibs', 'no-dependencies', 'no-python-compile',
+        'python-optimization-level=', 'ignore-errors', 'build-index', 'rebuild',
+        'dry-run', 'no-mib-writes', 'generate-mib-texts', 'disable-fuzzy-source',
+        'keep-texts-layout']
     )
 
 except getopt.GetoptError:
@@ -141,6 +144,9 @@ Software documentation and support at http://pysmi.sf.net
     if opt[0] == '--cache-directory':
         cacheDirectory = opt[1]
 
+    if opt[0] == '--regexp-mibs':
+        regExpMibs = True
+
     if opt[0] == '--no-dependencies':
         nodepsFlag = True
 
@@ -183,7 +189,8 @@ if inputMibs:
     mibSources.extend(list(set(['file://' + os.path.abspath(os.path.dirname(x))
                                 for x in inputMibs
                                 if os.path.sep in x])))
-    inputMibs = [os.path.basename(os.path.splitext(x)[0]) for x in inputMibs]
+    if not regExpMibs:
+        inputMibs = [os.path.basename(os.path.splitext(x)[0]) for x in inputMibs]
 
 else:
     sys.stderr.write('ERROR: MIB modules names not specified\r\n%s\r\n' % helpMessage)
@@ -288,7 +295,8 @@ MIBs excluded from code generation: %s
 MIBs to compile: %s
 Destination format: %s
 Parser grammar cache directory: %s
-Also compile all relevant MIBs: %s
+MIB names are regular expressions: %s
+Also compile dependencies: %s
 Rebuild MIBs regardless of age: %s
 Dry run mode: %s
 Create/update MIBs: %s
@@ -306,6 +314,7 @@ Try various file names while searching for MIB module: %s
        ', '.join(inputMibs),
        dstFormat,
        cacheDirectory or 'not used',
+       regExpMibs and 'yes' or 'no',
        nodepsFlag and 'no' or 'yes',
        rebuildFlag and 'yes' or 'no',
        dryrunFlag and 'yes' or 'no',
@@ -344,7 +353,8 @@ try:
                            genTexts=genMibTextsFlag,
                            textFilter=keepTextsLayout and (lambda symbol, text: text) or None,
                            writeMibs=writeMibsFlag,
-                           ignoreErrors=ignoreErrorsFlag)
+                           ignoreErrors=ignoreErrorsFlag,
+                           regExpMibs=regExpMibs)
     )
 
     if buildIndexFlag:

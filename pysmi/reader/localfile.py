@@ -6,6 +6,7 @@
 #
 import os
 import sys
+import re
 import time
 from pysmi.reader.base import AbstractReader
 from pysmi.mibinfo import MibInfo
@@ -104,6 +105,7 @@ class FileReader(AbstractReader):
         for path in self.getSubdirs(self._path, self._recursive, self._ignoreErrors):
 
             for mibalias, mibfile in self.getMibVariants(mibname):
+
                 f = os.path.join(decode(path), decode(mibfile))
 
                 debug.logger & debug.flagReader and debug.logger('trying MIB %s' % f)
@@ -135,3 +137,48 @@ class FileReader(AbstractReader):
                     raise error.PySmiReaderFileNotModifiedError('source MIB %s is older than needed' % f, reader=self)
 
         raise error.PySmiReaderFileNotFoundError('source MIB %s not found' % mibname, reader=self)
+
+    def dataGenerator(self, pattern):
+        debug.logger & debug.flagReader and debug.logger(
+            '%slooking for MIB %s' % (self._recursive and 'recursively ' or '', mibname))
+
+        regExp = re.compile(pattern)
+
+        for path in self.getSubdirs(self._path, self._recursive, self._ignoreErrors):
+
+            for mibfile in os.listdir(path):
+
+                if not regExp.match(mibfile):
+                    continue
+
+                f = os.path.join(decode(path), decode(mibfile))
+
+                if not os.path.isfile(f):
+                    continue
+
+                mibname = os.path.splitext(mibfile)[0]
+
+                debug.logger & debug.flagReader and debug.logger('trying MIB %s' % f)
+
+                try:
+                    mtime = os.stat(f)[8]
+
+                    debug.logger & debug.flagReader and debug.logger(
+                        'source MIB %s mtime is %s, fetching data...' % (
+                            f, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(mtime))))
+
+                    fp = open(f, mode='rb')
+                    mibData = fp.read(self.maxMibSize)
+                    fp.close()
+
+                    if len(mibData) == self.maxMibSize:
+                        raise IOError('MIB %s too large' % f)
+
+                    yield MibInfo(path='file://%s' % f, file=mibfile, name=mibname, mtime=mtime), decode(mibData)
+
+                except (OSError, IOError):
+                    debug.logger & debug.flagReader and debug.logger(
+                        'source file %s open failure: %s' % (f, sys.exc_info()[1]))
+
+                    if not self._ignoreErrors:
+                        raise error.PySmiError('file %s access error: %s' % (f, sys.exc_info()[1]))

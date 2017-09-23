@@ -7,6 +7,7 @@
 import os
 import sys
 import time
+import re
 import datetime
 import zipfile
 from pysmi.reader.base import AbstractReader
@@ -148,7 +149,7 @@ class ZipReader(AbstractReader):
     def __str__(self):
         return '%s{"%s"}' % (self.__class__.__name__, self._name)
 
-    def getData(self, mibname, zipBlob=None):
+    def getData(self, mibname):
         debug.logger & debug.flagReader and debug.logger('looking for MIB %s at %s' % (mibname, self._name))
 
         if self._pendingError:
@@ -183,3 +184,33 @@ class ZipReader(AbstractReader):
                            file=mibfile, name=mibalias, mtime=mtime), decode(mibData)
 
         raise error.PySmiReaderFileNotFoundError('source MIB %s not found' % mibname, reader=self)
+
+    def dataGenerator(self, pattern):
+        debug.logger & debug.flagReader and debug.logger('looking for MIB %s at %s' % (pattern, self._name))
+
+        if self._pendingError:
+            raise self._pendingError
+
+        regExp = re.compile(pattern)
+
+        for mibfile in self._members:
+            if not regExp.match(mibfile):
+                continue
+
+            refs = self._members[mibfile]
+
+            mibData, mtime = self._readZipFile(refs)
+
+            if not mibData:
+                continue
+
+            debug.logger & debug.flagReader and debug.logger(
+                'source MIB %s, mtime %s, read from %s/%s' % (
+                mibfile, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(mtime)), self._name, mibfile)
+            )
+
+            if len(mibData) == self.maxMibSize:
+                raise IOError('MIB %s/%s too large' % (self._name, mibfile))
+
+            yield MibInfo(path='zip://%s/%s' % (self._name, mibfile),
+                          file=mibfile, name=mibfile, mtime=mtime), decode(mibData)

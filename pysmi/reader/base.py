@@ -49,3 +49,6 @@ class AbstractReader(object):
 
     def getData(self, filename):
         raise NotImplementedError()
+
+    def dataGenerator(self, pattern):
+        return iter(())

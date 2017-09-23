@@ -27,3 +27,11 @@ class CallbackReader(AbstractReader):
             return MibInfo(path='file:///dev/stdin', file='', name=mibname, mtime=time.time()), res
 
         raise error.PySmiReaderFileNotFoundError(mibname=mibname, reader=self)
+
+    def dataGenerator(self, pattern):
+        debug.logger & debug.flagReader and debug.logger('calling user callback %s for MIB pattern %s' % (self._cbFun, pattern))
+
+        while True:
+            res = self._cbFun(pattern, self._cbCtx)
+            if res:
+                yield MibInfo(path='file:///dev/stdin', file='', name=pattern, mtime=time.time()), res

@@ -7,6 +7,7 @@
 import sys
 import os
 import time
+import itertools
 
 try:
     from pwd import getpwuid
@@ -216,19 +217,82 @@ class MibCompiler(object):
         borrowedMibs = {}
         builtMibs = {}
         symbolTableMap = {}
-        mibsToParse = list(mibnames)
 
         #
-        # Parse all requested MIBs and their dependencies
+        # Main MIB compilation loop
         #
 
-        while mibsToParse:
+        if options.get('regExpMibs', False):
+            mibDataGenerator = itertools.chain(
+                *[source.dataGenerator(mibname) for source in self._sources
+                  for mibname in mibnames]
+            )
+            mibsToParse = []
 
-            mibname = mibsToParse.pop(0)
+        else:
+            mibDataGenerator = None
+            mibsToParse = list(mibnames)
 
-            debug.logger & debug.flagCompiler and debug.logger('starting compilation cycle for requested MIB file %s' % mibname)
+        mibDependencies = []
 
-            mibDependencies = [mibname]
+        debug.logger & debug.flagCompiler and debug.logger(
+            'MIBs to compile (#%d) %s' % (len(mibnames), ', '.join(mibnames)))
+
+        while mibsToParse or mibDataGenerator:
+
+            #
+            # Parse one of remaining MIBs and its dependencies
+            #
+
+            if mibDataGenerator:
+
+                try:
+                    fileInfo, fileData = next(mibDataGenerator)
+
+                    debug.logger & debug.flagCompiler and debug.logger(
+                        'starting compilation cycle for requested MIB file %s' % fileInfo.name)
+
+                    for mibTree in self._parser.parse(fileData):
+
+                        mibInfo, symbolTable = self._symbolgen.genCode(
+                            mibTree, symbolTableMap
+                        )
+
+                        if fileInfo.name in failedMibs:
+                            del failedMibs[fileInfo.name]
+
+                        if mibInfo.name not in symbolTableMap:
+                            symbolTableMap[mibInfo.name] = symbolTable
+                            parsedMibs[mibInfo.name] = fileInfo, mibInfo, mibTree
+                            mibDependencies.extend(mibInfo.imported)
+
+                            debug.logger & debug.flagCompiler and debug.logger(
+                                '%s (%s) read from %s, immediate dependencies: %s' % (
+                                    mibInfo.name, fileInfo.name, fileInfo.path, ', '.join(mibInfo.imported) or '<none>'))
+
+                except StopIteration:
+                    mibDataGenerator = None
+                    continue
+
+                except error.PySmiError:
+                    exc_class, exc, tb = sys.exc_info()
+                    exc.source = source
+                    exc.mibname = fileInfo.name
+                    exc.msg += ' at MIB %s' % fileInfo.name
+
+                    debug.logger & debug.flagCompiler and debug.logger('%serror %s from %s' % (
+                        options.get('ignoreErrors') and 'ignoring ' or 'failing on ', exc, source))
+
+                    failedMibs[fileInfo.name] = exc
+
+                    processed[fileInfo.name] = statusFailed.setOptions(error=exc)
+
+            else:
+                mibname = mibsToParse.pop(0)
+                mibDependencies.append(mibname)
+
+                debug.logger & debug.flagCompiler and debug.logger(
+                    'starting compilation cycle for requested MIB file %s' % mibname)
 
             while mibDependencies:
 
