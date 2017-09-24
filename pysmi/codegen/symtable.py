@@ -74,6 +74,29 @@ class SymtableCodeGen(AbstractCodeGen):
         'snmpEnableAuthTraps': 'snmpEnableAuthenTraps'  # RFC1158-MIB -> SNMPv2-MIB
     }
 
+    constValueDefs = {
+        'ccitt': {
+            'origName': 'ccitt',
+            'type': 'ObjectIdentity',
+            'oid': (0,)
+        },
+        'iso': {
+            'origName': 'iso',
+            'type': 'ObjectIdentity',
+            'oid': (1,)
+        },
+        'joint-iso-ccitt': {
+            'origName': 'joint-iso-ccitt',
+            'type': 'ObjectIdentity',
+            'oid': (2,)
+        },
+        'zeroDotZero': {
+            'origName': 'zeroDotZero',
+            'type': 'ObjectIdentity',
+            'oid': (0, 0)
+        }
+    }
+
     smiv1IdxTypes = ['INTEGER', 'OCTET STRING', 'IPADDRESS', 'NETWORKADDRESS']
     ifTextStr = 'if mibBuilder.loadTexts: '
     indent = ' ' * 4
@@ -610,6 +633,11 @@ class SymtableCodeGen(AbstractCodeGen):
 
         if self._postponedSyms:
             raise error.PySmiSemanticError('Unknown parents for symbols: %s' % ', '.join(self._postponedSyms))
+
+        # Add well-known but sometimes missing value definitions
+        for valDef in self.constValueDefs:
+            if valDef not in self._out:
+                self._out[valDef] = self.constValueDefs[valDef]
 
         for sym in self._parentOids:
             if sym not in self._out and sym not in self._importMap:

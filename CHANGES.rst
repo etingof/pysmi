@@ -8,6 +8,8 @@ Revision 0.2.1, XX-09-2017
 * PRODUCT RELEASE clause support fixed at JSON codegen
 * Unconditionally import SMIv2-SMI::mgmt symbol (some broken MIBs
   forget to import it)
+* Implicitly define basic constants (ccitt, zeroDotZero) which may not be
+  explicitly defined by some MIBs
 
 Revision 0.1.3, 19-05-2017
 --------------------------
