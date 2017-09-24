@@ -71,7 +71,7 @@ class FileReader(AbstractReader):
                 f = open(indexFile)
                 mibIndex = {}
                 for line in f.readlines():
-                    key, value = line.partition(' ')
+                    key, _, value = line.partition(' ')
                     mibIndex[key.strip()] = value.strip()
                 f.close()
                 debug.logger & debug.flagReader and debug.logger(
