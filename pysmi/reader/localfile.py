@@ -69,9 +69,10 @@ class FileReader(AbstractReader):
         if os.path.exists(indexFile):
             try:
                 f = open(indexFile)
-                mibIndex = dict(
-                    [x.split()[:2] for x in f.readlines()]
-                )
+                mibIndex = {}
+                for line in f.readlines():
+                    key, value = line.partition(' ')
+                    mibIndex[key.strip()] = value.strip()
                 f.close()
                 debug.logger & debug.flagReader and debug.logger(
                     'loaded MIB index map from %s file, %s entries' % (indexFile, len(mibIndex)))
