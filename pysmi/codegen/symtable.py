@@ -37,6 +37,7 @@ class SymtableCodeGen(AbstractCodeGen):
 
     constImports = {
         'SNMPv2-SMI': ('iso',
+                       'mgmt',  # bug in some XEROX MIBs
                        'Bits',  # XXX
                        'Integer32',  # XXX
                        'TimeTicks',  # bug in some IETF MIBs

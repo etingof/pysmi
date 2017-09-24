@@ -36,6 +36,7 @@ class JsonCodeGen(AbstractCodeGen):
     """
     constImports = {
         'SNMPv2-SMI': ('iso',
+                       'mgmt',  # bug in some XEROX MIBs
                        'NOTIFICATION-TYPE',  # bug in some MIBs (e.g. A3COM-HUAWEI-DHCPSNOOP-MIB)
                        'MODULE-IDENTITY', 'OBJECT-TYPE', 'OBJECT-IDENTITY'),
         'SNMPv2-TC': ('DisplayString', 'TEXTUAL-CONVENTION',),  # XXX

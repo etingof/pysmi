@@ -50,6 +50,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         'ASN1-REFINEMENT': ('ConstraintsUnion', 'ConstraintsIntersection', 'SingleValueConstraint',
                             'ValueRangeConstraint', 'ValueSizeConstraint'),
         'SNMPv2-SMI': ('iso',
+                       'mgmt',  # bug in some XEROX MIBs
                        'Bits',  # XXX
                        'Integer32',  # XXX
                        'TimeTicks',  # bug in some IETF MIBs
