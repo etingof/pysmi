@@ -687,6 +687,9 @@ class JsonCodeGen(AbstractCodeGen):
         items = data[0]
         return {'enumeration': dict(items)}
 
+    def genProductRelease(self, data):
+        return self.textFilter('product-release', data[0])
+
     # noinspection PyUnusedLocal
     def genTableIndex(self, data):
         def genFakeSyms(fakeidx, idxType):
@@ -894,6 +897,7 @@ class JsonCodeGen(AbstractCodeGen):
         'REFERENCE': genReference,
         'Status': genStatus,
         'enumSpec': genEnumSpec,
+        'PRODUCT-RELEASE': genProductRelease,
         'INDEX': genTableIndex,
         'integerSubType': genIntegerSubType,
         'MaxAccessPart': genMaxAccess,

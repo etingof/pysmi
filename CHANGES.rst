@@ -5,6 +5,7 @@ Revision 0.2.1, XX-09-2017
 * ZIP archive reader implemented
 * Sequential MIB files read from MIB sources and mass compilation implemented
 * Processing of multiple MIBs now done sequentially to reduce memory footprint
+* PRODUCT RELEASE clause support fixed at JSON codegen
 
 Revision 0.1.3, 19-05-2017
 --------------------------
