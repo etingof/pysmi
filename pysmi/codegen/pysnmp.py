@@ -667,14 +667,25 @@ class PySnmpCodeGen(AbstractCodeGen):
 
         elif self.isHex(defval):  # hex
             if defvalType[0][0] in ('Integer32', 'Integer'):  # common bug in MIBs
-                val = str(int(defval[1:-2], 16))
+                try:
+                    val = str(int(defval[1:-2], 16))
+
+                except ValueError:
+                    debug.logger & debug.flagCodegen and debug.logger('malformed default hex value %s' % (defval,))
+                    val = '0'
             else:
                 val = 'hexValue="' + defval[1:-2] + '"'
 
         elif self.isBinary(defval):  # binary
             binval = defval[1:-2]
+
             if defvalType[0][0] in ('Integer32', 'Integer'):  # common bug in MIBs
-                val = str(int(binval or '0', 2))
+                try:
+                    val = str(int(binval or '0', 2))
+
+                except ValueError:
+                    debug.logger & debug.flagCodegen and debug.logger('malformed default binary value %s' % (defval,))
+                    val = '0'
             else:
                 hexval = binval and hex(int(binval, 2))[2:] or ''
                 val = 'hexValue="' + hexval + '"'
