@@ -10,6 +10,8 @@ Revision 0.2.1, XX-09-2017
   forget to import it)
 * Implicitly define basic constants (ccitt, zeroDotZero) which may not be
   explicitly defined by some MIBs
+* JSON code generator accepts `jsonOptions` parameter which ultimately gets
+  passed down to Python's JSON serializer
 
 Revision 0.1.3, 19-05-2017
 --------------------------

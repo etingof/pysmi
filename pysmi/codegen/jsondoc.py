@@ -960,7 +960,7 @@ class JsonCodeGen(AbstractCodeGen):
                        oids=self._oids,
                        enterprise=self._enterpriseOid,
                        compliance=self._complianceOids,
-                       imported=tuple([x for x in importedModules if x not in self.fakeMibs])), json.dumps(outDict, indent=2)
+                       imported=tuple([x for x in importedModules if x not in self.fakeMibs])), json.dumps(outDict, kwargs.get('jsonOptions', {'indent': 2}))
 
     def genIndex(self, processed, **kwargs):
         outDict = {
@@ -1050,4 +1050,4 @@ class JsonCodeGen(AbstractCodeGen):
         debug.logger & debug.flagCodegen and debug.logger(
             'OID->MIB index built, %s entries' % len(processed))
 
-        return json.dumps(order(outDict), indent=2)
+        return json.dumps(order(outDict), kwargs.get('jsonOptions', {'indent': 2}))
