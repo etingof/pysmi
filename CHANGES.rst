@@ -5,6 +5,8 @@ Revision 0.1.4, XX-10-2017
 - Fix to SMI lexer to treat tokens starting from a digit as belonging
   to a lower-cased class. This fixes sub-OID parsing bug (specifically,
   802dot3(10006))
+- Fix to the mibdump.py local MIB path automatic injection in front
+  of existing --mib-sources
 
 Revision 0.1.3, 19-05-2017
 --------------------------

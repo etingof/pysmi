@@ -179,19 +179,22 @@ Software documentation and support at http://pysmi.sf.net
     if opt[0] == '--keep-texts-layout':
         keepTextsLayout = True
 
-if inputMibs:
-    mibSources.extend(list(set(['file://' + os.path.abspath(os.path.dirname(x))
-                                for x in inputMibs
-                                if os.path.sep in x])))
-    inputMibs = [os.path.basename(os.path.splitext(x)[0]) for x in inputMibs]
-
-else:
-    sys.stderr.write('ERROR: MIB modules names not specified\r\n%s\r\n' % helpMessage)
-    sys.exit(-1)
-
 if not mibSources:
     mibSources = ['file:///usr/share/snmp/mibs',
                   'http://mibs.snmplabs.com/asn1/@mib@']
+
+if inputMibs:
+    mibSources = sorted(
+        set([os.path.abspath(os.path.dirname(x))
+            for x in inputMibs
+            if os.path.sep in x])
+    ) + mibSources
+
+    inputMibs = [os.path.basename(os.path.splitext(x)[0]) for x in inputMibs]
+
+if not inputMibs:
+    sys.stderr.write('ERROR: MIB modules names not specified\r\n%s\r\n' % helpMessage)
+    sys.exit(-1)
 
 if not dstFormat:
     dstFormat = 'pysnmp'
