@@ -1,8 +1,10 @@
 
-Revision 0.2.1, XX-09-2017
+Revision 0.1.4, XX-10-2017
 --------------------------
 
-* ZIP archive reader implemented
+- Fix to SMI lexer to treat tokens starting from a digit as belonging
+  to a lower-cased class. This fixes sub-OID parsing bug (specifically,
+  802dot3(10006))
 
 Revision 0.1.3, 19-05-2017
 --------------------------
