@@ -867,7 +867,9 @@ class SmiV2Parser(AbstractParser):
         if n == 2:
             p[0] = p[1]
         elif n == 5:
-            p[0] = (p[1], p[3])  # XXX Do we need to create a new symbol p[1]?
+            # NOTE: we are not creating new symbol p[1] because formally
+            # it is not defined in *this* MIB
+            p[0] = (p[1], p[3])
 
     def p_objectIdentifier_defval(self, p):
         """objectIdentifier_defval : subidentifiers_defval"""

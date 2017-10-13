@@ -193,24 +193,26 @@ options = dict(
     fuzzyMatching=doFuzzyMatchingFlag
 )
 
-if inputMibsOrURIs:
-    inputMibs = [os.path.basename(os.path.splitext(x)[0])
-                 for x in inputMibsOrURIs
-                 if '://' not in x]
-    if inputMibs:
-        mibSources.extend(list(set(['file://' + os.path.abspath(os.path.dirname(x))
-                                    for x in inputMibs
-                                    if os.path.sep in x])))
-
-    inputURIs = getReadersFromUrls(*[uri for uri in inputMibsOrURIs if '://' in uri], **options)
-
-else:
-    sys.stderr.write('ERROR: MIB names / URIs not specified\r\n%s\r\n' % helpMessage)
-    sys.exit(-1)
-
 if not mibSources:
     mibSources = ['file:///usr/share/snmp/mibs',
                   'http://mibs.snmplabs.com/asn1/@mib@']
+
+inputMibs = [x for x in inputMibsOrURIs if '://' not in x]
+
+if inputMibs:
+    mibSources = sorted(
+        set([os.path.abspath(os.path.dirname(x))
+             for x in inputMibs
+             if os.path.sep in x])
+    ) + mibSources
+
+    inputMibs = [os.path.basename(os.path.splitext(x)[0]) for x in inputMibs]
+
+inputURIs = getReadersFromUrls(*[uri for uri in inputMibsOrURIs if '://' in uri], **options)
+
+if not inputMibs and not inputURIs:
+    sys.stderr.write('ERROR: MIB names / URIs not specified\r\n%s\r\n' % helpMessage)
+    sys.exit(-1)
 
 if not dstFormat:
     dstFormat = 'pysnmp'
