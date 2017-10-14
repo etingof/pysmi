@@ -1,5 +1,5 @@
 
-Revision 0.1.4, XX-10-2017
+Revision 0.1.4, 14-10-2017
 --------------------------
 
 - Fix to SMI lexer to treat tokens starting from a digit as belonging
