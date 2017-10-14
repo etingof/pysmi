@@ -34,7 +34,7 @@ def getReadersFromUrls(*sourceUrls, **options):
                              'query', 'fragment', 'username', 'password',
                              'hostname', 'port'), mibSource + ('', '', '', None)):
                 if k == 'scheme':
-                    if mibSource.path.endswith('.zip') or mibSource.path.endswith('.ZIP'):
+                    if mibSource[2].endswith('.zip') or mibSource[2].endswith('.ZIP'):
                         v = 'zip'
                     else:
                         v = 'file'
