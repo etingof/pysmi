@@ -1,4 +1,9 @@
 
+Revision 0.1.5, XX-10-2017
+--------------------------
+
+- Sphinx documentation theme changed to Alabaster
+
 Revision 0.1.4, 14-10-2017
 --------------------------
 

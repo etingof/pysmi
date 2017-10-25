@@ -1,6 +1,6 @@
 
-PySMI: user perspective
-=======================
+The *mibdump* tool
+==================
 
 .. toctree::
    :maxdepth: 2
@@ -52,7 +52,7 @@ will produce a JSON document containing all MIB objects. For example,
 `IF-MIB <http://mibs.snmplabs.com/asn1/IF-MIB>`_ module in JSON form
 would look like:
 
-.. code-block:: json
+.. code-block:: python
 
    {
       "ifMIB": {
