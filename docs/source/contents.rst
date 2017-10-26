@@ -16,8 +16,7 @@ Documentation
 .. toctree::
    :maxdepth: 2
 
-   /user-perspective
-   /developer-documentation
+   /documentation
 
 Source code & Changelog
 -----------------------
@@ -27,20 +26,31 @@ Everyone is welcome to fork and contribute back!
 
 We maintain the detailed :doc:`log of changes </changelog>` to our software.
 
-Download
---------
+Download & Install
+------------------
 
-The easiest way to download and install SNMP SMI library is to `pip install` the
-latest version from PyPI:
+.. toctree::
+   :maxdepth: 2
 
-.. code-block:: bash
+   /download
 
-   $ virtualenv venv
-   $ source venv/bin/activate
-   $ pip install pysmi
+Changes
+-------
 
-Alternatively, you can download the latest release from `GitHub <https://github.com/etingof/pysmi/releases>`_
-or `PyPI <https://pypi.python.org/pypi/pysmi>`_.
+.. toctree::
+   :maxdepth: 1
+
+   /changelog
+
+License
+-------
+
+The SNMP SMI library software is distributed under 2-clause BSD License.
+
+.. toctree::
+   :maxdepth: 2
+
+   /license
 
 MIB files archive
 -----------------
@@ -57,15 +67,9 @@ dependency resolution.
 You can always reconfigure PySMI to use some other remote MIB repository
 instead or in addition to this one.
 
-License
--------
-
-The SNMP Simulator software is distributed under 2-clause :doc:`BSD license </license>`.
-
 Contact
 -------
 
 In case of questions or troubles using SNMP SMI library, please open up an
 `issue <https://github.com/etingof/pysmi/issues>`_ at GitHub or ask at
 `Stack Overflow <http://stackoverflow.com/questions/tagged/pysmi>`_ .
-
