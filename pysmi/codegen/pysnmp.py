@@ -202,15 +202,18 @@ class PySnmpCodeGen(AbstractCodeGen):
 
     def genExports(self, ):
         exports = list(self._exports)
-        exportsNum = len(exports)
-        chunkNum = exportsNum / 254
+        if not exports:
+            return ''
+
+        numFuncCalls = len(exports) // 254 + 1
+
         outStr = ''
 
-        for idx in range(int(chunkNum + 1)):
+        for idx in range(numFuncCalls):
             outStr += 'mibBuilder.exportSymbols("' + self.moduleName[0] + '", '
             outStr += ', '.join(exports[254 * idx:254 * (idx + 1)]) + ')\n'
 
-        return self._exports and outStr or ''
+        return outStr
 
     # noinspection PyMethodMayBeStatic
     def genLabel(self, symbol, classmode=False):
@@ -386,12 +389,18 @@ class PySnmpCodeGen(AbstractCodeGen):
 
         oidStr, parentOid = oid
 
-        if objects:
-            objects = ['("' + self._importMap.get(obj, self.moduleName[0]) + '", "' + self.transOpers(obj) + '")' for obj in objects]
-
-        objStr = ', '.join(objects)
         outStr = name + ' = NotificationGroup(' + oidStr + ')' + label
-        outStr += '.setObjects(' + objStr + ')\n'
+
+        if objects:
+            objects = ['("' + self._importMap.get(obj, self.moduleName[0]) + '", "' + self.transOpers(obj) + '")'
+                       for obj in objects]
+
+            numFuncCalls = len(objects) // 255 + 1
+
+            for idx in range(numFuncCalls):
+                outStr += '.setObjects(' + ', '.join(objects[255 * idx:255 * (idx + 1)]) + ')'
+
+            outStr += '\n'
 
 # TODO: pysnmp does not implement .setStatus
 #        if status:
@@ -416,12 +425,18 @@ class PySnmpCodeGen(AbstractCodeGen):
 
         oidStr, parentOid = oid
 
-        if objects:
-            objects = ['("' + self._importMap.get(obj, self.moduleName[0]) + '", "' + self.transOpers(obj) + '")' for obj in objects]
-
-        objStr = ', '.join(objects)
         outStr = name + ' = NotificationType(' + oidStr + ')' + label
-        outStr += '.setObjects(' + objStr + ')\n'
+
+        if objects:
+            objects = ['("' + self._importMap.get(obj, self.moduleName[0]) + '", "' + self.transOpers(obj) + '")'
+                       for obj in objects]
+
+            numFuncCalls = len(objects) // 255 + 1
+
+            for idx in range(numFuncCalls):
+                outStr += '.setObjects(' + ', '.join(objects[255 * idx:255 * (idx + 1)]) + ')'
+
+            outStr += '\n'
 
         if status:
             outStr += self.ifTextStr + name + status + '\n'
@@ -445,12 +460,18 @@ class PySnmpCodeGen(AbstractCodeGen):
 
         oidStr, parentOid = oid
 
-        if objects:
-            objects = ['("' + self._importMap.get(obj, self.moduleName[0]) + '", "' + self.transOpers(obj) + '")' for obj in objects]
-
-        objStr = ', '.join(objects)
         outStr = name + ' = ObjectGroup(' + oidStr + ')' + label
-        outStr += '.setObjects(' + objStr + ')\n'
+
+        if objects:
+            objects = ['("' + self._importMap.get(obj, self.moduleName[0]) + '", "' + self.transOpers(obj) + '")'
+                       for obj in objects]
+
+            numFuncCalls = len(objects) // 255 + 1
+
+            for idx in range(numFuncCalls):
+                outStr += '.setObjects(' + ', '.join(objects[255 * idx:255 * (idx + 1)]) + ')'
+
+            outStr += '\n'
 
 # TODO: pysnmp does not implement .setStatus
 #        if self.genRules['text'] and status:
@@ -539,20 +560,25 @@ class PySnmpCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genTrapType(self, data, classmode=False):
-        name, enterprise, variables, description, reference, value = data
+        name, enterprise, objects, description, reference, value = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
 
         enterpriseStr, parentOid = enterprise
 
-        if variables:
-            variables = ['("' + self._importMap.get(var, self.moduleName[0]) + '", "' + self.transOpers(var) + '")' for var in variables]
-
-        varStr = ', '.join(variables)
-
         outStr = name + ' = NotificationType(' + enterpriseStr + ' + (0,' + str(value) + '))' + label
-        outStr += '.setObjects(' + varStr + ')\n'
+
+        if objects:
+            objects = ['("' + self._importMap.get(obj, self.moduleName[0]) + '", "' + self.transOpers(obj) + '")'
+                       for obj in objects]
+
+            numFuncCalls = len(objects) // 255 + 1
+
+            for idx in range(numFuncCalls):
+                outStr += '.setObjects(' + ', '.join(objects[255 * idx:255 * (idx + 1)]) + ')'
+
+            outStr += '\n'
 
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
@@ -609,9 +635,10 @@ class PySnmpCodeGen(AbstractCodeGen):
 
         namedval = ['("' + bit[0] + '", ' + str(bit[1]) + ')' for bit in bits]
 
-        numFuncCalls = len(namedval) / 255 + 1
+        numFuncCalls = len(namedval) // 255 + 1
+
         funcCalls = ''
-        for idx in range(int(numFuncCalls)):
+        for idx in range(numFuncCalls):
             funcCalls += 'NamedValues(' + ', '.join(namedval[255 * idx:255 * (idx + 1)]) + ') + '
 
         funcCalls = funcCalls[:-3]
@@ -622,15 +649,25 @@ class PySnmpCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genCompliances(self, data, classmode=False):
-        compliances = []
+        if not data[0]:
+            return ''
+
+        objects = []
 
         for complianceModule in data[0]:
             name = complianceModule[0] or self.moduleName[0]
-            compliances += ['("' + name + '", "' + self.transOpers(compl) + '")' for compl in complianceModule[1]]
+            objects += ['("' + name + '", "' + self.transOpers(compl) + '")' for compl in complianceModule[1]]
 
-        complStr = ', '.join(compliances)
+        outStr = ''
 
-        return '.setObjects(' + complStr + ')'
+        numFuncCalls = len(objects) // 255 + 1
+
+        for idx in range(numFuncCalls):
+            outStr += '.setObjects(' + ', '.join(objects[255 * idx:255 * (idx + 1)]) + ')'
+
+        outStr += '\n'
+
+        return outStr
 
     # noinspection PyUnusedLocal
     def genConceptualTable(self, data, classmode=False):
@@ -697,8 +734,9 @@ class PySnmpCodeGen(AbstractCodeGen):
                     raise error.PySmiSemanticError('no symbol "%s" in module "%s"' % (defval, module))
 
             # enumeration
-            elif defvalType[0][0] in ('Integer32', 'Integer') and \
-                    isinstance(defvalType[1], list) and defval in dict(defvalType[1]):
+            elif (defvalType[0][0] in ('Integer32', 'Integer') and
+                    isinstance(defvalType[1], list) and
+                    defval in dict(defvalType[1])):
                 val = dorepr(defval)
 
             elif defvalType[0][0] == 'Bits':
@@ -745,7 +783,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         singleval = [str(item[1]) for item in items]
         outStr = classmode and self.indent + 'subtypeSpec = %s.subtypeSpec + ' or '.subtype(subtypeSpec='
         numFuncCalls = len(singleval) / 255 + 1
-        singleCall = numFuncCalls == 1 or False
+        singleCall = numFuncCalls == 1
         funcCalls = ''
 
         outStr += not singleCall and 'ConstraintsUnion(' or ''
