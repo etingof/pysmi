@@ -397,10 +397,24 @@ class PySnmpCodeGen(AbstractCodeGen):
 
             numFuncCalls = len(objects) // 255 + 1
 
-            for idx in range(numFuncCalls):
-                outStr += '.setObjects(' + ', '.join(objects[255 * idx:255 * (idx + 1)]) + ')'
+            if numFuncCalls > 1:
+                objStrParts = []
 
-            outStr += '\n'
+                for idx in range(numFuncCalls):
+                    objStrParts.append('[' + ', '.join(objects[255 * idx:255 * (idx + 1)]) + ']')
+
+                outStr += """
+for _%(name)s_obj in [%(objects)s]:
+    if pysnmp_version < (4, 4, 2):
+        # WARNING: leading objects get lost here! Upgrade your pysnmp version!
+        %(name)s = %(name)s.setObjects(*_%(name)s_obj)
+    else:
+        %(name)s = %(name)s.setObjects(*_%(name)s_obj, append=False)
+
+""" % dict(name=name, objects=', '.join(objStrParts))
+
+            else:
+                outStr += '.setObjects(' + ', '.join(objects) + ')\n'
 
 # TODO: pysnmp does not implement .setStatus
 #        if status:
@@ -433,10 +447,24 @@ class PySnmpCodeGen(AbstractCodeGen):
 
             numFuncCalls = len(objects) // 255 + 1
 
-            for idx in range(numFuncCalls):
-                outStr += '.setObjects(' + ', '.join(objects[255 * idx:255 * (idx + 1)]) + ')'
+            if numFuncCalls > 1:
+                objStrParts = []
 
-            outStr += '\n'
+                for idx in range(numFuncCalls):
+                    objStrParts.append('[' + ', '.join(objects[255 * idx:255 * (idx + 1)]) + ']')
+
+                outStr += """
+for _%(name)s_obj in [%(objects)s]:
+    if pysnmp_version < (4, 4, 2):
+        # WARNING: leading objects get lost here! Upgrade your pysnmp version!
+        %(name)s = %(name)s.setObjects(*_%(name)s_obj)
+    else:
+        %(name)s = %(name)s.setObjects(*_%(name)s_obj, append=False)
+
+""" % dict(name=name, objects=', '.join(objStrParts))
+
+            else:
+                outStr += '.setObjects(' + ', '.join(objects) + ')\n'
 
         if status:
             outStr += self.ifTextStr + name + status + '\n'
@@ -468,10 +496,24 @@ class PySnmpCodeGen(AbstractCodeGen):
 
             numFuncCalls = len(objects) // 255 + 1
 
-            for idx in range(numFuncCalls):
-                outStr += '.setObjects(' + ', '.join(objects[255 * idx:255 * (idx + 1)]) + ')'
+            if numFuncCalls > 1:
+                objStrParts = []
 
-            outStr += '\n'
+                for idx in range(numFuncCalls):
+                    objStrParts.append('[' + ', '.join(objects[255 * idx:255 * (idx + 1)]) + ']')
+
+                outStr += """
+for _%(name)s_obj in [%(objects)s]:
+    if pysnmp_version < (4, 4, 2):
+        # WARNING: leading objects get lost here!
+        %(name)s = %(name)s.setObjects(*_%(name)s_obj)
+    else:
+        %(name)s = %(name)s.setObjects(*_%(name)s_obj, append=False)
+
+""" % dict(name=name, objects=', '.join(objStrParts))
+
+            else:
+                outStr += '.setObjects(' + ', '.join(objects) + ')\n'
 
 # TODO: pysnmp does not implement .setStatus
 #        if self.genRules['text'] and status:
@@ -575,10 +617,24 @@ class PySnmpCodeGen(AbstractCodeGen):
 
             numFuncCalls = len(objects) // 255 + 1
 
-            for idx in range(numFuncCalls):
-                outStr += '.setObjects(' + ', '.join(objects[255 * idx:255 * (idx + 1)]) + ')'
+            if numFuncCalls > 1:
+                objStrParts = []
 
-            outStr += '\n'
+                for idx in range(numFuncCalls):
+                    objStrParts.append('[' + ', '.join(objects[255 * idx:255 * (idx + 1)]) + ']')
+
+                outStr += """
+for _%(name)s_obj in [%(objects)s]:
+    if pysnmp_version < (4, 4, 2):
+        # WARNING: leading objects get lost here! Upgrade your pysnmp version!
+        %(name)s = %(name)s.setObjects(*_%(name)s_obj)
+    else:
+        %(name)s = %(name)s.setObjects(*_%(name)s_obj, append=False)
+
+""" % dict(name=name, objects=', '.join(objStrParts))
+
+            else:
+                outStr += '.setObjects(' + ', '.join(objects) + ')\n'
 
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
@@ -662,10 +718,24 @@ class PySnmpCodeGen(AbstractCodeGen):
 
         numFuncCalls = len(objects) // 255 + 1
 
-        for idx in range(numFuncCalls):
-            outStr += '.setObjects(' + ', '.join(objects[255 * idx:255 * (idx + 1)]) + ')'
+        if numFuncCalls > 1:
+            objStrParts = []
 
-        outStr += '\n'
+            for idx in range(numFuncCalls):
+                objStrParts.append('[' + ', '.join(objects[255 * idx:255 * (idx + 1)]) + ']')
+
+            outStr += """
+for _%(name)s_obj in [%(objects)s]:
+    if pysnmp_version < (4, 4, 2):
+        # WARNING: leading objects get lost here! Upgrade your pysnmp version!
+        %(name)s = %(name)s.setObjects(*_%(name)s_obj)
+    else:
+        %(name)s = %(name)s.setObjects(*_%(name)s_obj, append=False)
+
+""" % dict(name=name, objects=', '.join(objStrParts))
+
+        else:
+            outStr += '.setObjects(' + ', '.join(objects) + ')\n'
 
         return outStr
 
@@ -1071,6 +1141,8 @@ class PySnmpCodeGen(AbstractCodeGen):
             out += self._out[sym]
 
         out += self.genExports()
+
+        out = '\nfrom pysnmp import __version__ as pysnmp_version\n\n' + out
 
         if 'comments' in kwargs:
             out = ''.join(['# %s\n' % x for x in kwargs['comments']]) + '#\n' + out
