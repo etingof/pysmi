@@ -409,7 +409,7 @@ for _%(name)s_obj in [%(objects)s]:
         # WARNING: leading objects get lost here! Upgrade your pysnmp version!
         %(name)s = %(name)s.setObjects(*_%(name)s_obj)
     else:
-        %(name)s = %(name)s.setObjects(*_%(name)s_obj, **dict(append=False))
+        %(name)s = %(name)s.setObjects(*_%(name)s_obj, **dict(append=True))
 
 """ % dict(name=name, objects=', '.join(objStrParts))
 
@@ -459,7 +459,7 @@ for _%(name)s_obj in [%(objects)s]:
         # WARNING: leading objects get lost here! Upgrade your pysnmp version!
         %(name)s = %(name)s.setObjects(*_%(name)s_obj)
     else:
-        %(name)s = %(name)s.setObjects(*_%(name)s_obj, **dict(append=False))
+        %(name)s = %(name)s.setObjects(*_%(name)s_obj, **dict(append=True))
 
 """ % dict(name=name, objects=', '.join(objStrParts))
 
@@ -508,7 +508,7 @@ for _%(name)s_obj in [%(objects)s]:
         # WARNING: leading objects get lost here!
         %(name)s = %(name)s.setObjects(*_%(name)s_obj)
     else:
-        %(name)s = %(name)s.setObjects(*_%(name)s_obj, **dict(append=False))
+        %(name)s = %(name)s.setObjects(*_%(name)s_obj, **dict(append=True))
 
 """ % dict(name=name, objects=', '.join(objStrParts))
 
@@ -629,7 +629,7 @@ for _%(name)s_obj in [%(objects)s]:
         # WARNING: leading objects get lost here! Upgrade your pysnmp version!
         %(name)s = %(name)s.setObjects(*_%(name)s_obj)
     else:
-        %(name)s = %(name)s.setObjects(*_%(name)s_obj, **dict(append=False))
+        %(name)s = %(name)s.setObjects(*_%(name)s_obj, **dict(append=True))
 
 """ % dict(name=name, objects=', '.join(objStrParts))
 
@@ -730,7 +730,7 @@ for _%(name)s_obj in [%(objects)s]:
         # WARNING: leading objects get lost here! Upgrade your pysnmp version!
         %(name)s = %(name)s.setObjects(*_%(name)s_obj)
     else:
-        %(name)s = %(name)s.setObjects(*_%(name)s_obj, **dict(append=False))
+        %(name)s = %(name)s.setObjects(*_%(name)s_obj, **dict(append=True))
 
 """ % dict(name=name, objects=', '.join(objStrParts))
 
