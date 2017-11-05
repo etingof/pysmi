@@ -4,6 +4,7 @@ Revision 0.1.5, XX-11-2017
 
 - Added MIB *status*, *release* and *revision description* set calls
   at pysnmp code generator
+- MIB REFERENCE fields are only exported if --with-mib-text is on
 - Sphinx documentation theme changed to Alabaster
 
 Revision 0.1.4, 14-10-2017

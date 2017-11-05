@@ -342,7 +342,7 @@ if getattr(mibBuilder, 'version', 0) > (4, 3, 5):
             if revisions:
                 outStr += name + revisions + '\n'
 
-            if descriptions:
+            if self.genRules['text'] and descriptions:
                 outStr += """
 if getattr(mibBuilder, 'version', 0) > (4, 4, 0):
     %(ifTextStr)s%(name)s%(descriptions)s
@@ -351,7 +351,7 @@ if getattr(mibBuilder, 'version', 0) > (4, 4, 0):
         if lastUpdated:
             outStr += self.ifTextStr + name + lastUpdated + '\n'
 
-        if self.genRules['text'] and organization:
+        if organization:
             outStr += self.ifTextStr + name + organization + '\n'
 
         if self.genRules['text'] and contactInfo:
@@ -384,7 +384,7 @@ if getattr(mibBuilder, 'version', 0) > (4, 3, 5):
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
 
-        if reference:
+        if self.genRules['text'] and reference:
             outStr += self.ifTextStr + name + reference + '\n'
 
         self.regSym(name, outStr, oidStr)
@@ -416,7 +416,7 @@ if getattr(mibBuilder, 'version', 0) > (4, 3, 5):
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
 
-        if reference:
+        if self.genRules['text'] and reference:
             outStr += name + reference + '\n'
 
         self.regSym(name, outStr, oidStr)
@@ -445,7 +445,7 @@ if getattr(mibBuilder, 'version', 0) > (4, 3, 5):
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
 
-        if reference:
+        if self.genRules['text'] and reference:
             outStr += self.ifTextStr + name + reference + '\n'
 
         self.regSym(name, outStr, oidStr)
@@ -477,7 +477,7 @@ if getattr(mibBuilder, 'version', 0) > (4, 3, 5):
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
 
-        if reference:
+        if self.genRules['text'] and reference:
             outStr += self.ifTextStr + name + reference + '\n'
 
         self.regSym(name, outStr, oidStr)
@@ -500,7 +500,7 @@ if getattr(mibBuilder, 'version', 0) > (4, 3, 5):
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
 
-        if reference:
+        if self.genRules['text'] and reference:
             outStr += self.ifTextStr + name + reference + '\n'
 
         self.regSym(name, outStr, oidStr)
@@ -532,7 +532,7 @@ if getattr(mibBuilder, 'version', 0) > (4, 3, 5):
         outStr += indexStr or ''
         outStr += '\n'
 
-        if reference:
+        if self.genRules['text'] and reference:
             outStr += self.ifTextStr + name + reference + '\n'
 
         if augmention:
@@ -575,7 +575,7 @@ if getattr(mibBuilder, 'version', 0) > (4, 3, 5):
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
 
-        if reference:
+        if self.genRules['text'] and reference:
             outStr += self.ifTextStr + name + reference + '\n'
 
         self.regSym(name, outStr, enterpriseStr)

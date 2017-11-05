@@ -249,7 +249,7 @@ class JsonCodeGen(AbstractCodeGen):
         if self.genRules['text'] and description:
             outDict['description'] = description
 
-        if reference:
+        if self.genRules['text'] and reference:
             outDict['reference'] = reference
 
         self.regSym(name, outDict, parentOid)
@@ -310,7 +310,7 @@ class JsonCodeGen(AbstractCodeGen):
         if self.genRules['text'] and description:
             outDict['description'] = description
 
-        if reference:
+        if self.genRules['text'] and reference:
             outDict['reference'] = reference
 
         self.regSym(name, outDict, parentOid, moduleCompliance=True)
@@ -339,7 +339,7 @@ class JsonCodeGen(AbstractCodeGen):
         if self.genRules['text'] and description:
             outDict['description'] = description
 
-        if reference:
+        if self.genRules['text'] and reference:
             outDict['reference'] = reference
 
         self.regSym(name, outDict, parentOid)
@@ -368,7 +368,7 @@ class JsonCodeGen(AbstractCodeGen):
         if self.genRules['text'] and description:
             outDict['description'] = description
 
-        if reference:
+        if self.genRules['text'] and reference:
             outDict['reference'] = reference
 
         self.regSym(name, outDict, parentOid)
@@ -396,7 +396,7 @@ class JsonCodeGen(AbstractCodeGen):
         if self.genRules['text'] and description:
             outDict['description'] = description
 
-        if reference:
+        if self.genRules['text'] and reference:
             outDict['reference'] = reference
 
         self.regSym(name, outDict, parentOid)
@@ -423,7 +423,7 @@ class JsonCodeGen(AbstractCodeGen):
         if self.genRules['text'] and description:
             outDict['description'] = description
 
-        if reference:
+        if self.genRules['text'] and reference:
             outDict['reference'] = reference
 
         self.regSym(name, outDict, parentOid)
@@ -463,7 +463,7 @@ class JsonCodeGen(AbstractCodeGen):
             outDict['maxaccess'] = maxaccess
         if indexStr:
             outDict['indices'] = indexStr
-        if reference:
+        if self.genRules['text'] and reference:
             outDict['reference'] = reference
         if augmention:
             augmention = self.transOpers(augmention)
@@ -506,7 +506,7 @@ class JsonCodeGen(AbstractCodeGen):
         if self.genRules['text'] and description:
             outDict['description'] = description
 
-        if reference:
+        if self.genRules['text'] and reference:
             outDict['reference'] = reference
 
         self.regSym(name, outDict, parentOid)
@@ -859,7 +859,7 @@ class JsonCodeGen(AbstractCodeGen):
                 outDict['status'] = status
             if self.genRules['text'] and description:
                 outDict['description'] = description
-            if reference:
+            if self.genRules['text'] and reference:
                 outDict['reference'] = reference
 
         return parentType, outDict
