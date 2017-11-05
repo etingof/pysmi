@@ -295,7 +295,7 @@ class PySnmpCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genAgentCapabilities(self, data, classmode=False):
-        name, release, status, description, reference, oid = data
+        name, productRelease, status, description, reference, oid = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -303,22 +303,22 @@ class PySnmpCodeGen(AbstractCodeGen):
         oidStr, parentOid = oid
         outStr = name + ' = AgentCapabilities(' + oidStr + ')' + label + '\n'
 
-        if release:
+        if productRelease:
             outStr += """\
-if getattr(mibBuilder, 'version', 0) > (4, 3, 5):
-    %(name)s = %(name)s%(release)s
-""" % dict(name=name, release=release)
+if getattr(mibBuilder, 'version', 0) > (4, 4, 0):
+    %(name)s = %(name)s%(productRelease)s
+""" % dict(name=name, release=productRelease)
 
         if status:
             outStr += """\
-if getattr(mibBuilder, 'version', 0) > (4, 3, 5):
+if getattr(mibBuilder, 'version', 0) > (4, 4, 0):
     %(name)s = %(name)s%(status)s
 """ % dict(name=name, status=status)
 
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
 
-        if reference:
+        if self.genRules['text'] and reference:
             outStr += name + reference + '\n'
 
         self.regSym(name, outStr, oidStr)
@@ -377,7 +377,7 @@ if getattr(mibBuilder, 'version', 0) > (4, 4, 0):
 
         if status:
             outStr += """\
-if getattr(mibBuilder, 'version', 0) > (4, 3, 5):
+if getattr(mibBuilder, 'version', 0) > (4, 4, 0):
     %(name)s = %(name)s%(status)s
 """ % dict(name=name, status=status)
 
@@ -409,7 +409,7 @@ if getattr(mibBuilder, 'version', 0) > (4, 3, 5):
 
         if status:
             outStr += """\
-if getattr(mibBuilder, 'version', 0) > (4, 3, 5):
+if getattr(mibBuilder, 'version', 0) > (4, 4, 0):
     %(name)s = %(name)s%(status)s
 """ % dict(name=name, status=status)
 
@@ -470,7 +470,7 @@ if getattr(mibBuilder, 'version', 0) > (4, 3, 5):
 
         if status:
             outStr += """\
-if getattr(mibBuilder, 'version', 0) > (4, 3, 5):
+if getattr(mibBuilder, 'version', 0) > (4, 4, 0):
     %(name)s = %(name)s%(status)s
 """ % dict(name=name, status=status)
 
@@ -756,7 +756,7 @@ if getattr(mibBuilder, 'version', 0) > (4, 3, 5):
     # noinspection PyMethodMayBeStatic
     def genProductRelease(self, data, classmode=False):
         text = data[0]
-        return classmode and self.indent + 'release = ' + dorepr(text) + '\n' or '.setRelease(' + dorepr(text) + ')'
+        return classmode and self.indent + 'productRelease = ' + dorepr(text) + '\n' or '.setProductRelease(' + dorepr(text) + ')'
 
     def genEnumSpec(self, data, classmode=False):
         items = data[0]

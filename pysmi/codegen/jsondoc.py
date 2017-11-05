@@ -228,7 +228,7 @@ class JsonCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genAgentCapabilities(self, data):
-        name, product_release, status, description, reference, oid = data
+        name, productRelease, status, description, reference, oid = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -240,8 +240,8 @@ class JsonCodeGen(AbstractCodeGen):
         outDict['oid'] = oidStr
         outDict['class'] = 'agentcapabilities'
 
-        if product_release:
-            outDict['release'] = product_release
+        if productRelease:
+            outDict['productrelease'] = productRelease
 
         if status:
             outDict['status'] = status
