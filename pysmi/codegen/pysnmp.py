@@ -303,13 +303,17 @@ class PySnmpCodeGen(AbstractCodeGen):
         oidStr, parentOid = oid
         outStr = name + ' = AgentCapabilities(' + oidStr + ')' + label + '\n'
 
-# TODO: pysnmp does not implement .setProductRelease()
-#       if release:
-#           outStr += name + release + '\n'
+        if release:
+            outStr += """\
+if getattr(mibBuilder, 'version', 0) > (4, 3, 5):
+    %(name)s = %(name)s%(release)s
+""" % dict(name=name, release=release)
 
-        # TODO: pysnmp does not implement .setStatus()
-#       if status:
-#           outStr += name + status + '\n'
+        if status:
+            outStr += """\
+if getattr(mibBuilder, 'version', 0) > (4, 3, 5):
+    %(name)s = %(name)s%(status)s
+""" % dict(name=name, status=status)
 
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
@@ -323,18 +327,26 @@ class PySnmpCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genModuleIdentity(self, data, classmode=False):
-        name, lastUpdated, organization, contactInfo, description, revisions, oid = data
+        name, lastUpdated, organization, contactInfo, description, revisionsAndDescrs, oid = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
 
         oidStr, parentOid = oid
-        revisions = revisions or ''
 
         outStr = name + ' = ModuleIdentity(' + oidStr + ')' + label + '\n'
 
-        if revisions:
-            outStr += self.ifTextStr + name + revisions + '\n'
+        if revisionsAndDescrs:
+            revisions, descriptions = revisionsAndDescrs
+
+            if revisions:
+                outStr += name + revisions + '\n'
+
+            if descriptions:
+                outStr += """
+if getattr(mibBuilder, 'version', 0) > (4, 4, 0):
+    %(ifTextStr)s%(name)s%(descriptions)s
+""" % dict(ifTextStr=self.ifTextStr, name=name, descriptions=descriptions)
 
         if lastUpdated:
             outStr += self.ifTextStr + name + lastUpdated + '\n'
@@ -363,9 +375,11 @@ class PySnmpCodeGen(AbstractCodeGen):
         outStr = name + ' = ModuleCompliance(' + oidStr + ')' + label
         outStr += compliances + '\n'
 
-# TODO: pysnmp does not implement .setStatus
-#        if status:
-#            outStr += self.ifTextStr + name + status + '\n'
+        if status:
+            outStr += """\
+if getattr(mibBuilder, 'version', 0) > (4, 3, 5):
+    %(name)s = %(name)s%(status)s
+""" % dict(name=name, status=status)
 
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
@@ -393,9 +407,11 @@ class PySnmpCodeGen(AbstractCodeGen):
         outStr = name + ' = NotificationGroup(' + oidStr + ')' + label
         outStr += '.setObjects(' + objStr + ')\n'
 
-# TODO: pysnmp does not implement .setStatus
-#        if status:
-#            outStr += self.ifTextStr + name + status + '\n'
+        if status:
+            outStr += """\
+if getattr(mibBuilder, 'version', 0) > (4, 3, 5):
+    %(name)s = %(name)s%(status)s
+""" % dict(name=name, status=status)
 
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
@@ -452,9 +468,11 @@ class PySnmpCodeGen(AbstractCodeGen):
         outStr = name + ' = ObjectGroup(' + oidStr + ')' + label
         outStr += '.setObjects(' + objStr + ')\n'
 
-# TODO: pysnmp does not implement .setStatus
-#        if self.genRules['text'] and status:
-#            outStr += self.ifTextStr + name + status + '\n'
+        if status:
+            outStr += """\
+if getattr(mibBuilder, 'version', 0) > (4, 3, 5):
+    %(name)s = %(name)s%(status)s
+""" % dict(name=name, status=status)
 
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
@@ -892,13 +910,15 @@ class PySnmpCodeGen(AbstractCodeGen):
     # noinspection PyUnusedLocal
     def genRevisions(self, data, classmode=False):
         times = self.genTime([x[0] for x in data[0]])
-        return '.setRevisions((%s,))' % ', '.join([dorepr(x) for x in times])
+        times = [dorepr(x) for x in times]
 
-# TODO: push description data to pysnmp
-#        descriptions = [dorepr(self.textFilter(x[1][1])) for x in data[0]]
-#        revisions = ', '.join(['(\'%s\', %s)' % x for x in zip(times, descriptions)])
-#        text += '.setRevisionsDescriptions((%s,))' % descriptions
-#        return text
+        revisions = '.setRevisions((%s,))' % ', '.join(times)
+
+        descriptions = '.setRevisionsDescriptions((%s,))' % ', '.join(
+            [dorepr(self.textFilter('description', x[1][1])) for x in data[0]]
+        )
+
+        return revisions, descriptions
 
     def genRow(self, data, classmode=False):
         row = data[0]
