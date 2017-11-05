@@ -76,7 +76,7 @@ class JsonCodeGen(AbstractCodeGen):
         self._oids = set()
         self._complianceOids = []
         self.moduleName = ['DUMMY']
-        self.genRules = {'text': 1}
+        self.genRules = {'text': True}
         self.symbolTable = {}
 
     @staticmethod

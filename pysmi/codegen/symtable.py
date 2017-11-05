@@ -88,7 +88,7 @@ class SymtableCodeGen(AbstractCodeGen):
         self._symsOrder = []
         self._out = {}  # k, v = symbol, properties
         self.moduleName = ['DUMMY']
-        self.genRules = {'text': 1}
+        self.genRules = {'text': True}
 
     def symTrans(self, symbol):
         if symbol in self.symsTable:

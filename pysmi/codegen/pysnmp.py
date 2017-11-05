@@ -117,7 +117,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         self._out = {}  # k, v = name, generated code
         self._moduleIdentityOid = None
         self.moduleName = ['DUMMY']
-        self.genRules = {'text': 1}
+        self.genRules = {'text': True}
         self.symbolTable = {}
 
     def symTrans(self, symbol):
@@ -305,13 +305,13 @@ class PySnmpCodeGen(AbstractCodeGen):
 
         if productRelease:
             outStr += """\
-if getattr(mibBuilder, 'version', 0) > (4, 4, 0):
+if getattr(mibBuilder, 'version', (0, 0, 0)) > (4, 4, 0):
     %(name)s = %(name)s%(productRelease)s
 """ % dict(name=name, release=productRelease)
 
         if status:
             outStr += """\
-if getattr(mibBuilder, 'version', 0) > (4, 4, 0):
+if getattr(mibBuilder, 'version', (0, 0, 0)) > (4, 4, 0):
     %(name)s = %(name)s%(status)s
 """ % dict(name=name, status=status)
 
@@ -344,7 +344,7 @@ if getattr(mibBuilder, 'version', 0) > (4, 4, 0):
 
             if self.genRules['text'] and descriptions:
                 outStr += """
-if getattr(mibBuilder, 'version', 0) > (4, 4, 0):
+if getattr(mibBuilder, 'version', (0, 0, 0)) > (4, 4, 0):
     %(ifTextStr)s%(name)s%(descriptions)s
 """ % dict(ifTextStr=self.ifTextStr, name=name, descriptions=descriptions)
 
@@ -377,7 +377,7 @@ if getattr(mibBuilder, 'version', 0) > (4, 4, 0):
 
         if status:
             outStr += """\
-if getattr(mibBuilder, 'version', 0) > (4, 4, 0):
+if getattr(mibBuilder, 'version', (0, 0, 0)) > (4, 4, 0):
     %(name)s = %(name)s%(status)s
 """ % dict(name=name, status=status)
 
@@ -409,7 +409,7 @@ if getattr(mibBuilder, 'version', 0) > (4, 4, 0):
 
         if status:
             outStr += """\
-if getattr(mibBuilder, 'version', 0) > (4, 4, 0):
+if getattr(mibBuilder, 'version', (0, 0, 0)) > (4, 4, 0):
     %(name)s = %(name)s%(status)s
 """ % dict(name=name, status=status)
 
@@ -470,7 +470,7 @@ if getattr(mibBuilder, 'version', 0) > (4, 4, 0):
 
         if status:
             outStr += """\
-if getattr(mibBuilder, 'version', 0) > (4, 4, 0):
+if getattr(mibBuilder, 'version', (0, 0, 0)) > (4, 4, 0):
     %(name)s = %(name)s%(status)s
 """ % dict(name=name, status=status)
 
