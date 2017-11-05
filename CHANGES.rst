@@ -1,9 +1,11 @@
 
-Revision 0.1.5, XX-11-2017
+Revision 0.2.1, XX-11-2017
 --------------------------
 
 - Added MIB *status*, *release* and *revision description* set calls
   at pysnmp code generator
+- Changed REVISION field format in JSON representation - it is now
+  a list of dicts each with *revision* timestamp and *description* text
 - MIB REFERENCE fields are only exported if --with-mib-text is on
 - Sphinx documentation theme changed to Alabaster
 

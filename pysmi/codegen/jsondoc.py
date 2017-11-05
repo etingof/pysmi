@@ -802,8 +802,13 @@ class JsonCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genRevisions(self, data):
-        times = self.genTime([x[0] for x in data[0]])
-        return times
+        revisions = []
+        for x in data[0]:
+            revision = OrderedDict()
+            revision['revision'] = self.genTime([x[0]])[0]
+            revision['description'] = self.textFilter('description', x[1][1])
+            revisions.append(revision)
+        return revisions
 
     def genRow(self, data):
         row = data[0]
