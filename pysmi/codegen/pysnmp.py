@@ -405,11 +405,11 @@ class PySnmpCodeGen(AbstractCodeGen):
 
                 outStr += """
 for _%(name)s_obj in [%(objects)s]:
-    if pysnmp_version < (4, 4, 2):
+    if getattr(mibBuilder, 'version', 0) < (4, 4, 2):
         # WARNING: leading objects get lost here! Upgrade your pysnmp version!
         %(name)s = %(name)s.setObjects(*_%(name)s_obj)
     else:
-        %(name)s = %(name)s.setObjects(*_%(name)s_obj, append=False)
+        %(name)s = %(name)s.setObjects(*_%(name)s_obj, **dict(append=False))
 
 """ % dict(name=name, objects=', '.join(objStrParts))
 
@@ -455,11 +455,11 @@ for _%(name)s_obj in [%(objects)s]:
 
                 outStr += """
 for _%(name)s_obj in [%(objects)s]:
-    if pysnmp_version < (4, 4, 2):
+    if getattr(mibBuilder, 'version', 0) < (4, 4, 2):
         # WARNING: leading objects get lost here! Upgrade your pysnmp version!
         %(name)s = %(name)s.setObjects(*_%(name)s_obj)
     else:
-        %(name)s = %(name)s.setObjects(*_%(name)s_obj, append=False)
+        %(name)s = %(name)s.setObjects(*_%(name)s_obj, **dict(append=False))
 
 """ % dict(name=name, objects=', '.join(objStrParts))
 
@@ -504,11 +504,11 @@ for _%(name)s_obj in [%(objects)s]:
 
                 outStr += """
 for _%(name)s_obj in [%(objects)s]:
-    if pysnmp_version < (4, 4, 2):
+    if getattr(mibBuilder, 'version', 0) < (4, 4, 2):
         # WARNING: leading objects get lost here!
         %(name)s = %(name)s.setObjects(*_%(name)s_obj)
     else:
-        %(name)s = %(name)s.setObjects(*_%(name)s_obj, append=False)
+        %(name)s = %(name)s.setObjects(*_%(name)s_obj, **dict(append=False))
 
 """ % dict(name=name, objects=', '.join(objStrParts))
 
@@ -625,11 +625,11 @@ for _%(name)s_obj in [%(objects)s]:
 
                 outStr += """
 for _%(name)s_obj in [%(objects)s]:
-    if pysnmp_version < (4, 4, 2):
+    if getattr(mibBuilder, 'version', 0) < (4, 4, 2):
         # WARNING: leading objects get lost here! Upgrade your pysnmp version!
         %(name)s = %(name)s.setObjects(*_%(name)s_obj)
     else:
-        %(name)s = %(name)s.setObjects(*_%(name)s_obj, append=False)
+        %(name)s = %(name)s.setObjects(*_%(name)s_obj, **dict(append=False))
 
 """ % dict(name=name, objects=', '.join(objStrParts))
 
@@ -726,11 +726,11 @@ for _%(name)s_obj in [%(objects)s]:
 
             outStr += """
 for _%(name)s_obj in [%(objects)s]:
-    if pysnmp_version < (4, 4, 2):
+    if getattr(mibBuilder, 'version', 0) < (4, 4, 2):
         # WARNING: leading objects get lost here! Upgrade your pysnmp version!
         %(name)s = %(name)s.setObjects(*_%(name)s_obj)
     else:
-        %(name)s = %(name)s.setObjects(*_%(name)s_obj, append=False)
+        %(name)s = %(name)s.setObjects(*_%(name)s_obj, **dict(append=False))
 
 """ % dict(name=name, objects=', '.join(objStrParts))
 
@@ -1141,8 +1141,6 @@ for _%(name)s_obj in [%(objects)s]:
             out += self._out[sym]
 
         out += self.genExports()
-
-        out = '\nfrom pysnmp import __version__ as pysnmp_version\n\n' + out
 
         if 'comments' in kwargs:
             out = ''.join(['# %s\n' % x for x in kwargs['comments']]) + '#\n' + out
