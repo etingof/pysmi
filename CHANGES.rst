@@ -3,6 +3,8 @@ Revision 0.1.5, XX-10-2017
 --------------------------
 
 - Sphinx documentation theme changed to Alabaster
+- Multiple fixes to pysnmp codegen not to produce function calls
+  with more than 255 parameters
 
 Revision 0.1.4, 14-10-2017
 --------------------------
