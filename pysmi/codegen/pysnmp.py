@@ -117,7 +117,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         self._out = {}  # k, v = name, generated code
         self._moduleIdentityOid = None
         self.moduleName = ['DUMMY']
-        self.genRules = {'text': 1}
+        self.genRules = {'text': True}
         self.symbolTable = {}
 
     def symTrans(self, symbol):
@@ -298,7 +298,7 @@ class PySnmpCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genAgentCapabilities(self, data, classmode=False):
-        name, release, status, description, reference, oid = data
+        name, productRelease, status, description, reference, oid = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -306,18 +306,22 @@ class PySnmpCodeGen(AbstractCodeGen):
         oidStr, parentOid = oid
         outStr = name + ' = AgentCapabilities(' + oidStr + ')' + label + '\n'
 
-# TODO: pysnmp does not implement .setProductRelease()
-#       if release:
-#           outStr += name + release + '\n'
+        if productRelease:
+            outStr += """\
+if getattr(mibBuilder, 'version', (0, 0, 0)) > (4, 4, 0):
+    %(name)s = %(name)s%(productRelease)s
+""" % dict(name=name, release=productRelease)
 
-        # TODO: pysnmp does not implement .setStatus()
-#       if status:
-#           outStr += name + status + '\n'
+        if status:
+            outStr += """\
+if getattr(mibBuilder, 'version', (0, 0, 0)) > (4, 4, 0):
+    %(name)s = %(name)s%(status)s
+""" % dict(name=name, status=status)
 
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
 
-        if reference:
+        if self.genRules['text'] and reference:
             outStr += name + reference + '\n'
 
         self.regSym(name, outStr, oidStr)
@@ -326,23 +330,31 @@ class PySnmpCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genModuleIdentity(self, data, classmode=False):
-        name, lastUpdated, organization, contactInfo, description, revisions, oid = data
+        name, lastUpdated, organization, contactInfo, description, revisionsAndDescrs, oid = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
 
         oidStr, parentOid = oid
-        revisions = revisions or ''
 
         outStr = name + ' = ModuleIdentity(' + oidStr + ')' + label + '\n'
 
-        if revisions:
-            outStr += self.ifTextStr + name + revisions + '\n'
+        if revisionsAndDescrs:
+            revisions, descriptions = revisionsAndDescrs
+
+            if revisions:
+                outStr += name + revisions + '\n'
+
+            if self.genRules['text'] and descriptions:
+                outStr += """
+if getattr(mibBuilder, 'version', (0, 0, 0)) > (4, 4, 0):
+    %(ifTextStr)s%(name)s%(descriptions)s
+""" % dict(ifTextStr=self.ifTextStr, name=name, descriptions=descriptions)
 
         if lastUpdated:
             outStr += self.ifTextStr + name + lastUpdated + '\n'
 
-        if self.genRules['text'] and organization:
+        if organization:
             outStr += self.ifTextStr + name + organization + '\n'
 
         if self.genRules['text'] and contactInfo:
@@ -366,14 +378,16 @@ class PySnmpCodeGen(AbstractCodeGen):
         outStr = name + ' = ModuleCompliance(' + oidStr + ')' + label
         outStr += compliances + '\n'
 
-# TODO: pysnmp does not implement .setStatus
-#        if status:
-#            outStr += self.ifTextStr + name + status + '\n'
+        if status:
+            outStr += """\
+if getattr(mibBuilder, 'version', (0, 0, 0)) > (4, 4, 0):
+    %(name)s = %(name)s%(status)s
+""" % dict(name=name, status=status)
 
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
 
-        if reference:
+        if self.genRules['text'] and reference:
             outStr += self.ifTextStr + name + reference + '\n'
 
         self.regSym(name, outStr, oidStr)
@@ -416,14 +430,16 @@ for _%(name)s_obj in [%(objects)s]:
             else:
                 outStr += '.setObjects(' + ', '.join(objects) + ')\n'
 
-# TODO: pysnmp does not implement .setStatus
-#        if status:
-#            outStr += self.ifTextStr + name + status + '\n'
+        if status:
+            outStr += """\
+if getattr(mibBuilder, 'version', (0, 0, 0)) > (4, 4, 0):
+    %(name)s = %(name)s%(status)s
+""" % dict(name=name, status=status)
 
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
 
-        if reference:
+        if self.genRules['text'] and reference:
             outStr += name + reference + '\n'
 
         self.regSym(name, outStr, oidStr)
@@ -472,7 +488,7 @@ for _%(name)s_obj in [%(objects)s]:
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
 
-        if reference:
+        if self.genRules['text'] and reference:
             outStr += self.ifTextStr + name + reference + '\n'
 
         self.regSym(name, outStr, oidStr)
@@ -515,14 +531,16 @@ for _%(name)s_obj in [%(objects)s]:
             else:
                 outStr += '.setObjects(' + ', '.join(objects) + ')\n'
 
-# TODO: pysnmp does not implement .setStatus
-#        if self.genRules['text'] and status:
-#            outStr += self.ifTextStr + name + status + '\n'
+        if status:
+            outStr += """\
+if getattr(mibBuilder, 'version', (0, 0, 0)) > (4, 4, 0):
+    %(name)s = %(name)s%(status)s
+""" % dict(name=name, status=status)
 
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
 
-        if reference:
+        if self.genRules['text'] and reference:
             outStr += self.ifTextStr + name + reference + '\n'
 
         self.regSym(name, outStr, oidStr)
@@ -545,7 +563,7 @@ for _%(name)s_obj in [%(objects)s]:
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
 
-        if reference:
+        if self.genRules['text'] and reference:
             outStr += self.ifTextStr + name + reference + '\n'
 
         self.regSym(name, outStr, oidStr)
@@ -577,7 +595,7 @@ for _%(name)s_obj in [%(objects)s]:
         outStr += indexStr or ''
         outStr += '\n'
 
-        if reference:
+        if self.genRules['text'] and reference:
             outStr += self.ifTextStr + name + reference + '\n'
 
         if augmention:
@@ -639,7 +657,7 @@ for _%(name)s_obj in [%(objects)s]:
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'
 
-        if reference:
+        if self.genRules['text'] and reference:
             outStr += self.ifTextStr + name + reference + '\n'
 
         self.regSym(name, outStr, enterpriseStr)
@@ -846,7 +864,7 @@ for _%(name)s_obj in [%(objects)s]:
     # noinspection PyMethodMayBeStatic
     def genProductRelease(self, data, classmode=False):
         text = data[0]
-        return classmode and self.indent + 'release = ' + dorepr(text) + '\n' or '.setRelease(' + dorepr(text) + ')'
+        return classmode and self.indent + 'productRelease = ' + dorepr(text) + '\n' or '.setProductRelease(' + dorepr(text) + ')'
 
     def genEnumSpec(self, data, classmode=False):
         items = data[0]
@@ -1000,13 +1018,15 @@ for _%(name)s_obj in [%(objects)s]:
     # noinspection PyUnusedLocal
     def genRevisions(self, data, classmode=False):
         times = self.genTime([x[0] for x in data[0]])
-        return '.setRevisions((%s,))' % ', '.join([dorepr(x) for x in times])
+        times = [dorepr(x) for x in times]
 
-# TODO: push description data to pysnmp
-#        descriptions = [dorepr(self.textFilter(x[1][1])) for x in data[0]]
-#        revisions = ', '.join(['(\'%s\', %s)' % x for x in zip(times, descriptions)])
-#        text += '.setRevisionsDescriptions((%s,))' % descriptions
-#        return text
+        revisions = '.setRevisions((%s,))' % ', '.join(times)
+
+        descriptions = '.setRevisionsDescriptions((%s,))' % ', '.join(
+            [dorepr(self.textFilter('description', x[1][1])) for x in data[0]]
+        )
+
+        return revisions, descriptions
 
     def genRow(self, data, classmode=False):
         row = data[0]

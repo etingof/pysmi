@@ -76,7 +76,7 @@ class JsonCodeGen(AbstractCodeGen):
         self._oids = set()
         self._complianceOids = []
         self.moduleName = ['DUMMY']
-        self.genRules = {'text': 1}
+        self.genRules = {'text': True}
         self.symbolTable = {}
 
     @staticmethod
@@ -228,7 +228,7 @@ class JsonCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genAgentCapabilities(self, data):
-        name, product_release, status, description, reference, oid = data
+        name, productRelease, status, description, reference, oid = data
 
         label = self.genLabel(name)
         name = self.transOpers(name)
@@ -240,8 +240,8 @@ class JsonCodeGen(AbstractCodeGen):
         outDict['oid'] = oidStr
         outDict['class'] = 'agentcapabilities'
 
-        if product_release:
-            outDict['release'] = product_release
+        if productRelease:
+            outDict['productrelease'] = productRelease
 
         if status:
             outDict['status'] = status
@@ -249,7 +249,7 @@ class JsonCodeGen(AbstractCodeGen):
         if self.genRules['text'] and description:
             outDict['description'] = description
 
-        if reference:
+        if self.genRules['text'] and reference:
             outDict['reference'] = reference
 
         self.regSym(name, outDict, parentOid)
@@ -310,7 +310,7 @@ class JsonCodeGen(AbstractCodeGen):
         if self.genRules['text'] and description:
             outDict['description'] = description
 
-        if reference:
+        if self.genRules['text'] and reference:
             outDict['reference'] = reference
 
         self.regSym(name, outDict, parentOid, moduleCompliance=True)
@@ -339,7 +339,7 @@ class JsonCodeGen(AbstractCodeGen):
         if self.genRules['text'] and description:
             outDict['description'] = description
 
-        if reference:
+        if self.genRules['text'] and reference:
             outDict['reference'] = reference
 
         self.regSym(name, outDict, parentOid)
@@ -368,7 +368,7 @@ class JsonCodeGen(AbstractCodeGen):
         if self.genRules['text'] and description:
             outDict['description'] = description
 
-        if reference:
+        if self.genRules['text'] and reference:
             outDict['reference'] = reference
 
         self.regSym(name, outDict, parentOid)
@@ -396,7 +396,7 @@ class JsonCodeGen(AbstractCodeGen):
         if self.genRules['text'] and description:
             outDict['description'] = description
 
-        if reference:
+        if self.genRules['text'] and reference:
             outDict['reference'] = reference
 
         self.regSym(name, outDict, parentOid)
@@ -423,7 +423,7 @@ class JsonCodeGen(AbstractCodeGen):
         if self.genRules['text'] and description:
             outDict['description'] = description
 
-        if reference:
+        if self.genRules['text'] and reference:
             outDict['reference'] = reference
 
         self.regSym(name, outDict, parentOid)
@@ -463,7 +463,7 @@ class JsonCodeGen(AbstractCodeGen):
             outDict['maxaccess'] = maxaccess
         if indexStr:
             outDict['indices'] = indexStr
-        if reference:
+        if self.genRules['text'] and reference:
             outDict['reference'] = reference
         if augmention:
             augmention = self.transOpers(augmention)
@@ -506,7 +506,7 @@ class JsonCodeGen(AbstractCodeGen):
         if self.genRules['text'] and description:
             outDict['description'] = description
 
-        if reference:
+        if self.genRules['text'] and reference:
             outDict['reference'] = reference
 
         self.regSym(name, outDict, parentOid)
@@ -802,8 +802,13 @@ class JsonCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal
     def genRevisions(self, data):
-        times = self.genTime([x[0] for x in data[0]])
-        return times
+        revisions = []
+        for x in data[0]:
+            revision = OrderedDict()
+            revision['revision'] = self.genTime([x[0]])[0]
+            revision['description'] = self.textFilter('description', x[1][1])
+            revisions.append(revision)
+        return revisions
 
     def genRow(self, data):
         row = data[0]
@@ -859,7 +864,7 @@ class JsonCodeGen(AbstractCodeGen):
                 outDict['status'] = status
             if self.genRules['text'] and description:
                 outDict['description'] = description
-            if reference:
+            if self.genRules['text'] and reference:
                 outDict['reference'] = reference
 
         return parentType, outDict
