@@ -310,7 +310,7 @@ class PySnmpCodeGen(AbstractCodeGen):
             outStr += """\
 if getattr(mibBuilder, 'version', (0, 0, 0)) > (4, 4, 0):
     %(name)s = %(name)s%(productRelease)s
-""" % dict(name=name, release=productRelease)
+""" % dict(name=name, productRelease=productRelease)
 
         if status:
             outStr += """\
