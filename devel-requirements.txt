@@ -1,2 +1,2 @@
 sphinx
-pysnmp
+pysnmp >= '4.4.2'
