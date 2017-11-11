@@ -1,5 +1,5 @@
 
-Revision 0.2.1, XX-11-2017
+Revision 0.2.1, 11-11-2017
 --------------------------
 
 - Added MIB *status*, *product release* and *revision description* set
