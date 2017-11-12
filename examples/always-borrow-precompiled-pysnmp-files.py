@@ -1,11 +1,14 @@
-#
-# Try to download (AKA borrow) precompiled pysnmp MIB file(s)
-# from a web-site.
-# In this example no attempt is made to find and compile ASN.1
-# MIB source.
-#
-# Fetched pysnmp MIB(s) are stored in a local directory.
-#
+"""
+Always borrow pysnmp MIBs
++++++++++++++++++++++++++
+
+Try to borrow precompiled pysnmp MIB file(s) from a web-site.
+
+In this example no attempt is made to find and compile ASN.1
+MIB source.
+
+Fetched pysnmp MIB(s) are stored in a local directory.
+"""#
 from pysmi.reader import HttpReader
 from pysmi.searcher import PyFileSearcher
 from pysmi.borrower import PyFileBorrower
@@ -13,9 +16,6 @@ from pysmi.writer import PyFileWriter
 from pysmi.parser import NullParser
 from pysmi.codegen import NullCodeGen
 from pysmi.compiler import MibCompiler
-# from pysmi import debug
-
-# debug.setLogger(debug.Debug('compiler'))
 
 inputMibs = ['BORROWED-MIB']
 

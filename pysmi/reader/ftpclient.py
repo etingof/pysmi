@@ -27,7 +27,9 @@ class FtpReader(AbstractReader):
 
            Args:
                host (str): domain name or IP address of web server
-               locationTemplate (str): location part of the directory containing @mib@ magic placeholder to be replaced with MIB name fetch.
+               locationTemplate (str): location part of the directory containing @mib@ magic placeholder to be
+                   replaced with MIB name fetch.
+
            Keyword Args:
                timeout (int): response timeout
                ssl (bool): access HTTPS web site

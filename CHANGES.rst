@@ -2,7 +2,7 @@
 Revision 0.2.2, XX-11-2017
 --------------------------
 
-No changes yet
+- Library documentation refactored and updated
 
 Revision 0.2.1, 11-11-2017
 --------------------------

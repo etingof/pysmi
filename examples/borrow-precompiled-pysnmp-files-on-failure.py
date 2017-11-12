@@ -1,9 +1,12 @@
-#
-# Look up specific ASN.1 MIBs at configured Web/FTP sites.
-# If no required MIB is found or its compilation fails for
-# some reason, attempt to download precompiled version of
-# failed MIB and store it locally as if we had compiled it.
-#
+"""
+Borrow pysnmp MIBs on failure
++++++++++++++++++++++++++++++
+
+Look up specific ASN.1 MIBs at configured Web/FTP sites.
+If no required MIB is found or its compilation fails for
+some reason, attempt to download precompiled version of
+failed MIB and store it locally as if we had compiled it.
+"""#
 from pysmi.reader import HttpReader
 from pysmi.searcher import PyFileSearcher
 from pysmi.searcher import StubSearcher

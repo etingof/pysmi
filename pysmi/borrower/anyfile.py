@@ -8,4 +8,4 @@ from pysmi.borrower.base import AbstractBorrower
 
 
 class AnyFileBorrower(AbstractBorrower):
-    """Transformed MIB modules borrower."""
+    """Create arbitrary MIB file borrowing object"""

@@ -1,13 +1,16 @@
-#
-# Invoke user callback function to provide MIB text,
-# compile given text string into pysnmp MIB form and pass
-# results to another user callback function for storing.
-#
-# Here we expect to deal only with SMIv2-valid MIBs.
-#
-# We use noDeps flag to prevent MIB compiler from attemping
-# to compile IMPORT'ed MIBs as well.
-#
+"""
+Compile SMIv2 MIBs
+++++++++++++++++++
+
+Invoke user callback function to provide MIB text,
+compile given text string into pysnmp MIB form and pass
+results to another user callback function for storing.
+
+Here we expect to deal only with SMIv2-valid MIBs.
+
+We use noDeps flag to prevent MIB compiler from attemping
+to compile IMPORT'ed MIBs as well.
+"""#
 import sys
 from pysmi.reader import CallbackReader
 from pysmi.searcher import StubSearcher
@@ -15,9 +18,6 @@ from pysmi.writer import CallbackWriter
 from pysmi.parser import SmiV2Parser
 from pysmi.codegen import PySnmpCodeGen
 from pysmi.compiler import MibCompiler
-# from pysmi import debug
-
-# debug.setLogger(debug.Debug('compiler'))
 
 inputMibs = ['IF-MIB', 'IP-MIB']
 srcDir = '/usr/share/snmp/mibs/'  # we will read MIBs from here

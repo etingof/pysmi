@@ -1,10 +1,13 @@
-#
-# Look up specific ASN.1 MIBs at configured Web and FTP sites,
-# compile them into JSON documents and print them out to stdout.
-#
-# Try to support both SMIv1 and SMIv2 flavors of SMI as well as
-# popular deviations from official syntax found in the wild.
-#
+"""
+Compile MIBs into JSON
+++++++++++++++++++++++
+
+Look up specific ASN.1 MIBs at configured Web and FTP sites,
+compile them into JSON documents and print them out to stdout.
+
+Try to support both SMIv1 and SMIv2 flavors of SMI as well as
+popular deviations from official syntax found in the wild.
+"""#
 from pysmi.reader import FileReader, HttpReader
 from pysmi.searcher import StubSearcher
 from pysmi.writer import CallbackWriter
@@ -20,6 +23,7 @@ srcDirectories = ['/usr/share/snmp/mibs']
 httpSources = [
     ('mibs.snmplabs.com', 80, '/asn1/@mib@')
 ]
+
 
 def printOut(mibName, jsonDoc, cbCtx):
     print('\n\n# MIB module %s' % mibName)

@@ -1,6 +1,6 @@
 
-Documentation
-=============
+PySMI documentation
+===================
 
 PySMI library is highly modular. The top-level component is called
 *compiler* and it acts as main user-facing object. Most of other
@@ -41,5 +41,5 @@ chosen and configured to compiler.
 .. toctree::
    :maxdepth: 2
 
-   /user-perspective
-   /developer-documentation
+   /mibdump
+   /library-reference
