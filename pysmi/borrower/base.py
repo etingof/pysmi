@@ -17,6 +17,7 @@ class AbstractBorrower(object):
 
            Args:
                reader: a *reader* object
+
            Keyword Args:
                genText: indicates whether this borrower should be looking
                         for transformed MIBs that include human-oriented texts

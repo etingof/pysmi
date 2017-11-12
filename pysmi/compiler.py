@@ -72,30 +72,6 @@ class MibCompiler(object):
     life. Unlike singular, required components, optional one can be present
     in sequences to address many possible sources of data. They are
     *readers*, *searchers* and *borrowers*.
-
-    Examples: ::
-
-        from pysmi.reader.localfile import FileReader
-        from pysmi.searcher.pyfile import PyFileSearcher
-        from pysmi.searcher.pypackage import PyPackageSearcher
-        from pysmi.searcher.stub import StubSearcher
-        from pysmi.writer.pyfile import PyFileWriter
-        from pysmi.parser.smi import SmiV2Parser
-        from pysmi.codegen.pysnmp import PySnmpCodeGen, baseMibs
-
-        mibCompiler = MibCompiler(SmiV2Parser(),
-                                  PySnmpCodeGen(),
-                                  PyFileWriter('/tmp/pysnmp/mibs'))
-
-        mibCompiler.addSources(FileReader('/usr/share/snmp/mibs'))
-
-        mibCompiler.addSearchers(PyFileSearcher('/tmp/pysnmp/mibs'))
-        mibCompiler.addSearchers(PyPackageSearcher('pysnmp.mibs'))
-
-        mibCompiler.addSearchers(StubSearcher(*baseMibs))
-
-        results = mibCompiler.compile('IF-MIB', 'IP-MIB')
-
     """
     indexFile = 'index'
 

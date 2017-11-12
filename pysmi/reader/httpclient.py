@@ -24,10 +24,9 @@ from pysmi import debug
 class HttpReader(AbstractReader):
     """Fetch ASN.1 MIB text by name from a web site.
 
-        *HttpReader* class instance tries to download ASN.1 MIB files
-        by name and return their contents to caller.
+    *HttpReader* class instance tries to download ASN.1 MIB files
+    by name and return their contents to caller.
     """
-
     MIB_MAGIC = '@mib@'
 
     def __init__(self, host, port, locationTemplate, timeout=5, ssl=False):
@@ -37,8 +36,8 @@ class HttpReader(AbstractReader):
                host (str): domain name or IP address of web server
                port (int): TCP port web server is listening
                locationTemplate (str): location part of the URL optionally containing @mib@
-               magic placeholder to be replaced with MIB name. If @mib@ magic is not present,
-               MIB name is appended to `locationTemplate`
+                   magic placeholder to be replaced with MIB name. If @mib@ magic is not present,
+                   MIB name is appended to `locationTemplate`
 
            Keyword Args:
                timeout (int): response timeout

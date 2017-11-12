@@ -76,6 +76,14 @@ class ZipReader(AbstractReader):
     useIndexFile = False
 
     def __init__(self, path, ignoreErrors=True):
+        """Create an instance of *ZipReader* serving a ZIP archive.
+
+           Args:
+               path (str): path to ZIP archive containing MIB files
+
+           Keyword Args:
+               ignoreErrors (bool): ignore ZIP archive access errors
+        """
         self._name = path
         self._members = {}
         self._pendingError = None

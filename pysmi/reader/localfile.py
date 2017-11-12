@@ -28,6 +28,7 @@ class FileReader(AbstractReader):
 
            Args:
                path (str): directory to search MIB files
+
            Keyword Args:
                recursive (bool): whether to include subdirectories
                ignoreErrors (bool): ignore filesystem access errors

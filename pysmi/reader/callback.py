@@ -12,7 +12,21 @@ from pysmi import debug
 
 
 class CallbackReader(AbstractReader):
+    """Fetch ASN.1 MIB text by name by calling user-defined callable.
+
+    *CallbackReader* class instance tries to retrieve ASN.1 MIB files
+    by name and return their contents to caller.
+    """
     def __init__(self, cbFun, cbCtx=None):
+        """Create an instance of *CallbackReader* bound to specific URL.
+
+           Args:
+               cbFun (callable): user callable accepting *MIB name* and *cbCtx* objects
+
+           Keyword Args:
+               cbCtx (object): user object that can be used to communicate state information
+                   between user-scope code and the *cbFun* callable scope
+        """
         self._cbFun = cbFun
         self._cbCtx = cbCtx
 
