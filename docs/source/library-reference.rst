@@ -6,11 +6,11 @@ The *MibCompiler* object is the top-most interface to PySMI library features.
 It holds together the otherwise isolated pieces of the compiler infrastructure
 and manages the workflow of ASN.1 MIB transformation.
 
-This example showcases most of its features:
+This example showcases some of its features:
 
 .. code-block:: python
 
-   from pysmi.reader import FileReader, HttpReader
+   from pysmi.reader import HttpReader
    from pysmi.searcher import StubSearcher
    from pysmi.writer import CallbackWriter
    from pysmi.parser import SmiStarParser
@@ -19,7 +19,6 @@ This example showcases most of its features:
 
    inputMibs = ['IF-MIB', 'IP-MIB']
 
-   srcDirectories = ['/usr/share/snmp/mibs']
    httpSources = [('mibs.snmplabs.com', 80, '/asn1/@mib@')]
 
    # store compiled MIBs by calling this function
@@ -31,8 +30,7 @@ This example showcases most of its features:
        SmiStarParser(), JsonCodeGen(), CallbackWriter(store_mibs)
    )
 
-   # pull ASN.1 MIBs from these locations
-   mibCompiler.addSources(*[FileReader(x) for x in srcDirectories])
+   # pull ASN.1 MIBs over HTTP
    mibCompiler.addSources(*[HttpReader(*x) for x in httpSources])
 
    # never recompile MIBs with ASN.1 MACROs
@@ -145,3 +143,27 @@ object given to :ref:`MibCompiler <compiler.MibCompiler>` on instantiation.
    /pysmi/writer/localfile/filewriter
    /pysmi/writer/pyfile/pyfilewriter
    /pysmi/writer/callback/callbackwriter
+
+Examples
+--------
+
+The following examples focus on various feature of the PySMI library.
+
+In case of any troubles or confusion, try enabling PySMI debugging
+and watch the output:
+
+.. code-block:: python
+
+   from pysmi import debug
+
+   debug.setLogger(debug.Debug('all'))
+
+.. toctree::
+   :maxdepth: 2
+
+   /examples/download-and-compile-smistar-mibs-into-json.rst
+   /examples/download-and-compile-smistar-mibs-into-pysnmp-files.rst
+   /examples/compile-smistar-mibs-into-pysnmp-files-if-needed.rst
+   /examples/compile-smiv2-mibs-from-text-into-pysnmp-code.rst
+   /examples/borrow-precompiled-pysnmp-files-on-failure.rst
+   /examples/always-borrow-precompiled-pysnmp-files.rst
