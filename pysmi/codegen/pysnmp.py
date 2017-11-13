@@ -423,12 +423,13 @@ for _%(name)s_obj in [%(objects)s]:
         # WARNING: leading objects get lost here! Upgrade your pysnmp version!
         %(name)s = %(name)s.setObjects(*_%(name)s_obj)
     else:
-        %(name)s = %(name)s.setObjects(*_%(name)s_obj, **dict(append=True))
-
+        %(name)s = %(name)s.setObjects(*_%(name)s_obj, **dict(append=True))\
 """ % dict(name=name, objects=', '.join(objStrParts))
 
             else:
-                outStr += '.setObjects(' + ', '.join(objects) + ')\n'
+                outStr += '.setObjects(' + ', '.join(objects) + ')'
+
+        outStr += '\n'
 
         if status:
             outStr += """\
@@ -475,12 +476,13 @@ for _%(name)s_obj in [%(objects)s]:
         # WARNING: leading objects get lost here! Upgrade your pysnmp version!
         %(name)s = %(name)s.setObjects(*_%(name)s_obj)
     else:
-        %(name)s = %(name)s.setObjects(*_%(name)s_obj, **dict(append=True))
-
+        %(name)s = %(name)s.setObjects(*_%(name)s_obj, **dict(append=True))\
 """ % dict(name=name, objects=', '.join(objStrParts))
 
             else:
-                outStr += '.setObjects(' + ', '.join(objects) + ')\n'
+                outStr += '.setObjects(' + ', '.join(objects) + ')'
+
+        outStr += '\n'
 
         if status:
             outStr += self.ifTextStr + name + status + '\n'
@@ -524,12 +526,13 @@ for _%(name)s_obj in [%(objects)s]:
         # WARNING: leading objects get lost here!
         %(name)s = %(name)s.setObjects(*_%(name)s_obj)
     else:
-        %(name)s = %(name)s.setObjects(*_%(name)s_obj, **dict(append=True))
-
+        %(name)s = %(name)s.setObjects(*_%(name)s_obj, **dict(append=True))\
 """ % dict(name=name, objects=', '.join(objStrParts))
 
             else:
-                outStr += '.setObjects(' + ', '.join(objects) + ')\n'
+                outStr += '.setObjects(' + ', '.join(objects) + ')'
+
+        outStr += '\n'
 
         if status:
             outStr += """\
@@ -647,12 +650,13 @@ for _%(name)s_obj in [%(objects)s]:
         # WARNING: leading objects get lost here! Upgrade your pysnmp version!
         %(name)s = %(name)s.setObjects(*_%(name)s_obj)
     else:
-        %(name)s = %(name)s.setObjects(*_%(name)s_obj, **dict(append=True))
-
+        %(name)s = %(name)s.setObjects(*_%(name)s_obj, **dict(append=True))\
 """ % dict(name=name, objects=', '.join(objStrParts))
 
             else:
-                outStr += '.setObjects(' + ', '.join(objects) + ')\n'
+                outStr += '.setObjects(' + ', '.join(objects) + ')'
+
+        outStr += '\n'
 
         if self.genRules['text'] and description:
             outStr += self.ifTextStr + name + description + '\n'

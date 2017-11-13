@@ -149,15 +149,6 @@ Examples
 
 The following examples focus on various feature of the PySMI library.
 
-In case of any troubles or confusion, try enabling PySMI debugging
-and watch the output:
-
-.. code-block:: python
-
-   from pysmi import debug
-
-   debug.setLogger(debug.Debug('all'))
-
 .. toctree::
    :maxdepth: 2
 
@@ -167,3 +158,13 @@ and watch the output:
    /examples/compile-smiv2-mibs-from-text-into-pysnmp-code.rst
    /examples/borrow-precompiled-pysnmp-files-on-failure.rst
    /examples/always-borrow-precompiled-pysnmp-files.rst
+
+In case of any troubles or confusion, try enabling PySMI debugging
+and watch the output:
+
+.. code-block:: python
+
+   from pysmi import debug
+
+   debug.setLogger(debug.Debug('all'))
+

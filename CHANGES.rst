@@ -1,8 +1,9 @@
 
-Revision 0.2.2, XX-11-2017
+Revision 0.2.2, 13-11-2017
 --------------------------
 
 - Library documentation refactored and updated
+- Fixed malformed Python code being produced by pysnmp code generator
 
 Revision 0.2.1, 11-11-2017
 --------------------------
