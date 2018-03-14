@@ -2,8 +2,8 @@
 #
 # This file is part of pysmi software.
 #
-# Copyright (c) 2015-2017, Ilya Etingof <etingof@gmail.com>
-# License: http://pysmi.sf.net/license.html
+# Copyright (c) 2015-2018, Ilya Etingof <etingof@gmail.com>
+# License: http://snmplabs.com/pysmi/license.html
 #
 # SNMP SMI/MIB data management tool
 #
@@ -98,7 +98,7 @@ for opt in opts:
 Synopsis:
   SNMP SMI/MIB files conversion tool
 Documentation:
-  http://pysmi.sourceforge.net
+  http://snmplabs.com/pysmi
 %s
 """ % helpMessage)
         sys.exit(-1)
@@ -109,7 +109,7 @@ Documentation:
         sys.stderr.write("""\
 SNMP SMI/MIB library version %s, written by Ilya Etingof <etingof@gmail.com>
 Python interpreter: %s
-Software documentation and support at http://pysmi.sf.net
+Software documentation and support at http://snmplabs.com/pysmi
 %s
 """ % (__version__, sys.version, helpMessage))
         sys.exit(1)

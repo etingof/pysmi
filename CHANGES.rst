@@ -4,6 +4,8 @@ Revision 0.3.0, XX-02-2018
 
 - ZIP archive reader implemented to pull ASN.1 MIB files from .zip
   archives pretty much in the same way as from plain directories
+- Copyright notice bumped up to year 2018
+- Project site in the docs changes from SourceForge to snmplabs.com
 
 Revision 0.2.2, 13-11-2017
 --------------------------

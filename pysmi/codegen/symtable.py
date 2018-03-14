@@ -1,8 +1,8 @@
 #
 # This file is part of pysmi software.
 #
-# Copyright (c) 2015-2017, Ilya Etingof <etingof@gmail.com>
-# License: http://pysmi.sf.net/license.html
+# Copyright (c) 2015-2018, Ilya Etingof <etingof@gmail.com>
+# License: http://snmplabs.com/pysmi/license.html
 #
 # Build an internally used symbol table for each passed MIB.
 #

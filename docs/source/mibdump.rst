@@ -15,7 +15,7 @@ into various formats.
    Synopsis:
      SNMP SMI/MIB files conversion tool
    Documentation:
-     http://pysmi.sourceforge.net
+     http://snmplabs.com/pysmi
    Usage: mibdump.py [--help]
          [--version]
          [--quiet]

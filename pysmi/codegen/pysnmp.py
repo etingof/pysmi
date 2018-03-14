@@ -1,8 +1,8 @@
 #
 # This file is part of pysmi software.
 #
-# Copyright (c) 2015-2017, Ilya Etingof <etingof@gmail.com>
-# License: http://pysmi.sf.net/license.html
+# Copyright (c) 2015-2018, Ilya Etingof <etingof@gmail.com>
+# License: http://snmplabs.com/pysmi/license.html
 #
 import sys
 import re
@@ -1168,7 +1168,7 @@ for _%(name)s_obj in [%(objects)s]:
 
         if 'comments' in kwargs:
             out = ''.join(['# %s\n' % x for x in kwargs['comments']]) + '#\n' + out
-            out = '#\n# PySNMP MIB module %s (http://pysnmp.sf.net)\n' % self.moduleName[0] + out
+            out = '#\n# PySNMP MIB module %s (http://snmplabs.com/pysmi)\n' % self.moduleName[0] + out
 
         debug.logger & debug.flagCodegen and debug.logger(
             'canonical MIB name %s (%s), imported MIB(s) %s, Python code size %s bytes' % (
@@ -1194,7 +1194,7 @@ for _%(name)s_obj in [%(objects)s]:
 
         if 'comments' in kwargs:
             out = ''.join(['# %s\n' % x for x in kwargs['comments']]) + '#\n' + out
-            out = '#\n# PySNMP MIB indices (http://pysnmp.sf.net)\n' + out
+            out = '#\n# PySNMP MIB indices (http://snmplabs.com/pysmi)\n' + out
 
         debug.logger & debug.flagCodegen and debug.logger(
             'OID->MIB index built, %s entries, %s bytes' % (count, len(out)))

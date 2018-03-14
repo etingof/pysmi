@@ -22,7 +22,7 @@ Features
   HTTP and FTP servers
 * 100% Python, works with Python 2.4 up to Python 3.6
 
-Rendered PySMI documentation can be found at [pysmi site](http://pysmi.sf.net).
+Rendered PySMI documentation can be found at [pysmi site](http://snmplabs.com/pysmi).
 
 How to use PySMI
 ----------------
@@ -186,7 +186,7 @@ How to get PySMI
 ----------------
 
 The pysmi package is distributed under terms and conditions of 2-clause
-BSD [license](http://pyasn1.sourceforge.net/license.html). Source code is freely
+BSD [license](http://snmplabs.com/pysmi/license.html). Source code is freely
 available as a GitHub [repo](https://github.com/etingof/pysmi).
 
 You could `pip install pysmi` or download it from [PyPI](https://pypi.python.org/pypi/pysmi).
@@ -195,5 +195,5 @@ If something does not work as expected,
 [open an issue](https://github.com/etingof/pysmi/issues) at GitHub or
 post your question [on Stack Overflow](http://stackoverflow.com/questions/ask).
 
-Copyright (c) 2015-2017, [Ilya Etingof](mailto:etingof@gmail.com).
+Copyright (c) 2015-2018, [Ilya Etingof](mailto:etingof@gmail.com).
 All rights reserved.
