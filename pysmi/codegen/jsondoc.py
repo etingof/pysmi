@@ -241,7 +241,7 @@ class JsonCodeGen(AbstractCodeGen):
         outDict['class'] = 'agentcapabilities'
 
         if productRelease:
-            outDict['productrelease'] = productRelease
+            outDict['productRelease'] = productRelease
 
         if status:
             outDict['status'] = status
@@ -683,6 +683,9 @@ class JsonCodeGen(AbstractCodeGen):
     def genStatus(self, data):
         return data[0]
 
+    def genProductRelease(self, data):
+        return data[0]
+
     def genEnumSpec(self, data):
         items = data[0]
         return {'enumeration': dict(items)}
@@ -886,7 +889,7 @@ class JsonCodeGen(AbstractCodeGen):
         'trapTypeClause': genTrapType,
         'typeDeclaration': genTypeDeclaration,
         'valueDeclaration': genValueDeclaration,
-
+        'PRODUCT-RELEASE': genProductRelease,
         'ApplicationSyntax': genSimpleSyntax,
         'BitNames': genBitNames,
         'BITS': genBits,
