@@ -6,6 +6,7 @@ Revision 0.3.0, XX-02-2018
   archives pretty much in the same way as from plain directories
 - Copyright notice bumped up to year 2018
 - Project site in the docs changes from SourceForge to snmplabs.com
+- PRODUCT-RELEASE generation added to the JSON code generator
 
 Revision 0.2.2, 13-11-2017
 --------------------------

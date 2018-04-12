@@ -241,7 +241,7 @@ class JsonCodeGen(AbstractCodeGen):
         outDict['class'] = 'agentcapabilities'
 
         if productRelease:
-            outDict['productRelease'] = productRelease
+            outDict['productrelease'] = productRelease
 
         if status:
             outDict['status'] = status
