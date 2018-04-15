@@ -1,12 +1,16 @@
 
-Revision 0.3.0, XX-02-2018
+Revision 0.3.0, XX-04-2018
 --------------------------
 
+- The `mibcopy` tool implemented to copy MIB modules from files with
+  potentially messed up names into a directory under canonical MIB
+  names picking up the latest MIB revision along the way.
 - ZIP archive reader implemented to pull ASN.1 MIB files from .zip
   archives pretty much in the same way as from plain directories
 - Copyright notice bumped up to year 2018
 - Project site in the docs changes from SourceForge to snmplabs.com
 - PRODUCT-RELEASE generation added to the JSON code generator
+- Fixed missing REVISIONS generations in MODULE-IDENTITY
 
 Revision 0.2.2, 13-11-2017
 --------------------------

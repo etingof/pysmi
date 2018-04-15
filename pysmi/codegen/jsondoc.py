@@ -72,6 +72,7 @@ class JsonCodeGen(AbstractCodeGen):
         self._importMap = {}
         self._out = {}  # k, v = name, generated code
         self._moduleIdentityOid = None
+        self._moduleRevision = None
         self._enterpriseOid = None
         self._oids = set()
         self._complianceOids = []
@@ -272,6 +273,8 @@ class JsonCodeGen(AbstractCodeGen):
 
         if revisions:
             outDict['revisions'] = revisions
+
+            self._moduleRevision = revisions[0]['revision']
 
         if self.genRules['text']:
             if lastUpdated:
@@ -960,6 +963,7 @@ class JsonCodeGen(AbstractCodeGen):
         return MibInfo(oid=moduleOid,
                        identity=self._moduleIdentityOid,
                        name=self.moduleName[0],
+                       revision=self._moduleRevision,
                        oids=self._oids,
                        enterprise=self._enterpriseOid,
                        compliance=self._complianceOids,

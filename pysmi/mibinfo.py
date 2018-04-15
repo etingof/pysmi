@@ -25,6 +25,9 @@ class MibInfo(object):
     #: module OID
     oid = ''
 
+    #: MIB revision as `datetime`
+    revision = None
+
     #: all OIDs defined in this module
     oids = ()
 
