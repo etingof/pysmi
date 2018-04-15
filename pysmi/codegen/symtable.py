@@ -88,6 +88,7 @@ class SymtableCodeGen(AbstractCodeGen):
         self._symsOrder = []
         self._out = {}  # k, v = symbol, properties
         self.moduleName = ['DUMMY']
+        self._moduleRevision = None
         self.genRules = {'text': True}
 
     def symTrans(self, symbol):
@@ -219,6 +220,9 @@ class SymtableCodeGen(AbstractCodeGen):
         symProps = {'type': 'ModuleIdentity',
                     'oid': oid,
                     'origName': origName}
+
+        if revisions:
+            self._moduleRevision = revisions[0]
 
         self.regSym(pysmiName, symProps)
 
@@ -491,15 +495,15 @@ class SymtableCodeGen(AbstractCodeGen):
 
     # noinspection PyUnusedLocal,PyUnusedLocal,PyMethodMayBeStatic
     def genLastUpdated(self, data, classmode=False):
-        return ''
+        return data[0]
 
     # noinspection PyUnusedLocal,PyUnusedLocal,PyMethodMayBeStatic
     def genOrganization(self, data, classmode=False):
-        return ''
+        return data[0]
 
     # noinspection PyUnusedLocal,PyUnusedLocal,PyMethodMayBeStatic
     def genRevisions(self, data, classmode=False):
-        return ''
+        return data[0][0][0], data[0][0][1][1]
 
     def genRow(self, data, classmode=False):
         row = data[0]
@@ -622,4 +626,7 @@ class SymtableCodeGen(AbstractCodeGen):
             'canonical MIB name %s (%s), imported MIB(s) %s, Symbol table size %s symbols' % (
                 self.moduleName[0], moduleOid, ','.join(importedModules) or '<none>', len(self._out)))
 
-        return MibInfo(oid=None, name=self.moduleName[0], imported=tuple([x for x in importedModules])), self._out
+        return MibInfo(oid=None,
+                       name=self.moduleName[0],
+                       revision=self._moduleRevision,
+                       imported=tuple([x for x in importedModules])), self._out

@@ -113,7 +113,8 @@ params.update({
                  'pysmi.codegen',
                  'pysmi.borrower',
                  'pysmi.writer'],
-    'scripts': [os.path.join('scripts', 'mibdump.py')]
+    'scripts': [os.path.join('scripts', 'mibdump.py'),
+                os.path.join('scripts', 'mibcomb.py')]
 })
 
 # handle unittest discovery feature

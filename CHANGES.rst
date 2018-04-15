@@ -2,11 +2,14 @@
 Revision 0.3.0, XX-02-2018
 --------------------------
 
+- The `mibcomb` tool implemented to normalize MIB file names
+  and pick the latest revision out of potentially many
 - ZIP archive reader implemented to pull ASN.1 MIB files from .zip
   archives pretty much in the same way as from plain directories
 - Copyright notice bumped up to year 2018
 - Project site in the docs changes from SourceForge to snmplabs.com
 - PRODUCT-RELEASE generation added to the JSON code generator
+- Fixed missing REVISIONS generations in MODULE-IDENTITY
 
 Revision 0.2.2, 13-11-2017
 --------------------------

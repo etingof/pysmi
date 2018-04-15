@@ -116,6 +116,7 @@ class PySnmpCodeGen(AbstractCodeGen):
         self._importMap = {}
         self._out = {}  # k, v = name, generated code
         self._moduleIdentityOid = None
+        self._moduleRevision = None
         self.moduleName = ['DUMMY']
         self.genRules = {'text': True}
         self.symbolTable = {}
@@ -340,7 +341,9 @@ if getattr(mibBuilder, 'version', (0, 0, 0)) > (4, 4, 0):
         outStr = name + ' = ModuleIdentity(' + oidStr + ')' + label + '\n'
 
         if revisionsAndDescrs:
-            revisions, descriptions = revisionsAndDescrs
+            last_revision, revisions, descriptions = revisionsAndDescrs
+
+            self._moduleRevision = last_revision
 
             if revisions:
                 outStr += name + revisions + '\n'
@@ -1030,7 +1033,7 @@ for _%(name)s_obj in [%(objects)s]:
             [dorepr(self.textFilter('description', x[1][1])) for x in data[0]]
         )
 
-        return revisions, descriptions
+        return data[0][0][0], revisions, descriptions
 
     def genRow(self, data, classmode=False):
         row = data[0]
@@ -1177,6 +1180,7 @@ for _%(name)s_obj in [%(objects)s]:
         return MibInfo(oid=moduleOid,
                        identity=self._moduleIdentityOid,
                        name=self.moduleName[0],
+                       revision=self._moduleRevision,
                        oids=[],
                        enterprise=None,
                        compliance=[],
