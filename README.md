@@ -1,7 +1,7 @@
 
 SNMP MIB parser
 ---------------
-[![Python Versions](https://img.shields.io/pypi/pyversions/pysmi.svg)](https://pypi.python.org/pypi/pysmi/)
+[![Python Versions](https://img.shields.io/pypi/pyversions/pysmi.svg)](https://pypi.org/project/pysmi/)
 [![Build status](https://travis-ci.org/etingof/pysmi.svg?branch=master)](https://secure.travis-ci.org/etingof/pysmi)
 [![Coverage Status](https://img.shields.io/codecov/c/github/etingof/pysmi.svg)](https://codecov.io/github/etingof/pysmi)
 [![GitHub license](https://img.shields.io/badge/license-BSD-blue.svg)](https://raw.githubusercontent.com/etingof/pysmi/master/LICENSE.rst)
@@ -189,7 +189,7 @@ The pysmi package is distributed under terms and conditions of 2-clause
 BSD [license](http://snmplabs.com/pysmi/license.html). Source code is freely
 available as a GitHub [repo](https://github.com/etingof/pysmi).
 
-You could `pip install pysmi` or download it from [PyPI](https://pypi.python.org/pypi/pysmi).
+You could `pip install pysmi` or download it from [PyPI](https://pypi.org/project/pysmi/).
 
 If something does not work as expected,
 [open an issue](https://github.com/etingof/pysmi/issues) at GitHub or
