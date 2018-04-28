@@ -191,6 +191,7 @@ class MibCompiler(object):
         builtMibs = {}
         symbolTableMap = {}
         mibsToParse = [x for x in mibnames]
+        canonicalMibNames = {}
 
         while mibsToParse:
             mibname = mibsToParse.pop(0)
@@ -222,6 +223,11 @@ class MibCompiler(object):
                             del failedMibs[mibname]
 
                         mibsToParse.extend(mibInfo.imported)
+
+                        if fileInfo.name in mibnames:
+                            if mibInfo.name not in canonicalMibNames:
+                                canonicalMibNames[mibInfo.name] = []
+                            canonicalMibNames[mibInfo.name].append(fileInfo.name)
 
                         debug.logger & debug.flagCompiler and debug.logger(
                             '%s (%s) read from %s, immediate dependencies: %s' % (
@@ -258,7 +264,7 @@ class MibCompiler(object):
                     processed[mibname] = statusMissing
 
         debug.logger & debug.flagCompiler and debug.logger(
-            'MIBs analized %s, MIBs failed %s' % (len(parsedMibs), len(failedMibs)))
+            'MIBs analyzed %s, MIBs failed %s' % (len(parsedMibs), len(failedMibs)))
 
         #
         # See what MIBs need generating
@@ -297,7 +303,7 @@ class MibCompiler(object):
                 debug.logger & debug.flagCompiler and debug.logger(
                     'no suitable compiled MIB %s found anywhere' % mibname)
 
-                if options.get('noDeps') and mibname not in mibnames:
+                if options.get('noDeps') and mibname not in canonicalMibNames:
                     debug.logger & debug.flagCompiler and debug.logger(
                         'excluding imported MIB %s from code generation' % mibname)
                     del parsedMibs[mibname]
@@ -362,7 +368,7 @@ class MibCompiler(object):
         #
 
         for mibname in failedMibs.copy():
-            if options.get('noDeps') and mibname not in mibnames:
+            if options.get('noDeps') and mibname not in canonicalMibNames:
                 debug.logger & debug.flagCompiler and debug.logger('excluding imported MIB %s from borrowing' % mibname)
                 continue
 
@@ -425,7 +431,7 @@ class MibCompiler(object):
                 debug.logger & debug.flagCompiler and debug.logger(
                     'no suitable compiled MIB %s found anywhere' % mibname)
 
-                if options.get('noDeps') and mibname not in mibnames:
+                if options.get('noDeps') and mibname not in canonicalMibNames:
                     debug.logger & debug.flagCompiler and debug.logger(
                         'excluding imported MIB %s from borrowing' % mibname)
                     processed[mibname] = statusUntouched
@@ -484,6 +490,7 @@ class MibCompiler(object):
                         oid=mibInfo.oid,
                         oids=mibInfo.oids,
                         identity=mibInfo.identity,
+                        revision=mibInfo.revision,
                         enterprise=mibInfo.enterprise,
                         compliance=mibInfo.compliance,
                     )
