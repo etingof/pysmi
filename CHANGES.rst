@@ -10,6 +10,8 @@ Revision 0.3.0, XX-04-2018
 - Copyright notice bumped up to year 2018
 - Project site in the docs changes from SourceForge to snmplabs.com
 - PRODUCT-RELEASE generation added to the JSON code generator
+- Added special handling of BITS-like DEFVAL syntax for Integers
+  that occurs in buggy MIBs
 - Fixed missing REVISIONS generations in MODULE-IDENTITY
 
 Revision 0.2.2, 13-11-2017

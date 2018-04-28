@@ -636,7 +636,7 @@ class JsonCodeGen(AbstractCodeGen):
 
         else:  # symbol (oid as defval) or name for enumeration member
             if (defvalType[0][0] == 'ObjectIdentifier' and
-                (defval in self.symbolTable[self.moduleName[0]] or defval in self._importMap)):  # oid
+                    (defval in self.symbolTable[self.moduleName[0]] or defval in self._importMap)):  # oid
 
                 module = self._importMap.get(defval, self.moduleName[0])
 
@@ -648,9 +648,13 @@ class JsonCodeGen(AbstractCodeGen):
                     raise error.PySmiSemanticError('no symbol "%s" in module "%s"' % (defval, module))
 
             # enumeration
-            elif (defvalType[0][0] in ('Integer32', 'Integer') and
-                  isinstance(defvalType[1], list) and defval in dict(defvalType[1])):
-                outDict.update(value=defval, format='enum')
+            elif defvalType[0][0] in ('Integer32', 'Integer') and isinstance(defvalType[1], list):
+                if isinstance(defval, list):  # buggy MIB: DEFVAL { { ... } }
+                    defval = [dv for dv in defval if dv in dict(defvalType[1])]
+                    if defval:
+                        outDict.update(value=defval[0], format='enum')
+                elif defval in dict(defvalType[1]):  # good MIB: DEFVAL { ... }
+                    outDict.update(value=defval, format='enum')
 
             elif defvalType[0][0] == 'Bits':
                 defvalBits = []

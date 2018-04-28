@@ -829,10 +829,14 @@ for _%(name)s_obj in [%(objects)s]:
                     raise error.PySmiSemanticError('no symbol "%s" in module "%s"' % (defval, module))
 
             # enumeration
-            elif (defvalType[0][0] in ('Integer32', 'Integer') and
-                    isinstance(defvalType[1], list) and
-                    defval in dict(defvalType[1])):
-                val = dorepr(defval)
+            elif defvalType[0][0] in ('Integer32', 'Integer') and isinstance(defvalType[1], list):
+                if isinstance(defval, list):  # buggy MIB: DEFVAL { { ... } }
+                    defval = [dv for dv in defval if dv in dict(defvalType[1])]
+                    val = defval and dorepr(defval[0]) or ''
+                elif defval in dict(defvalType[1]):  # good MIB: DEFVAL { ... }
+                    val = dorepr(defval)
+                else:
+                    val = ''
 
             elif defvalType[0][0] == 'Bits':
                 defvalBits = []
