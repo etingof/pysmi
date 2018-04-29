@@ -4,15 +4,18 @@
 # Copyright (c) 2015-2018, Ilya Etingof <etingof@gmail.com>
 # License: http://snmplabs.com/pysmi/license.html
 #
+import socket
 import sys
 import time
 
 try:
     # noinspection PyUnresolvedReferences
-    import httplib
+    from urllib2 import Request, urlopen
 except ImportError:
     # noinspection PyUnresolvedReferences
-    import http.client as httplib
+    from urllib.request import Request
+    from urllib.request import urlopen
+
 from pysmi.reader.base import AbstractReader
 from pysmi.mibinfo import MibInfo
 from pysmi.compat import decode
@@ -32,6 +35,10 @@ class HttpReader(AbstractReader):
     def __init__(self, host, port, locationTemplate, timeout=5, ssl=False):
         """Create an instance of *HttpReader* bound to specific URL.
 
+           Note:
+               The `http_proxy` and `https_proxy` environment variables are
+               respected by the underlying `urllib` stdlib module.
+
            Args:
                host (str): domain name or IP address of web server
                port (int): TCP port web server is listening
@@ -43,50 +50,42 @@ class HttpReader(AbstractReader):
                timeout (int): response timeout
                ssl (bool): access HTTPS web site
         """
-        self._schema = ssl and 'https' or 'http'
-        self._host = host
-        self._port = port
-        self._locationTemplate = decode(locationTemplate)
-        self._timeout = timeout
+        self._url = '%s://%s:%d%s' % (ssl and 'https' or 'http',
+                                      host, port, decode(locationTemplate))
+
+        socket.setdefaulttimeout(timeout)
         self._user_agent = 'pysmi-%s; python-%s.%s.%s; %s' % (
             pysmi_version, sys.version_info[0], sys.version_info[1],
             sys.version_info[2], sys.platform
         )
 
     def __str__(self):
-        return '%s{"%s://%s:%s%s"}' % (
-            self.__class__.__name__, self._schema, self._host, self._port, self._locationTemplate)
+        return self._url
 
     def getData(self, mibname):
         headers = {
             'Accept': 'text/plain',
             'User-Agent': self._user_agent
         }
-        if sys.version_info[:2] < (2, 6):
-            conn = httplib.HTTPConnection(self._host, self._port)
-        else:
-            conn = httplib.HTTPConnection(self._host, self._port, timeout=self._timeout)
 
         mibname = decode(mibname)
 
         debug.logger & debug.flagReader and debug.logger('looking for MIB %s' % mibname)
 
         for mibalias, mibfile in self.getMibVariants(mibname):
-            if self.MIB_MAGIC in self._locationTemplate:
-                location = self._locationTemplate.replace(self.MIB_MAGIC, mibfile)
+            if self.MIB_MAGIC in self._url:
+                url = self._url.replace(self.MIB_MAGIC, mibfile)
             else:
-                location = self._locationTemplate + mibfile
+                url = self._url + mibfile
 
-            debug.logger & debug.flagReader and debug.logger(
-                'trying to fetch MIB from %s://%s:%s%s' % (self._schema, self._host, self._port, location))
+            debug.logger & debug.flagReader and debug.logger('trying to fetch MIB from %s' % url)
 
             try:
-                conn.request('GET', location, '', headers)
-                response = conn.getresponse()
+                req = Request(url, headers=headers)
+                response = urlopen(req)
 
             except Exception:
-                debug.logger & debug.flagReader and debug.logger('failed to fetch MIB from %s://%s:%s%s: %s' % (
-                    self._schema, self._host, self._port, location, sys.exc_info()[1]))
+                debug.logger & debug.flagReader and debug.logger('failed to fetch MIB from %s: %s' % (url, sys.exc_info()[1]))
                 continue
 
             debug.logger & debug.flagReader and debug.logger('HTTP response %s' % response.status)
@@ -100,9 +99,8 @@ class HttpReader(AbstractReader):
                     mtime = time.time()
 
                 debug.logger & debug.flagReader and debug.logger(
-                    'fetching source MIB %s, mtime %s' % (location, response.getheader('Last-Modified')))
+                    'fetching source MIB %s, mtime %s' % (url, response.getheader('Last-Modified')))
 
-                return MibInfo(path='%s://%s:%s%s' % (self._schema, self._host, self._port, location), file=mibfile,
-                               name=mibalias, mtime=mtime), decode(response.read(self.maxMibSize))
+                return MibInfo(path=url, file=mibfile, name=mibalias, mtime=mtime), decode(response.read(self.maxMibSize))
 
         raise error.PySmiReaderFileNotFoundError('source MIB %s not found' % mibname, reader=self)
