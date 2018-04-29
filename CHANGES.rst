@@ -7,6 +7,8 @@ Revision 0.3.0, XX-04-2018
   names picking up the latest MIB revision along the way.
 - ZIP archive reader implemented to pull ASN.1 MIB files from .zip
   archives pretty much in the same way as from plain directories
+- HTTP/S proxy support added (through respecting `http_proxy` environment
+  variable) by switching from `httplib` to `urllib2` internally
 - Copyright notice bumped up to year 2018
 - Project site in the docs changes from SourceForge to snmplabs.com
 - PRODUCT-RELEASE generation added to the JSON code generator
