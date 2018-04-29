@@ -1,5 +1,5 @@
 
-Revision 0.3.0, XX-04-2018
+Revision 0.3.0, 29-04-2018
 --------------------------
 
 - The `mibcopy` tool implemented to copy MIB modules from files with
