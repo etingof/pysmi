@@ -88,9 +88,9 @@ class HttpReader(AbstractReader):
                 debug.logger & debug.flagReader and debug.logger('failed to fetch MIB from %s: %s' % (url, sys.exc_info()[1]))
                 continue
 
-            debug.logger & debug.flagReader and debug.logger('HTTP response %s' % response.status)
+            debug.logger & debug.flagReader and debug.logger('HTTP response %s' % response.code)
 
-            if response.status == 200:
+            if response.code == 200:
                 try:
                     mtime = time.mktime(time.strptime(response.getheader('Last-Modified'), "%a, %d %b %Y %H:%M:%S %Z"))
 
