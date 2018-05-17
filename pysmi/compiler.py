@@ -156,6 +156,22 @@ class MibCompiler(object):
 
         return self
 
+    def _get_system_info(self):
+
+        try:
+            platform_info = os.uname()
+
+        except AttributeError:
+            platform_info = ('?',) * 6
+
+        try:
+            user_info = getpwuid(os.getuid())
+
+        except Exception:
+            user_info = ('?',) * 7
+
+        return platform_info, user_info
+
     def compile(self, *mibnames, **options):
         """Transform requested and possibly referred MIBs.
 
@@ -322,13 +338,13 @@ class MibCompiler(object):
 
             debug.logger & debug.flagCompiler and debug.logger('compiling %s read from %s' % (mibname, fileInfo.path))
 
+            platform_info, user_info = self._get_system_info()
+
             comments = [
                 'ASN.1 source %s' % fileInfo.path,
                 'Produced by %s-%s at %s' % (packageName, packageVersion, time.asctime()),
-                'On host %s platform %s version %s by user %s' % (
-                    hasattr(os, 'uname') and os.uname()[1] or '?', hasattr(os, 'uname') and os.uname()[0] or '?',
-                    hasattr(os, 'uname') and os.uname()[2] or '?',
-                    hasattr(os, 'getuid') and getpwuid(os.getuid())[0] or '?'),
+                'On host %s platform %s version %s by user %s' % (platform_info[1], platform_info[0],
+                                                                  platform_info[2], user_info[0]),
                 'Using Python version %s' % sys.version.split('\n')[0]
             ]
 
@@ -513,13 +529,15 @@ class MibCompiler(object):
         return processed
 
     def buildIndex(self, processedMibs, **options):
+        platform_info, user_info = self._get_system_info()
+
         comments = [
             'Produced by %s-%s at %s' % (packageName, packageVersion, time.asctime()),
-            'On host %s platform %s version %s by user %s' % (
-                hasattr(os, 'uname') and os.uname()[1] or '?', hasattr(os, 'uname') and os.uname()[0] or '?',
-                hasattr(os, 'uname') and os.uname()[2] or '?', hasattr(os, 'getuid') and getpwuid(os.getuid())[0]) or '?',
+            'On host %s platform %s version %s by user %s' % (platform_info[1], platform_info[0],
+                                                              platform_info[2], user_info[0]),
             'Using Python version %s' % sys.version.split('\n')[0]
         ]
+
         try:
             self._writer.putData(
                 self.indexFile,

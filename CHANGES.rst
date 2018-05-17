@@ -1,4 +1,10 @@
 
+Revision 0.3.1, XX-0X-2018
+--------------------------
+
+- Fixed compiler crash when building comments at a platform which
+  has broken users/groups databases
+
 Revision 0.3.0, 29-04-2018
 --------------------------
 
