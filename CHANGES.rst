@@ -1,7 +1,8 @@
 
-Revision 0.3.1, XX-0X-2018
+Revision 0.3.1, XX-05-2018
 --------------------------
 
+- Fixed pysnmp lower version in test-requirements.txt
 - Fixed compiler crash when building comments at a platform which
   has broken users/groups databases
 
