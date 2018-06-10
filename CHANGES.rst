@@ -1,5 +1,5 @@
 
-Revision 0.3.1, XX-05-2018
+Revision 0.3.1, 10-06-2018
 --------------------------
 
 - Fixed pysnmp lower version in test-requirements.txt
