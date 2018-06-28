@@ -7,7 +7,8 @@
 #
 """SNMP SMI/MIB Parser
 
-   A pure-Python implementation of SNMP/SMI MIB parsing and conversion library.
+A pure-Python implementation of SNMP/SMI MIB parsing and
+conversion library.
 """
 
 import os
@@ -35,6 +36,7 @@ Programming Language :: Python :: 3.3
 Programming Language :: Python :: 3.4
 Programming Language :: Python :: 3.5
 Programming Language :: Python :: 3.6
+Programming Language :: Python :: 3.7
 Topic :: Communications
 Topic :: System :: Monitoring
 Topic :: System :: Networking :: Monitoring

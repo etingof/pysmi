@@ -20,7 +20,7 @@ Features
 * Maintains an index of MIB objects over many MIB modules
 * Automatically pulls ASN.1 MIBs from local directories, ZIP archives,
   HTTP and FTP servers
-* 100% Python, works with Python 2.4 up to Python 3.6
+* 100% Python, works with Python 2.4 up to Python 3.7
 
 Rendered PySMI documentation can be found at [pysmi site](http://snmplabs.com/pysmi).
 
