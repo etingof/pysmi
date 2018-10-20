@@ -159,7 +159,7 @@ def getMibRevision(mibDir, mibFile):
 
     except error.PySmiError:
         sys.stderr.write('ERROR: %s\r\n' % sys.exc_info()[1])
-        sys.exit(-1)
+        sys.exit(1)
 
     for canonicalMibName in processed:
         if (processed[canonicalMibName] == 'compiled' and
@@ -277,3 +277,5 @@ for srcDirectory in inputMibs:
 
 if not quietFlag:
     sys.stderr.write("MIBs seen: %d, copied: %d, failed: %d\r\n" % (mibsSeen, mibsCopied, mibsFailed))
+
+sys.exit(0)

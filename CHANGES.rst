@@ -3,6 +3,8 @@ Revision 0.3.2, XX-07-2018
 --------------------------
 
 - Bumped upper Python version to 3.7 and enabled pip cache
+- Fix exit code in command-line tools to return just general
+  failure (1) on process termination
 
 Revision 0.3.1, 10-06-2018
 --------------------------

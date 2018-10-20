@@ -101,7 +101,7 @@ Documentation:
   http://snmplabs.com/pysmi
 %s
 """ % helpMessage)
-        sys.exit(-1)
+        sys.exit(1)
 
     if opt[0] == '-v' or opt[0] == '--version':
         from pysmi import __version__
@@ -153,7 +153,7 @@ Software documentation and support at http://snmplabs.com/pysmi
 
         except ValueError:
             sys.stderr.write('ERROR: known Python optimization levels: -1, 0, 1, 2\r\n%s\r\n' % helpMessage)
-            sys.exit(-1)
+            sys.exit(1)
 
     if opt[0] == '--ignore-errors':
         ignoreErrorsFlag = True
@@ -194,7 +194,7 @@ if inputMibs:
 
 if not inputMibs:
     sys.stderr.write('ERROR: MIB modules names not specified\r\n%s\r\n' % helpMessage)
-    sys.exit(-1)
+    sys.exit(1)
 
 if not dstFormat:
     dstFormat = 'pysnmp'
@@ -280,7 +280,7 @@ elif dstFormat == 'null':
 
 else:
     sys.stderr.write('ERROR: unknown destination format: %s\r\n%s\r\n' % (dstFormat, helpMessage))
-    sys.exit(-1)
+    sys.exit(1)
 
 if verboseFlag:
     sys.stderr.write("""Source MIB repositories: %s
@@ -359,7 +359,7 @@ try:
 
 except error.PySmiError:
     sys.stderr.write('ERROR: %s\r\n' % sys.exc_info()[1])
-    sys.exit(-1)
+    sys.exit(1)
 
 else:
     if verboseFlag:
