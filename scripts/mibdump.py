@@ -20,6 +20,13 @@ from pysmi.compiler import MibCompiler
 from pysmi import debug
 from pysmi import error
 
+# sysexits.h
+EX_OK = 0
+EX_USAGE = 64
+EX_SOFTWARE = 70
+EX_MIB_MISSING = 79
+EX_MIB_FAILED = 79
+
 # Defaults
 verboseFlag = True
 mibSources = []
@@ -90,7 +97,7 @@ except getopt.GetoptError:
     if verboseFlag:
         sys.stderr.write('ERROR: %s\r\n%s\r\n' % (sys.exc_info()[1], helpMessage))
 
-    sys.exit(1)
+    sys.exit(EX_USAGE)
 
 for opt in opts:
     if opt[0] == '-h' or opt[0] == '--help':
@@ -101,7 +108,7 @@ Documentation:
   http://snmplabs.com/pysmi
 %s
 """ % helpMessage)
-        sys.exit(1)
+        sys.exit(EX_OK)
 
     if opt[0] == '-v' or opt[0] == '--version':
         from pysmi import __version__
@@ -112,7 +119,7 @@ Python interpreter: %s
 Software documentation and support at http://snmplabs.com/pysmi
 %s
 """ % (__version__, sys.version, helpMessage))
-        sys.exit(1)
+        sys.exit(EX_OK)
 
     if opt[0] == '--quiet':
         verboseFlag = False
@@ -153,7 +160,7 @@ Software documentation and support at http://snmplabs.com/pysmi
 
         except ValueError:
             sys.stderr.write('ERROR: known Python optimization levels: -1, 0, 1, 2\r\n%s\r\n' % helpMessage)
-            sys.exit(1)
+            sys.exit(EX_USAGE)
 
     if opt[0] == '--ignore-errors':
         ignoreErrorsFlag = True
@@ -194,7 +201,7 @@ if inputMibs:
 
 if not inputMibs:
     sys.stderr.write('ERROR: MIB modules names not specified\r\n%s\r\n' % helpMessage)
-    sys.exit(1)
+    sys.exit(EX_USAGE)
 
 if not dstFormat:
     dstFormat = 'pysnmp'
@@ -280,7 +287,7 @@ elif dstFormat == 'null':
 
 else:
     sys.stderr.write('ERROR: unknown destination format: %s\r\n%s\r\n' % (dstFormat, helpMessage))
-    sys.exit(1)
+    sys.exit(EX_USAGE)
 
 if verboseFlag:
     sys.stderr.write("""Source MIB repositories: %s
@@ -359,7 +366,7 @@ try:
 
 except error.PySmiError:
     sys.stderr.write('ERROR: %s\r\n' % sys.exc_info()[1])
-    sys.exit(1)
+    sys.exit(EX_SOFTWARE)
 
 else:
     if verboseFlag:
@@ -381,4 +388,12 @@ else:
         sys.stderr.write('Failed MIBs: %s\r\n' % ', '.join(
             ['%s (%s)' % (x, processed[x].error) for x in sorted(processed) if processed[x] == 'failed']))
 
-    sys.exit(0)
+    exitCode = EX_OK
+
+    if any(x for x in processed.values() if x == 'missing'):
+        exitCode = EX_MIB_MISSING
+
+    if any(x for x in processed.values() if x == 'failed'):
+        exitCode = EX_MIB_FAILED
+
+    sys.exit(exitCode)

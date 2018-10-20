@@ -20,6 +20,10 @@ from pysmi.compiler import MibCompiler
 from pysmi import debug
 from pysmi import error
 
+# sysexits.h
+EX_OK = 0
+EX_USAGE = 64
+EX_SOFTWARE = 70
 
 # Defaults
 quietFlag = False
@@ -62,7 +66,7 @@ try:
     )
 
 except getopt.GetoptError:
-    sys.exit(1)
+    sys.exit(EX_USAGE)
 
 for opt in opts:
     if opt[0] == '-h' or opt[0] == '--help':
@@ -79,7 +83,7 @@ Documentation:
   http://snmplabs.com/pysmi
 %s
 """ % helpMessage)
-        sys.exit(1)
+        sys.exit(EX_OK)
 
     if opt[0] == '-v' or opt[0] == '--version':
         from pysmi import __version__
@@ -90,7 +94,7 @@ Python interpreter: %s
 Software documentation and support at http://snmplabs.com/pysmi
 %s
 """ % (__version__, sys.version, helpMessage))
-        sys.exit(1)
+        sys.exit(EX_OK)
 
     if opt[0] == '--quiet':
         quietFlag = True
@@ -116,13 +120,13 @@ if not mibSources:
 
 if len(inputMibs) < 2:
     sys.stderr.write('ERROR: MIB source and/or destination arguments not given\r\n%s\r\n' % helpMessage)
-    sys.exit(1)
+    sys.exit(EX_USAGE)
 
 dstDirectory = inputMibs.pop()
 
 if os.path.exists(dstDirectory) and not os.path.isdir(dstDirectory):
     sys.stderr.write('ERROR: given destination is not a directory\r\n%s\r\n' % helpMessage)
-    sys.exit(1)
+    sys.exit(EX_USAGE)
 
 try:
     os.makedirs(dstDirectory, mode=0o755)
@@ -159,7 +163,7 @@ def getMibRevision(mibDir, mibFile):
 
     except error.PySmiError:
         sys.stderr.write('ERROR: %s\r\n' % sys.exc_info()[1])
-        sys.exit(1)
+        sys.exit(EX_SOFTWARE)
 
     for canonicalMibName in processed:
         if (processed[canonicalMibName] == 'compiled' and
@@ -278,4 +282,4 @@ for srcDirectory in inputMibs:
 if not quietFlag:
     sys.stderr.write("MIBs seen: %d, copied: %d, failed: %d\r\n" % (mibsSeen, mibsCopied, mibsFailed))
 
-sys.exit(0)
+sys.exit(EX_OK)
