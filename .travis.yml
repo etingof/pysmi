@@ -2,22 +2,22 @@ language: python
 cache: pip
 matrix:
   include:
-  - os: linux
-    dist: xenial
-    sudo: false
-    python: '2.6'
+#  - os: linux
+#    dist: xenial
+#    sudo: false
+#    python: '2.6'
   - os: linux
     dist: xenial
     sudo: false
     python: '2.7'
-  - os: linux
-    dist: xenial
-    sudo: false
-    python: '3.2'
-  - os: linux
-    dist: xenial
-    sudo: false
-    python: '3.3'
+#  - os: linux
+#    dist: xenial
+#    sudo: false
+#    python: '3.2'
+#  - os: linux
+#    dist: xenial
+#    sudo: false
+#    python: '3.3'
   - os: linux
     dist: xenial
     sudo: false
@@ -38,14 +38,14 @@ matrix:
     dist: xenial
     sudo: false
     python: 'nightly'
-  - os: linux
-    dist: xenial
-    sudo: false
-    python: 'pypy'
-  - os: linux
-    dist: xenial
-    sudo: false
-    python: 'pypy3'
+#  - os: linux
+#    dist: xenial
+#    sudo: false
+#    python: 'pypy'
+#  - os: linux
+#    dist: xenial
+#    sudo: false
+#    python: 'pypy3'
 install:
   - pip install codecov
   - pip install -r requirements.txt -r devel-requirements.txt
