@@ -42,4 +42,5 @@ chosen and configured to compiler.
    :maxdepth: 2
 
    /mibdump
+   /mibcopy
    /library-reference

@@ -240,7 +240,7 @@ By default *mibdump.py* writes pysnmp MIBs into:
 and JSON files in current working directory.
 
 Use --destination-directory option to change default output
-diretory.
+directory.
 
 Performing unconditional transformation
 ---------------------------------------
@@ -265,7 +265,7 @@ Skipping dependencies
 
 Most MIBs rely on other MIBs for their operations. This is indicated
 by the IMPORT statement in ASN.1 language. PySMI attempts to transform
-all MIBs IMPORT'ed by MIB being transformed. That is done in recurrsive
+all MIBs IMPORT'ed by MIB being transformed. That is done in recursive
 manner.
 
 By using --no-dependencies flag you can tell PySMI not to transform any
