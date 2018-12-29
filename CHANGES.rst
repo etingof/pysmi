@@ -1,8 +1,9 @@
 
-Revision 0.3.3, XX-11-2018
+Revision 0.3.3, 29-12-2018
 --------------------------
 
 - Added mibcopy.py documentation
+- Copyright notice bumped up to year 2019
 
 Revision 0.3.2, 22-10-2018
 --------------------------
