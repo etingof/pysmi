@@ -82,7 +82,7 @@ END
     def testAgentCapabilitiesDescription(self):
         self.assertEqual(
             self.ctx['testCapability'].getDescription(),
-            'test capabilities',
+            'test capabilities\n',
             'bad DESCRIPTION'
         )
 

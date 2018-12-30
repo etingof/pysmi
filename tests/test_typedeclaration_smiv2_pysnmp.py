@@ -132,7 +132,7 @@ END
     def TestTextualConventionDescription(self):
         self.assertEqual(
             self.ctx['TestTextualConvention'].getDescription(),
-            'Test TC',
+            'Test TC\n',
             'bad DESCRIPTION'
         )
 

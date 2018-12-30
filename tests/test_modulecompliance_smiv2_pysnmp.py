@@ -69,7 +69,7 @@ END
     def testModuleComplianceDescription(self):
         self.assertEqual(
             self.ctx['testCompliance'].getDescription(),
-            'This is the MIB compliance statement',
+            'This is the MIB compliance statement\n',
             'bad DESCRIPTION'
         )
 

@@ -63,7 +63,7 @@ END
     def testObjectIdentityDescription(self):
         self.assertEqual(
             self.ctx['testObject'].getDescription(),
-            'Initial version',
+            'Initial version\n',
             'bad DESCRIPTION'
         )
 

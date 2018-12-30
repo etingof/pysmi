@@ -66,7 +66,7 @@ END
     def testNotificationTypeDescription(self):
         self.assertEqual(
             self.ctx['testNotificationType'].getDescription(),
-            'A collection of test notification types.',
+            'A collection of test notification types.\n',
             'bad DESCRIPTION'
         )
 

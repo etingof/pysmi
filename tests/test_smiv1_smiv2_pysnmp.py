@@ -75,7 +75,7 @@ END
     def testSmiV1Description(self):
         self.assertEqual(
             self.ctx['testSmiV1'].getDescription(),
-            'A collection of test notifications.',
+            'A collection of test notifications.\n',
             'bad DESCRIPTION'
         )
 
