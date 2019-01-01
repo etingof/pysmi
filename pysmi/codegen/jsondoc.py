@@ -710,6 +710,7 @@ class JsonCodeGen(AbstractCodeGen):
         idxStrlist, fakeSyms, fakeStrlist = [], [], []
 
         for idx in indexes:
+            isImplied = idx[0]
             idxName = idx[1]
             if idxName in self.smiv1IdxTypes:  # SMIv1 support
                 idxType = idxName
@@ -721,6 +722,7 @@ class JsonCodeGen(AbstractCodeGen):
             index = OrderedDict()
             index['module'] = self._importMap.get(idxName, self.moduleName[0])
             index['object'] = idxName
+            index['implied'] = isImplied
             idxStrlist.append(index)
 
         return idxStrlist, fakeStrlist, fakeSyms
