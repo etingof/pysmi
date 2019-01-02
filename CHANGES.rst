@@ -27,6 +27,11 @@ Revision 0.4.0, XX-01-2019
   Despite pysmi is trying to support those Python versions, it may
   start to fail on them due to Jinja failures.
 
+- Introduced SNMP agent code hooks generation template allowing
+  building a functional skeleton of the Python module from a
+  given ASN.1 MIB. The tapping points include SMI Managed Object
+  read/readnext/write/create and destroy work flows.
+
 Revision 0.3.4, XX-01-2019
 --------------------------
 

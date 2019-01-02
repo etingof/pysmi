@@ -36,7 +36,7 @@ class PySnmpCodeGen(IntermediateCodeGen):
 
     defaultMibPackages = ('pysnmp.smi.mibs', 'pysnmp_mibs')
 
-    TEMPLATE_NAME = 'pysnmp.j2'
+    TEMPLATE_NAME = 'pysnmp/base.j2'
 
     SMI_OBJECTS = {
         'MODULE-IDENTITY': ['ModuleIdentity'],
@@ -135,7 +135,7 @@ class PySnmpCodeGen(IntermediateCodeGen):
 
         # Render Python code
 
-        searchPath = [os.path.join(os.path.dirname(__file__), 'templates', 'pysnmp')]
+        searchPath = [os.path.join(os.path.dirname(__file__), 'templates')]
 
         # TODO: add unit test on custom template
 
