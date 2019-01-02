@@ -37,14 +37,14 @@ class JsonCodeGen(IntermediateCodeGen):
     Instance of this class is supposed to be passed to *MibCompiler*,
     the rest is internal to *MibCompiler*.
     """
-    TEMPLATE_NAME = 'jsondoc.j2'
+    TEMPLATE_NAME = 'jsondoc/base.j2'
 
     def genCode(self, ast, symbolTable, **kwargs):
         mibInfo, context = IntermediateCodeGen.genCode(self, ast, symbolTable, **kwargs)
 
         # TODO: reduce code duplication with the other codegens
 
-        searchPath = os.path.join(os.path.dirname(__file__), 'templates', 'jsondoc')
+        searchPath = os.path.join(os.path.dirname(__file__), 'templates')
 
         dstTemplate = kwargs.get('dstTemplate')
         if dstTemplate:
