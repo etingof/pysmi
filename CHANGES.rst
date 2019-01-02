@@ -2,7 +2,30 @@
 Revision 0.4.0, XX-01-2019
 --------------------------
 
-No changes yet
+- Introduced Jinja2 templates for code generation.
+
+  This change significantly refactors the way how code generation
+  works. Previously, pysmi code generator has been responsible for
+  producing a well-formed text document (e.g. JSON or pysnmp).
+
+  With this change, all code generations should be done through
+  Jinja2 templates by rendering them in the context of the parsed MIB
+  taking shape of the intermediate MIB representation which other parts
+  of pysmi provide.
+
+- By way of moving pysnmp code generation to Jinja2 template, the
+  Python code layout of pysnmp modules improved dramatically - it
+  is just one little step from being PEP8-compliant.
+
+- The template-based pysnmp code generator drops some backward
+  compatibility aids that keep Python MIB modules compatible with
+  older pysnmp versions. Perhaps in the followup patch we should
+  make the Python MIB module failing early and clearly on import
+  when it's old pysnmp importing it.
+
+- Jinja does not seem to work well with Python < 2.6 and Python == 3.2.
+  Despite pysmi is trying to support those Python versions, it may
+  start to fail on them due to Jinja failures.
 
 Revision 0.3.4, XX-01-2019
 --------------------------
