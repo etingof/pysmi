@@ -67,7 +67,7 @@ END
     def testNotificationGroupDescription(self):
         self.assertEqual(
             self.ctx['testNotificationGroup'].getDescription(),
-            'A collection of test notifications.',
+            'A collection of test notifications.\n',
             'bad DESCRIPTION'
         )
 

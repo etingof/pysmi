@@ -66,7 +66,7 @@ END
     def testObjectTypeDescription(self):
         self.assertEqual(
             self.ctx['testObjectType'].getDescription(),
-            'Test object',
+            'Test object\n',
             'bad DESCRIPTION'
         )
 
@@ -87,7 +87,7 @@ END
     def testObjectTypeMaxAccess(self):
         self.assertEqual(
             self.ctx['testObjectType'].getMaxAccess(),
-            'accessiblefornotify',
+            'accessible-for-notify',
             'bad MAX-ACCESS'
         )
 
@@ -217,6 +217,7 @@ END
 
         exec(codeobj, self.ctx, self.ctx)
 
+    # TODO: pyasn1 does not like OctetString.defaultValue
     def testObjectTypeSyntax(self):
         self.assertEqual(
             self.ctx['testObjectType'].getSyntax(), str2octs('test value'),

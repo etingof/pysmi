@@ -99,7 +99,7 @@ END
     def testModuleIdentityDescription(self):
         self.assertEqual(
             self.ctx['testModule'].getDescription(),
-            'This is the MIB module for the SNMP',
+            'This is the MIB module for the SNMP\n',
             'bad DESCRIPTION'
         )
 

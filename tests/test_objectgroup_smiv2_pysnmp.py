@@ -67,7 +67,7 @@ END
     def testObjectGroupDescription(self):
         self.assertEqual(
             self.ctx['testObjectGroup'].getDescription(),
-            'A collection of test objects.',
+            'A collection of test objects.\n',
             'bad DESCRIPTION'
         )
 

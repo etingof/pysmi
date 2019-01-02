@@ -75,7 +75,7 @@ END
     def testTrapTypeDescription(self):
         self.assertEqual(
             self.ctx['testTrap'].getDescription(),
-            'Test trap',
+            'Test trap\n',
             'bad DESCRIPTION'
         )
 
@@ -85,6 +85,7 @@ END
             'NotificationType',
             'bad SYNTAX class'
         )
+
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
 
