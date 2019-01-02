@@ -2,5 +2,6 @@ ply==3.4; python_version < '2.6'
 ply; python_version >= '2.6'
 ordereddict; python_version < '2.7'
 simplejson; python_version < '2.6'
+# TODO: older Jinja does not support the options we use...
 jinja2<=2.6; python_version < '2.6'
 jinja2; python_version >= '2.6'
