@@ -640,9 +640,15 @@ END
         exec(codeobj, self.ctx, self.ctx)
 
     def testObjectTypeTableRowAugmention(self):
-        # XXX provide getAugmentation() method
+        # TODO: provide getAugmentation() method
+        try:
+            augmentingRows = self.ctx['testEntry'].augmentingRows
+
+        except AttributeError:
+            augmentingRows = self.ctx['testEntry']._augmentingRows
+
         self.assertEqual(
-            list(self.ctx['testEntry'].augmentingRows.keys())[0],
+            list(augmentingRows)[0],
             ('TEST-MIB', 'testEntryExt'),
             'bad AUGMENTS table clause'
         )
