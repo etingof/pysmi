@@ -353,6 +353,7 @@ class MibCompiler(object):
                     mibTree,
                     symbolTableMap,
                     comments=comments,
+                    dstTemplate=options.get('dstTemplate'),
                     genTexts=options.get('genTexts'),
                     textFilter=options.get('textFilter')
                 )

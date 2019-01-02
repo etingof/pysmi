@@ -42,14 +42,33 @@ class JsonCodeGen(IntermediateCodeGen):
     def genCode(self, ast, symbolTable, **kwargs):
         mibInfo, context = IntermediateCodeGen.genCode(self, ast, symbolTable, **kwargs)
 
-        searchPath = os.path.join(os.path.dirname(__file__), 'templates')
+        # TODO: reduce code duplication with the other codegens
 
-        env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchPath))
+        searchPath = os.path.join(os.path.dirname(__file__), 'templates', 'jsondoc')
 
-        # TODO: make template configurable/extendable
-        tmpl = env.get_template(self.TEMPLATE_NAME)
+        dstTemplate = kwargs.get('dstTemplate')
+        if dstTemplate:
+            searchPath.insert(0, os.path.dirname(os.path.abspath(dstTemplate)))
 
-        return mibInfo, tmpl.render(mib=context)
+        env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchPath),
+                                 trim_blocks=True, lstrip_blocks=True)
+
+        try:
+            tmpl = env.get_template(dstTemplate or self.TEMPLATE_NAME)
+            text = tmpl.render(mib=context)
+
+        except jinja2.exceptions.TemplateError:
+            err = sys.exc_info()[1]
+            raise error.PySmiCodegenError('Jinja template rendering error: %s' % err)
+
+        debug.logger & debug.flagCodegen and debug.logger(
+            'canonical MIB name %s (%s), imported MIB(s) %s, rendered from '
+            '%s, JSON document size %d bytes' % (
+                mibInfo.name, mibInfo.identity,
+                ','.join(mibInfo.imported) or '<none>',
+                dstTemplate, len(text)))
+
+        return mibInfo, text
 
     # TODO: move this to a template
     def genIndex(self, processed, **kwargs):
