@@ -1,3 +1,4 @@
+{% block docstring %}
 """{{ mib['meta']['module'] }} SNMP MIB module compiled for pysnmp.
 
 This Python module is designed to be imported and executed by the
@@ -11,7 +12,8 @@ Notes
 {{ comment }}
 {% endfor -%}
 """
-
+{% endblock %}
+{% block first_run %}
 try:
     mibBuilder
 
@@ -19,7 +21,8 @@ except NameError:
     import sys
     sys.stderr.write(__doc__)
     sys.exit(1)
-
+{% endblock %}
+{% block asn1_imports %}
 # Import base ASN.1 objects even if this MIB does not use it
 
 (Integer,
@@ -31,7 +34,8 @@ except NameError:
 
 (NamedValues,) = mibBuilder.importSymbols("ASN1-ENUMERATION",
     "NamedValues")
-
+{% endblock %}
+{% block asn1_constraints_imports %}
 (ConstraintsIntersection,
  SingleValueConstraint,
  ValueRangeConstraint,
@@ -42,7 +46,9 @@ except NameError:
     "ValueRangeConstraint",
     "ValueSizeConstraint",
     "ConstraintsUnion")
+{% endblock %}
 
+{% block smi_imports %}
 # Import SMI symbols from the MIBs this MIB depends on
 
 {% for module, symbols in mib['imports'].items() %}
@@ -66,7 +72,9 @@ except NameError:
     {%  endfor %}
 
 {%  endfor %}
+{% endblock %}
 
+{% block module_identity %}
 # MODULE-IDENTITY
 
 {% for symbol, definition in mib.items() if definition['class'] == 'moduleidentity' %}
@@ -106,7 +114,8 @@ if mibBuilder.loadTexts:
 """)
     {% endif %}
 
-{%  endfor %}
+{% endfor %}
+{% endblock %}
 
 {% macro constraints(type, spec) %}
     subtypeSpec = {{ type }}.subtypeSpec
@@ -169,7 +178,8 @@ if mibBuilder.loadTexts:
     {% elif definition['default']['default']['format'] == 'oid' %}
     {# TODO: this OID might be in a string form #}
     defaultValue = "{{ definition['default']['default']['value'] }}"
-    {% elif definition['default']['default']['format'] == 'enum' %}
+    {% elif definition['default']['default']['format'] == 'enum'
+        and 'constraints' in definition['syntax'] %}
     {# TODO: pyasn1 does not like default enum #}
     defaultValue = {{ definition['syntax']['constraints']['enumeration'][definition['default']['default']['value']] }}
     {% elif definition['default']['default']['format'] == 'bits' %}
@@ -178,6 +188,7 @@ if mibBuilder.loadTexts:
     {%  endif %}
 {% endmacro %}
 
+{% block types_definitions %}
 # Types definitions
 
 {% for symbol, definition in mib.items() if definition['class'] == 'type' %}
@@ -192,7 +203,9 @@ class {{ symbol }}({{ definition['type']['type'] }}):
     {% endif %}
 
 {%  endfor %}
+{% endblock %}
 
+{% block textual_conventions %}
 # TEXTUAL-CONVENTIONS
 
 {% for symbol, definition in mib.items() if definition['class'] == 'textualconvention' %}
@@ -212,8 +225,10 @@ class {{ symbol }}(TextualConvention, {{ definition['type']['type'] }}):
 """
     {% endif %}
 
-{%  endfor %}
+{% endfor %}
+{% endblock %}
 
+{% block managed_objects %}
 # MIB Managed Objects in the order of their OIDs
 
 {% for symbol, definition in mib.items()
@@ -307,8 +322,10 @@ if mibBuilder.loadTexts:
 """)
     {% endif %}
 
-{%  endfor %}
+{% endfor %}
+{% endblock %}
 
+{% block managed_objects_groups %}
 # Managed Objects groups
 
 {% for symbol, definition in mib.items()
@@ -340,8 +357,10 @@ if mibBuilder.loadTexts:
 """)
     {% endif %}
 
-{%  endfor %}
+{% endfor %}
+{% endblock %}
 
+{% block notification_objects %}
 # Notification objects
 
 {% for symbol, definition in mib.items()
@@ -373,8 +392,10 @@ if mibBuilder.loadTexts:
 """)
     {% endif %}
 
-{%  endfor %}
+{% endfor %}
+{% endblock %}
 
+{% block notification_groups %}
 # Notifications groups
 
 {% for symbol, definition in mib.items()
@@ -406,8 +427,10 @@ if mibBuilder.loadTexts:
 """)
     {% endif %}
 
-{%  endfor %}
+{% endfor %}
+{% endblock %}
 
+{% block agent_capabilities %}
 # Agent capabilities
 
 {% for symbol, definition in mib.items()
@@ -432,8 +455,10 @@ if mibBuilder.loadTexts:
 """)
     {% endif %}
 
-{%  endfor %}
+{% endfor %}
+{% endblock %}
 
+{% block module_compliance %}
 # Module compliance
 
 {% for symbol, definition in mib.items()
@@ -465,8 +490,10 @@ if mibBuilder.loadTexts:
 """)
     {% endif %}
 
-{%  endfor %}
+{% endfor %}
+{% endblock %}
 
+{% block exports %}
 # Export all MIB objects to the MIB builder
 
 mibBuilder.exportSymbols(
@@ -488,3 +515,4 @@ mibBuilder.exportSymbols(
             {% endif %}
     {%  endfor %}
 )
+{% endblock %}

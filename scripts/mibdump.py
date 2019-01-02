@@ -35,6 +35,7 @@ mibSearchers = []
 mibStubs = []
 mibBorrowers = []
 dstFormat = None
+dstTemplate = None
 dstDirectory = None
 cacheDirectory = ''
 nodepsFlag = False
@@ -58,6 +59,7 @@ Usage: %s [--help]
       [--mib-stub=<MIB-NAME>]
       [--mib-borrower=<PATH>]
       [--destination-format=<FORMAT>]
+      [--destination-template=<PATH>]
       [--destination-directory=<DIRECTORY>]
       [--cache-directory=<DIRECTORY>]
       [--disable-fuzzy-source]
@@ -77,7 +79,9 @@ Where:
                Use @mib@ placeholder token in URI to refer directly to
                the required MIB module when source does not support
                directory listing (e.g. HTTP).
-    FORMAT   - pysnmp, json, null""" % (
+    FORMAT   - pysnmp, json, null
+    TEMPLATE - path to a Jinja2 template extending the base one (see
+               documentation for details)""" % (
     sys.argv[0],
     '|'.join([x for x in sorted(debug.flagMap)])
 )
@@ -86,11 +90,12 @@ try:
     opts, inputMibs = getopt.getopt(
         sys.argv[1:], 'hv',
         ['help', 'version', 'quiet', 'debug=',
-        'mib-source=', 'mib-searcher=', 'mib-stub=', 'mib-borrower=',
-        'destination-format=', 'destination-directory=', 'cache-directory=',
-        'no-dependencies', 'no-python-compile', 'python-optimization-level=',
-        'ignore-errors', 'build-index', 'rebuild', 'dry-run', 'no-mib-writes',
-        'generate-mib-texts', 'disable-fuzzy-source', 'keep-texts-layout']
+         'mib-source=', 'mib-searcher=', 'mib-stub=', 'mib-borrower=',
+         'destination-format=', 'destination-template=',
+         'destination-directory=', 'cache-directory=', 'no-dependencies',
+         'no-python-compile', 'python-optimization-level=', 'ignore-errors',
+         'build-index', 'rebuild', 'dry-run', 'no-mib-writes',
+         'generate-mib-texts', 'disable-fuzzy-source', 'keep-texts-layout']
     )
 
 except getopt.GetoptError:
@@ -141,6 +146,9 @@ Software documentation and support at http://snmplabs.com/pysmi
 
     if opt[0] == '--destination-format':
         dstFormat = opt[1]
+
+    if opt[0] == '--destination-template':
+        dstTemplate = opt[1]
 
     if opt[0] == '--destination-directory':
         dstDirectory = opt[1]
@@ -297,6 +305,7 @@ Compiled MIBs destination directory: %s
 MIBs excluded from code generation: %s
 MIBs to compile: %s
 Destination format: %s
+Custom destination template: %s
 Parser grammar cache directory: %s
 Also compile all relevant MIBs: %s
 Rebuild MIBs regardless of age: %s
@@ -315,6 +324,7 @@ Try various file names while searching for MIB module: %s
        ', '.join(sorted(mibStubs)),
        ', '.join(inputMibs),
        dstFormat,
+       dstTemplate,
        cacheDirectory or 'not used',
        nodepsFlag and 'no' or 'yes',
        rebuildFlag and 'yes' or 'no',
@@ -351,6 +361,7 @@ try:
         *inputMibs, **dict(noDeps=nodepsFlag,
                            rebuild=rebuildFlag,
                            dryRun=dryrunFlag,
+                           dstTemplate=dstTemplate,
                            genTexts=genMibTextsFlag,
                            textFilter=keepTextsLayout and (lambda symbol, text: text) or None,
                            writeMibs=writeMibsFlag,

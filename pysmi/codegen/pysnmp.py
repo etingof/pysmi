@@ -11,6 +11,7 @@ try:
 except ImportError:
     from ordereddict import OrderedDict
 from pysmi.codegen.intermediate import IntermediateCodeGen
+from pysmi import error
 from pysmi import debug
 
 import jinja2
@@ -134,20 +135,31 @@ class PySnmpCodeGen(IntermediateCodeGen):
 
         # Render Python code
 
-        searchPath = os.path.join(os.path.dirname(__file__), 'templates', 'pysnmp')
+        searchPath = [os.path.join(os.path.dirname(__file__), 'templates', 'pysnmp')]
+
+        # TODO: add unit test on custom template
+
+        dstTemplate = kwargs.get('dstTemplate')
+        if dstTemplate:
+            searchPath.insert(0, os.path.dirname(os.path.abspath(dstTemplate)))
 
         env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchPath),
                                  trim_blocks=True, lstrip_blocks=True)
 
-        tmpl = env.get_template(self.TEMPLATE_NAME)
+        try:
+            tmpl = env.get_template(dstTemplate or self.TEMPLATE_NAME)
+            text = tmpl.render(mib=context)
 
-        text = tmpl.render(mib=context)
+        except jinja2.exceptions.TemplateError:
+            err = sys.exc_info()[1]
+            raise error.PySmiCodegenError('Jinja template rendering error: %s' % err)
 
         debug.logger & debug.flagCodegen and debug.logger(
-            'canonical MIB name %s (%s), imported MIB(s) %s, Python code '
-            'size %s bytes' % (mibInfo.name, mibInfo.identity,
-                               ','.join(mibInfo.imported) or '<none>',
-                               len(text)))
+            'canonical MIB name %s (%s), imported MIB(s) %s, rendered from '
+            '%s, Python code size %d bytes' % (
+                mibInfo.name, mibInfo.identity,
+                ','.join(mibInfo.imported) or '<none>',
+                dstTemplate, len(text)))
 
         return mibInfo, text
 
