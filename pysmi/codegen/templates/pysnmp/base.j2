@@ -83,19 +83,21 @@ except NameError:
 {{ symbol }} = ModuleIdentity(
     {{ definition['oid'] }}
 )
+    {% if 'revisions' in definition %}
 {{ symbol }}.setRevisions(
-    {% for revision in definition.get('revisions', ()) %}
-        {% if loop.first and loop.last %}
-    ("{{ revision['revision'] }}",)
-        {% elif loop.first %}
-    ("{{ revision['revision'] }}",
-        {% elif loop.last %}
-     "{{ revision['revision'] }}")
-        {%  else %}
-     "{{ revision['revision'] }}",
-        {%  endif %}
-    {%  endfor %}
+        {% for revision in definition.get('revisions', ()) %}
+            {% if loop.first and loop.last %}
+        ("{{ revision['revision'] }}",)
+            {% elif loop.first %}
+        ("{{ revision['revision'] }}",
+            {% elif loop.last %}
+         "{{ revision['revision'] }}")
+            {%  else %}
+         "{{ revision['revision'] }}",
+            {%  endif %}
+        {%  endfor %}
 )
+    {% endif %}
     {% if 'lastupdated' in definition %}
 {{ symbol }}.setLastUpdated("{{ definition['lastupdated'] }}")
     {% endif %}
