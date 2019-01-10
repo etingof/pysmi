@@ -1,7 +1,8 @@
 {#
 This template renders MIB instrumentation hooks to the SMI classes
-representing "leaf" Managed Objects. By leaf we mean MIB scalars and
-MIB columns.
+representing "leaf" Managed Objects (but not Managed Objects
+Instances). By leaf Managed Objects we mean MIB scalars and MIB
+columns.
 
 By default all read/readnext/write/create/destroy hooks are generated.
 User can extend this template muting some of the hooks to reduce code
@@ -14,9 +15,9 @@ These hooks are asynchronous by design. Be sure to understand pysnmp
 SMI data model (`http://snmplabs.com/pysnmp`) if you are going to add
 your code into these hooks.
 #}
-{% extends "pysnmp/base.j2" %}
+{% extends "pysnmp/mib-definitions.j2" %}
 
-{% block mib_scalar_object %}
+{% block mib_scalar_object_definition %}
 
 
 class _{{ symbol|replace('-', '_')|title }}Object(MibScalar):
@@ -83,9 +84,10 @@ class _{{ symbol|replace('-', '_')|title }}Object(MibScalar):
         MibScalar.createUndo(self, varBind, **context)
     {% endblock %}
 
-{% endblock %}
 
-{% block mib_table_column_object %}
+{% endblock -%}
+
+{% block mib_table_column_object_definition %}
 
 
 class _{{ symbol|replace('-', '_')|title }}Object(MibScalar):
@@ -169,5 +171,6 @@ class _{{ symbol|replace('-', '_')|title }}Object(MibScalar):
         # Put your code here
         MibTableColumn.destroyUndo(self, varBind, **context)
     {% endblock %}
+
 
 {% endblock %}

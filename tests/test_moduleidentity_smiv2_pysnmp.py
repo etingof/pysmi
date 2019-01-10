@@ -72,7 +72,7 @@ END
     def testModuleIdentityOrganization(self):
         self.assertEqual(
             self.ctx['testModule'].getOrganization(),
-            'AgentX Working Group',
+            'AgentX Working Group\n',
             'bad ORGANIZATION'
         )
 
@@ -92,7 +92,7 @@ END
     def testModuleIdentityContactInfo(self):
         self.assertEqual(
             self.ctx['testModule'].getContactInfo(),
-            'WG-email: agentx@dorothy.bmc.com',
+            'WG-email: agentx@dorothy.bmc.com\n',
             'bad CONTACT-INFO'
         )
 
@@ -109,6 +109,7 @@ END
             'ModuleIdentity',
             'bad SYNTAX class'
         )
+
 
 suite = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
 
