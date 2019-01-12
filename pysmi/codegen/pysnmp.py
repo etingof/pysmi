@@ -36,7 +36,7 @@ class PySnmpCodeGen(IntermediateCodeGen):
 
     defaultMibPackages = ('pysnmp.smi.mibs', 'pysnmp_mibs')
 
-    TEMPLATE_NAME = 'pysnmp/base.j2'
+    TEMPLATE_NAME = 'pysnmp/mib-definitions.j2'
 
     SMI_OBJECTS = {
         'MODULE-IDENTITY': ['ModuleIdentity'],
