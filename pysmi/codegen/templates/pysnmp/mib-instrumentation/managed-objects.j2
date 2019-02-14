@@ -20,7 +20,7 @@ your code into these hooks.
 {% block mib_scalar_object_definition %}
 
 
-class _{{ symbol|replace('-', '_')|title }}Object(MibScalar):
+class _{{ symbol|replace('-', '_')|capfirst }}_Object(MibScalar):
     """Scalar MIB object with MIB instrumentation hooks.
 
     User can override none, some or all of the method below interfacing
@@ -90,7 +90,7 @@ class _{{ symbol|replace('-', '_')|title }}Object(MibScalar):
 {% block mib_table_column_object_definition %}
 
 
-class _{{ symbol|replace('-', '_')|title }}Object(MibScalar):
+class _{{ symbol|replace('-', '_')|capfirst }}_Object(MibScalar):
     """Columnar MIB object with MIB instrumentation hooks.
 
     User can override none, some or all of the method below interfacing

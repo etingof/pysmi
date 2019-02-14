@@ -19,7 +19,7 @@ your code into these hooks.
 {% block mib_scalar_object_instance_definition %}
 
 
-class {{ symbol|replace('-', '_')|title }}ObjectInstance(MibScalarInstance):
+class {{ symbol|replace('-', '_')|capfirst }}_ObjectInstance(MibScalarInstance):
     """Scalar Managed Object Instance with MIB instrumentation hooks.
 
     User can override none, some or all of the method below interfacing
@@ -90,7 +90,7 @@ class {{ symbol|replace('-', '_')|title }}ObjectInstance(MibScalarInstance):
 {% block mib_table_column_object_instance_definition %}
 
 
-class {{ symbol|replace('-', '_')|title }}ObjectInstance(MibScalarInstance):
+class {{ symbol|replace('-', '_')|capfirst }}_ObjectInstance(MibScalarInstance):
     """Columnar Managed Object Instance with MIB instrumentation hooks.
 
     User can override none, some or all of the method below interfacing

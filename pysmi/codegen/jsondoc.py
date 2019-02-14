@@ -15,6 +15,7 @@ try:
 except ImportError:
     from ordereddict import OrderedDict
 from pysmi.codegen.intermediate import IntermediateCodeGen
+from pysmi.codegen import jfilters
 from pysmi import error
 from pysmi import debug
 
@@ -49,6 +50,8 @@ class JsonCodeGen(IntermediateCodeGen):
         dstTemplate = kwargs.get('dstTemplate')
         if dstTemplate:
             searchPath.insert(0, os.path.dirname(os.path.abspath(dstTemplate)))
+
+        env.filters['capfirst'] = jfilters.capfirst
 
         env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchPath),
                                  trim_blocks=True, lstrip_blocks=True)

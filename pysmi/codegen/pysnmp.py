@@ -11,6 +11,7 @@ try:
 except ImportError:
     from ordereddict import OrderedDict
 from pysmi.codegen.intermediate import IntermediateCodeGen
+from pysmi.codegen import jfilters
 from pysmi import error
 from pysmi import debug
 
@@ -146,6 +147,8 @@ class PySnmpCodeGen(IntermediateCodeGen):
         env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchPath),
                                  trim_blocks=True, lstrip_blocks=True)
 
+        env.filters['capfirst'] = jfilters.capfirst
+
         try:
             tmpl = env.get_template(dstTemplate or self.TEMPLATE_NAME)
             text = tmpl.render(mib=context)
@@ -162,6 +165,7 @@ class PySnmpCodeGen(IntermediateCodeGen):
                 dstTemplate, len(text)))
 
         return mibInfo, text
+
 
 # backward compatibility
 baseMibs = PySnmpCodeGen.baseMibs

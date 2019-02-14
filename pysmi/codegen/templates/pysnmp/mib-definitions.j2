@@ -237,7 +237,7 @@ class {{ symbol }}(TextualConvention, {{ definition['type']['type'] }}):
             {% if 'default' in definition or 'constraints' in definition['syntax'] or 'bits' in definition['syntax'] %}
 
 
-class _{{ symbol|replace('-', '_')|title }}Type({{ definition['syntax']['type'] }}):
+class _{{ symbol|replace('-', '_')|capfirst }}_Type({{ definition['syntax']['type'] }}):
                 {% if 'default' in definition %}
 {{ default(definition) }}
                 {% endif %}
@@ -261,48 +261,48 @@ class _{{ symbol|replace('-', '_')|title }}Type({{ definition['syntax']['type'] 
                 {% endif %}
 
                 {% if 'constraints' in definition['syntax'] or 'bits' in definition['syntax'] %}
-_{{ symbol|replace('-', '_')|title }}Type.__name__ = "{{ definition['syntax']['type'] }}"
+_{{ symbol|replace('-', '_')|capfirst }}_Type.__name__ = "{{ definition['syntax']['type'] }}"
                 {% endif %}
             {% else %}
-_{{ symbol|replace('-', '_')|title }}Type = {{ definition['syntax']['type'] }}
+_{{ symbol|replace('-', '_')|capfirst }}_Type = {{ definition['syntax']['type'] }}
             {% endif %}
         {% endblock %}
     {% endif %}
     {% if definition['class'] == 'objectidentity' %}
         {% block mib_scalar_object_identity_definition scoped %}
-_{{ symbol|replace('-', '_')|title }}ObjectIdentity = ObjectIdentity
+_{{ symbol|replace('-', '_')|capfirst }}_ObjectIdentity = ObjectIdentity
         {% endblock %}
         {% block mib_object_identity_instantiation scoped %}
-{{ symbol|replace('-', '_') }} = _{{ symbol|replace('-', '_')|title }}ObjectIdentity(
+{{ symbol|replace('-', '_') }} = _{{ symbol|replace('-', '_')|capfirst }}_ObjectIdentity(
     {{ definition['oid'] }}
 )
         {% endblock %}
     {% elif definition['nodetype'] == 'scalar' %}
         {% block mib_scalar_object_definition scoped %}
-_{{ symbol|replace('-', '_')|title }}Object = MibScalar
+_{{ symbol|replace('-', '_')|capfirst }}_Object = MibScalar
         {% endblock %}
         {% block mib_scalar_object_instantiation scoped %}
-{{ symbol|replace('-', '_') }} = _{{ symbol|replace('-', '_')|title }}Object(
+{{ symbol|replace('-', '_') }} = _{{ symbol|replace('-', '_')|capfirst }}_Object(
     {{ definition['oid'] }},
-    _{{ symbol|replace('-', '_')|title }}Type()
+    _{{ symbol|replace('-', '_')|capfirst }}_Type()
 )
         {% endblock %}
 {{ symbol|replace('-', '_') }}.setMaxAccess("{{ definition['maxaccess'] }}")
     {% elif definition['nodetype'] == 'table' %}
         {% block mib_table_object_definition scoped %}
-_{{ symbol|replace('-', '_')|title }}Object = MibTable
+_{{ symbol|replace('-', '_')|capfirst }}_Object = MibTable
         {% endblock %}
         {% block mib_table_object_instantiation scoped %}
-{{ symbol|replace('-', '_') }} = _{{ symbol|replace('-', '_')|title }}Object(
+{{ symbol|replace('-', '_') }} = _{{ symbol|replace('-', '_')|capfirst }}_Object(
     {{ definition['oid'] }}
 )
         {% endblock %}
     {% elif definition['nodetype'] == 'row' %}
         {% block mib_table_row_object_definition scoped %}
-_{{ symbol|replace('-', '_')|title }}Object = MibTableRow
+_{{ symbol|replace('-', '_')|capfirst }}_Object = MibTableRow
         {% endblock %}
         {% block mib_table_row_object_instantiation scoped %}
-{{ symbol|replace('-', '_') }} = _{{ symbol|replace('-', '_')|title }}Object(
+{{ symbol|replace('-', '_') }} = _{{ symbol|replace('-', '_')|capfirst }}_Object(
     {{ definition['oid'] }}
 )
         {% endblock %}
@@ -322,12 +322,12 @@ _{{ symbol|replace('-', '_')|title }}Object = MibTableRow
         {% endif %}
     {% elif definition['nodetype'] == 'column' %}
         {% block mib_table_column_object_definition scoped %}
-_{{ symbol|replace('-', '_')|title }}Object = MibTableColumn
+_{{ symbol|replace('-', '_')|capfirst }}_Object = MibTableColumn
         {% endblock %}
         {% block mib_table_column_object_instantiation scoped %}
-{{ symbol|replace('-', '_') }} = _{{ symbol|replace('-', '_')|title }}Object(
+{{ symbol|replace('-', '_') }} = _{{ symbol|replace('-', '_')|capfirst }}_Object(
     {{ definition['oid'] }},
-    _{{ symbol|replace('-', '_')|title }}Type()
+    _{{ symbol|replace('-', '_')|capfirst }}_Type()
 )
         {% endblock %}
 {{ symbol|replace('-', '_') }}.setMaxAccess("{{ definition['maxaccess'] }}")
