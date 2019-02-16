@@ -351,7 +351,9 @@ if mibBuilder.loadTexts:
     {% endif %}
     {% if 'reference' in definition %}
 if mibBuilder.loadTexts:
-    {{ symbol|replace('-', '_') }}.setReference("{{ definition['reference'] }}")
+    {{ symbol|replace('-', '_') }}.setReference("""\
+{{ definition['reference']|wordwrap }}
+""")
     {% endif %}
     {% if 'description' in definition %}
 if mibBuilder.loadTexts:
