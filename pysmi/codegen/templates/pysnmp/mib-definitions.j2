@@ -246,6 +246,7 @@ class {{ symbol }}(TextualConvention, {{ definition['type']['type'] }}):
 
 
 class _{{ symbol|replace('-', '_')|capfirst }}_Type({{ definition['syntax']['type'] }}):
+    """Custom type {{ symbol }} based on {{ definition['syntax']['type'] }}"""
                 {% if 'default' in definition %}
 {{ default(definition) }}
                 {% endif %}
