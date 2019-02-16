@@ -160,11 +160,19 @@ if mibBuilder.loadTexts:
     {% if definition['default']['default']['format'] == 'decimal' %}
     defaultValue = {{ definition['default']['default']['value'] }}
     {% elif definition['default']['default']['format'] == 'hex' %}
-    {# TODO: pyasn1 Integer does not have defaultHexValue #}
+        {# TODO: pyasn1 Integer does not have defaultHexValue #}
+        {% if definition['default']['default']['basetype'] in ('Integer', 'Integer32') %}
     defaultHexValue = {{ definition['default']['default']['value'] }}
+        {% else %}
+    defaultHexValue = "{{ definition['default']['default']['value'] }}"
+        {% endif %}
     {# TODO: pyasn1 Integer does not have defaultBinValue #}
     {% elif definition['default']['default']['format'] == 'bin' %}
+        {% if definition['default']['default']['basetype'] in ('Integer', 'Integer32') %}
     defaultBinValue = {{ definition['default']['default']['value'] }}
+        {% else %}
+    defaultBinValue = "{{ definition['default']['default']['value'] }}"
+        {% endif %}
     {% elif definition['default']['default']['format'] == 'string' %}
     {# TODO: pyasn1 does not like defaulted strings #}
     defaultValue = OctetString("{{ definition['default']['default']['value'] }}")

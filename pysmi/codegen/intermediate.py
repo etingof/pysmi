@@ -597,58 +597,105 @@ class IntermediateCodeGen(AbstractCodeGen):
     def genDefVal(self, data, objname=None):
         if not data:
             return {}
+
         if not objname:
             return data
-
-        outDict = OrderedDict()
 
         defval = data[0]
         defvalType = self.getBaseType(objname, self.moduleName[0])
 
+        outDict = OrderedDict(basetype=defvalType[0][0])
+
         if isinstance(defval, (int, long)):  # number
-            outDict.update(value=defval, format='decimal')
+            outDict.update(
+                value=defval,
+                format='decimal'
+            )
 
         elif self.isHex(defval):  # hex
-            if defvalType[0][0] in ('Integer32', 'Integer'):  # common bug in MIBs
-                outDict.update(value=str(int(len(defval) > 3 and defval[1:-2] or '0', 16)), format='hex')
+            # common bug in MIBs
+            if defvalType[0][0] in ('Integer32', 'Integer'):
+                outDict.update(
+                    value=str(int(len(defval) > 3 and
+                                  defval[1:-2] or '0', 16)),
+                    format='hex'
+                )
+
             else:
-                outDict.update(value=defval[1:-2], format='hex')
+                outDict.update(
+                    value=defval[1:-2],
+                    format='hex'
+                )
 
         elif self.isBinary(defval):  # binary
             binval = defval[1:-2]
-            if defvalType[0][0] in ('Integer32', 'Integer'):  # common bug in MIBs
-                outDict.update(value=str(int(binval or '0', 2)), format='bin')
+
+            # common bug in MIBs
+            if defvalType[0][0] in ('Integer32', 'Integer'):
+                outDict.update(
+                    value=str(int(binval or '0', 2)),
+                    format='bin'
+                )
+
             else:
                 hexval = binval and hex(int(binval, 2))[2:] or ''
                 outDict.update(value=hexval, format='hex')
 
-        elif defval[0] == defval[-1] and defval[0] == '"':  # quoted string
-            if defval[1:-1] == '' and defvalType != 'OctetString':  # common bug
+        # quoted string
+        elif defval[0] == defval[-1] and defval[0] == '"':
+            # common bug in MIBs
+            if defval[1:-1] == '' and defvalType != 'OctetString':
                 # a warning should be here
                 return {}  # we will set no default value
-            outDict.update(value=defval[1:-1], format='string')
 
-        else:  # symbol (oid as defval) or name for enumeration member
+            outDict.update(
+                value=defval[1:-1],
+                format='string'
+            )
+
+        # symbol (oid as defval) or name for enumeration member
+        else:
+            # oid
             if (defvalType[0][0] == 'ObjectIdentifier' and
-                    (defval in self.symbolTable[self.moduleName[0]] or defval in self._importMap)):  # oid
+                    (defval in self.symbolTable[self.moduleName[0]] or
+                     defval in self._importMap)):
 
                 module = self._importMap.get(defval, self.moduleName[0])
 
                 try:
-                    val = str(self.genNumericOid(self.symbolTable[module][defval]['oid']))
-                    outDict.update(value=val, format='oid')
-                except:
+                    val = str(self.genNumericOid(
+                        self.symbolTable[module][defval]['oid']))
+
+                    outDict.update(
+                        value=val,
+                        format='oid'
+                    )
+
+                except Exception:
                     # or no module if it will be borrowed later
-                    raise error.PySmiSemanticError('no symbol "%s" in module "%s"' % (defval, module))
+                    raise error.PySmiSemanticError(
+                        'no symbol "%s" in module "%s"' % (defval, module))
 
             # enumeration
-            elif defvalType[0][0] in ('Integer32', 'Integer') and isinstance(defvalType[1], list):
-                if isinstance(defval, list):  # buggy MIB: DEFVAL { { ... } }
-                    defval = [dv for dv in defval if dv in dict(defvalType[1])]
+            elif (defvalType[0][0] in ('Integer32', 'Integer') and
+                  isinstance(defvalType[1], list)):
+
+                # buggy MIB: DEFVAL { { ... } }
+                if isinstance(defval, list):
+                    defval = [dv for dv in defval
+                              if dv in dict(defvalType[1])]
                     if defval:
-                        outDict.update(value=defval[0], format='enum')
-                elif defval in dict(defvalType[1]):  # good MIB: DEFVAL { ... }
-                    outDict.update(value=defval, format='enum')
+                        outDict.update(
+                            value=defval[0],
+                            format='enum'
+                        )
+
+                # good MIB: DEFVAL { ... }
+                elif defval in dict(defvalType[1]):
+                    outDict.update(
+                        value=defval,
+                        format='enum'
+                    )
 
             elif defvalType[0][0] == 'Bits':
                 defvalBits = []
@@ -659,16 +706,23 @@ class IntermediateCodeGen(AbstractCodeGen):
                     bitValue = bits.get(bit, None)
                     if bitValue is not None:
                         defvalBits.append((bit, bitValue))
-                    else:
-                        raise error.PySmiSemanticError('no such bit as "%s" for symbol "%s"' % (bit, objname))
 
-                outDict.update(value=self.genBits([defvalBits])[1], format='bits')
+                    else:
+                        raise error.PySmiSemanticError(
+                            'no such bit as "%s" for symbol "%s"' % (
+                                bit, objname))
+
+                outDict.update(
+                    value=self.genBits([defvalBits])[1],
+                    format='bits'
+                )
 
                 return outDict
 
             else:
                 raise error.PySmiSemanticError(
-                    'unknown type "%s" for defval "%s" of symbol "%s"' % (defvalType, defval, objname))
+                    'unknown type "%s" for defval "%s" of symbol "%s"' % (
+                        defvalType, defval, objname))
 
         return {'default': outDict}
 
