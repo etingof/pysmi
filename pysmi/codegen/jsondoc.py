@@ -51,10 +51,10 @@ class JsonCodeGen(IntermediateCodeGen):
         if dstTemplate:
             searchPath.insert(0, os.path.dirname(os.path.abspath(dstTemplate)))
 
-        env.filters['capfirst'] = jfilters.capfirst
-
         env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchPath),
                                  trim_blocks=True, lstrip_blocks=True)
+
+        env.filters['capfirst'] = jfilters.capfirst
 
         try:
             tmpl = env.get_template(dstTemplate or self.TEMPLATE_NAME)
