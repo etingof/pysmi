@@ -6,8 +6,21 @@
 #
 import os
 import time
-import imp
 import struct
+try:
+    import importlib
+
+    PY_MAGIC_NUMBER = importlib.util.MAGIC_NUMBER
+    SOURCE_SUFFIXES = importlib.machinery.SOURCE_SUFFIXES
+    BYTECODE_SUFFIXES = importlib.machinery.BYTECODE_SUFFIXES
+
+except ImportError:
+    import imp
+
+    PY_MAGIC_NUMBER = imp.get_magic()
+    SOURCE_SUFFIXES = [imp.PY_SOURCE]
+    BYTECODE_SUFFIXES = [imp.PY_COMPILED]
+
 from pysmi.searcher.base import AbstractSearcher
 from pysmi.searcher.pyfile import PyFileSearcher
 from pysmi.compat import decode
@@ -21,13 +34,6 @@ class PyPackageSearcher(AbstractSearcher):
 
        Python package must be importable.
     """
-    suffixes = {}
-    for sfx, mode, typ in imp.get_suffixes():
-        if typ not in suffixes:
-            suffixes[typ] = []
-
-        suffixes[typ].append((sfx, mode))
-
     def __init__(self, package):
         """Create an instance of *PyPackageSearcher* bound to specific Python
            package.
@@ -82,41 +88,46 @@ class PyPackageSearcher(AbstractSearcher):
         except ImportError:
             raise error.PySmiFileNotFoundError('%s is not importable, trying as a path' % self._package, searcher=self)
 
-        for fmt in imp.PY_COMPILED, imp.PY_SOURCE:
-            for pySfx, pyMode in self.suffixes[fmt]:
-                f = os.path.join(self._package, mibname.upper()) + pySfx
+        for pySfx in BYTECODE_SUFFIXES:
+            f = os.path.join(self._package, mibname.upper()) + pySfx
 
-                if f not in self.__loader._files:
-                    debug.logger & debug.flagSearcher and debug.logger('%s is not in %s' % (f, self._package))
-                    continue
+            if f not in self.__loader._files:
+                debug.logger & debug.flagSearcher and debug.logger('%s is not in %s' % (f, self._package))
+                continue
 
-                if fmt == imp.PY_COMPILED:
-                    pyData = self.__loader.get_data(f)
-                    if pyData[:4] == imp.get_magic():
-                        pyData = pyData[4:]
-                        pyTime = struct.unpack('<L', pyData[:4])[0]
-                        debug.logger & debug.flagSearcher and debug.logger(
-                            'found %s, mtime %s' % (f, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(pyTime))))
-                        if pyTime >= mtime:
-                            raise error.PySmiFileNotModifiedError()
-                        else:
-                            raise error.PySmiFileNotFoundError('older file %s exists' % mibname, searcher=self)
-
-                    else:
-                        debug.logger & debug.flagSearcher and debug.logger('bad magic in %s' % f)
-                        continue
-
+            pyData = self.__loader.get_data(f)
+            if pyData[:4] == PY_MAGIC_NUMBER:
+                pyData = pyData[4:]
+                pyTime = struct.unpack('<L', pyData[:4])[0]
+                debug.logger & debug.flagSearcher and debug.logger(
+                    'found %s, mtime %s' % (f, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(pyTime))))
+                if pyTime >= mtime:
+                    raise error.PySmiFileNotModifiedError()
                 else:
-                    pyTime = self._parseDosTime(
-                        self.__loader._files[f][6],
-                        self.__loader._files[f][5]
-                    )
+                    raise error.PySmiFileNotFoundError('older file %s exists' % mibname, searcher=self)
 
-                    debug.logger & debug.flagSearcher and debug.logger(
-                        'found %s, mtime %s' % (f, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(pyTime))))
-                    if pyTime >= mtime:
-                        raise error.PySmiFileNotModifiedError()
-                    else:
-                        raise error.PySmiFileNotFoundError('older file %s exists' % mibname, searcher=self)
+            else:
+                debug.logger & debug.flagSearcher and debug.logger('bad magic in %s' % f)
+                continue
+
+        for pySfx in SOURCE_SUFFIXES:
+
+            f = os.path.join(self._package, mibname.upper()) + pySfx
+
+            if f not in self.__loader._files:
+                debug.logger & debug.flagSearcher and debug.logger('%s is not in %s' % (f, self._package))
+                continue
+
+            pyTime = self._parseDosTime(
+                self.__loader._files[f][6],
+                self.__loader._files[f][5]
+            )
+
+            debug.logger & debug.flagSearcher and debug.logger(
+                'found %s, mtime %s' % (f, time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(pyTime))))
+            if pyTime >= mtime:
+                raise error.PySmiFileNotModifiedError()
+            else:
+                raise error.PySmiFileNotFoundError('older file %s exists' % mibname, searcher=self)
 
         raise error.PySmiFileNotFoundError('no file %s found' % mibname, searcher=self)

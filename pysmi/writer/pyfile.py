@@ -6,9 +6,18 @@
 #
 import os
 import sys
-import imp
 import tempfile
 import py_compile
+try:
+    import importlib
+
+    SOURCE_SUFFIXES = importlib.machinery.SOURCE_SUFFIXES
+
+except ImportError:
+    import imp
+
+    SOURCE_SUFFIXES = [imp.PY_SOURCE]
+
 from pysmi.writer.base import AbstractWriter
 from pysmi.compat import encode, decode
 from pysmi import debug
@@ -23,14 +32,6 @@ class PyFileWriter(AbstractWriter):
     """
     pyCompile = True
     pyOptimizationLevel = -1
-
-    suffixes = {}
-
-    for sfx, mode, typ in imp.get_suffixes():
-        if typ not in suffixes:
-            suffixes[typ] = []
-
-        suffixes[typ].append((decode(sfx), mode))
 
     def __init__(self, path):
         """Creates an instance of *PyFileWriter* class.
@@ -59,7 +60,8 @@ class PyFileWriter(AbstractWriter):
         if comments:
             data = '#\n' + ''.join(['# %s\n' % x for x in comments]) + '#\n' + data
 
-        pyfile = os.path.join(self._path, decode(mibname)) + self.suffixes[imp.PY_SOURCE][0][0]
+        pyfile = os.path.join(self._path, decode(mibname))
+        pyfile += SOURCE_SUFFIXES[0]
 
         tfile = None
 

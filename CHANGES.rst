@@ -3,6 +3,8 @@ Revision 0.3.4, XX-01-2019
 --------------------------
 
 - Added `implied` key to JSON SNMP table index structure
+- Rebased MIB importing code onto `importlib` because `imp` is long
+  deprecated
 
 Revision 0.3.3, 29-12-2018
 --------------------------
