@@ -8,15 +8,21 @@ import os
 import sys
 import tempfile
 import py_compile
+
 try:
     import importlib
 
-    SOURCE_SUFFIXES = importlib.machinery.SOURCE_SUFFIXES
+    try:
+        SOURCE_SUFFIXES = importlib.machinery.SOURCE_SUFFIXES
+
+    except Exception:
+        raise ImportError()
 
 except ImportError:
     import imp
 
-    SOURCE_SUFFIXES = [imp.PY_SOURCE]
+    SOURCE_SUFFIXES = [s[0] for s in imp.get_suffixes()
+                       if s[2] == imp.PY_SOURCE]
 
 from pysmi.writer.base import AbstractWriter
 from pysmi.compat import encode, decode
