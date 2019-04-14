@@ -50,4 +50,4 @@ class AbstractBorrower(object):
             debug.logger('trying to borrow file %s from %s' % (mibname, self._reader))
         )
 
-        return self._reader.getData(mibname)
+        return self._reader.getData(mibname, exts=self.exts)
