@@ -62,7 +62,7 @@ class HttpReader(AbstractReader):
     def __str__(self):
         return self._url
 
-    def getData(self, mibname):
+    def getData(self, mibname, exts=None):
         headers = {
             'Accept': 'text/plain',
             'User-Agent': self._user_agent
@@ -72,7 +72,7 @@ class HttpReader(AbstractReader):
 
         debug.logger & debug.flagReader and debug.logger('looking for MIB %s' % mibname)
 
-        for mibalias, mibfile in self.getMibVariants(mibname):
+        for mibalias, mibfile in self.getMibVariants(mibname, exts):
             if self.MIB_MAGIC in self._url:
                 url = self._url.replace(self.MIB_MAGIC, mibfile)
             else:

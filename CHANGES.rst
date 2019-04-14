@@ -38,6 +38,7 @@ Revision 0.3.4, XX-01-2019
 - Added `implied` key to JSON SNMP table index structure
 - Rebased MIB importing code onto `importlib` because `imp` is long
   deprecated
+- Fixed Py file borrower to become functional
 
 Revision 0.3.3, 29-12-2018
 --------------------------

@@ -83,7 +83,7 @@ class FileReader(AbstractReader):
 
         return mibIndex
 
-    def getMibVariants(self, mibname):
+    def getMibVariants(self, mibname, exts=None):
         if self.useIndexFile:
             if not self._indexLoaded:
                 self._mibIndex = self.loadIndex(
@@ -96,7 +96,7 @@ class FileReader(AbstractReader):
                     'found %s in MIB index: %s' % (mibname, self._mibIndex[mibname]))
                 return [(mibname, self._mibIndex[mibname])]
 
-        return super(FileReader, self).getMibVariants(mibname)
+        return super(FileReader, self).getMibVariants(mibname, exts)
 
     def getData(self, mibname):
         debug.logger & debug.flagReader and debug.logger(

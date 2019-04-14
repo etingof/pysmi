@@ -22,7 +22,7 @@ class AbstractReader(object):
             setattr(self, k, kwargs[k])
         return self
 
-    def getMibVariants(self, mibname):
+    def getMibVariants(self, mibname, exts=None):
         filenames = []
 
         if self.originalMatching:
@@ -45,7 +45,7 @@ class AbstractReader(object):
                 filenames.append(suffixed.upper())
                 filenames.append(suffixed.lower())
 
-        return ((x, x + y) for x in filenames for y in self.exts)
+        return ((x, x + y) for x in filenames for y in exts or self.exts)
 
-    def getData(self, filename):
+    def getData(self, filename, exts=None):
         raise NotImplementedError()
