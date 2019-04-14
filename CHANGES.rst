@@ -1,5 +1,5 @@
 
-Revision 0.3.4, XX-01-2019
+Revision 0.3.4, 14-04-2019
 --------------------------
 
 - Added `implied` key to JSON SNMP table index structure
