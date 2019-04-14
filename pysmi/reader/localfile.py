@@ -83,7 +83,7 @@ class FileReader(AbstractReader):
 
         return mibIndex
 
-    def getMibVariants(self, mibname, exts=None):
+    def getMibVariants(self, mibname, **options):
         if self.useIndexFile:
             if not self._indexLoaded:
                 self._mibIndex = self.loadIndex(
@@ -96,15 +96,15 @@ class FileReader(AbstractReader):
                     'found %s in MIB index: %s' % (mibname, self._mibIndex[mibname]))
                 return [(mibname, self._mibIndex[mibname])]
 
-        return super(FileReader, self).getMibVariants(mibname, exts)
+        return super(FileReader, self).getMibVariants(mibname, **options)
 
-    def getData(self, mibname):
+    def getData(self, mibname, **options):
         debug.logger & debug.flagReader and debug.logger(
             '%slooking for MIB %s' % (self._recursive and 'recursively ' or '', mibname))
 
         for path in self.getSubdirs(self._path, self._recursive, self._ignoreErrors):
 
-            for mibalias, mibfile in self.getMibVariants(mibname):
+            for mibalias, mibfile in self.getMibVariants(mibname, **options):
                 f = os.path.join(decode(path), decode(mibfile))
 
                 debug.logger & debug.flagReader and debug.logger('trying MIB %s' % f)
