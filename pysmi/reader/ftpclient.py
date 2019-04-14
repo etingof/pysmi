@@ -50,7 +50,7 @@ class FtpReader(AbstractReader):
     def __str__(self):
         return '%s{"ftp://%s%s"}' % (self.__class__.__name__, self._host, self._locationTemplate)
 
-    def getData(self, mibname, exts=None):
+    def getData(self, mibname, **options):
         if self._ssl:
             conn = ftplib.FTP_TLS()
         else:
@@ -74,7 +74,7 @@ class FtpReader(AbstractReader):
 
         debug.logger & debug.flagReader and debug.logger('looking for MIB %s' % mibname)
 
-        for mibalias, mibfile in self.getMibVariants(mibname, exts):
+        for mibalias, mibfile in self.getMibVariants(mibname, **options):
             location = self._locationTemplate.replace('@mib@', mibfile)
 
             mtime = time.time()

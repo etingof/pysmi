@@ -156,7 +156,7 @@ class ZipReader(AbstractReader):
     def __str__(self):
         return '%s{"%s"}' % (self.__class__.__name__, self._name)
 
-    def getData(self, mibname, exts=None, zipBlob=None):
+    def getData(self, mibname, **options):
         debug.logger & debug.flagReader and debug.logger('looking for MIB %s at %s' % (mibname, self._name))
 
         if self._pendingError:
@@ -165,7 +165,7 @@ class ZipReader(AbstractReader):
         if not self._members:
             raise error.PySmiReaderFileNotFoundError('source MIB %s not found' % mibname, reader=self)
 
-        for mibalias, mibfile in self.getMibVariants(mibname, exts):
+        for mibalias, mibfile in self.getMibVariants(mibname, **options):
 
             debug.logger & debug.flagReader and debug.logger('trying MIB %s' % mibfile)
 
