@@ -78,17 +78,17 @@ except ImportError:
     params = {}
 
     if sys.version_info[:2] < (2, 6):
-        params['requires'] = ['ply(==3.4)', 'simplejson(==2.1)']
+        params['requires'] = ['ply(==3.4)', 'simplejson(==2.1)', 'jinja2(<=2.6)']
     else:
-        params['requires'] = ['ply']
+        params['requires'] = ['ply', 'jinja2(>=2.10.1)']
 
     if sys.version_info[:2] < (2, 7):
         params['requires'].append('ordereddict')
 else:
     if sys.version_info[:2] < (2, 6):
-        params['install_requires'] = ['ply==3.4', 'simplejson==2.1']
+        params['install_requires'] = ['ply==3.4', 'simplejson==2.1', 'jinja2<=2.6']
     else:
-        params['install_requires'] = ['ply']
+        params['install_requires'] = ['ply', 'jinja2>=2.10.1']
 
     if sys.version_info[:2] < (2, 7):
         params['install_requires'].append('ordereddict')
