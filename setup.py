@@ -107,14 +107,23 @@ params.update({
     'platforms': ['any'],
     'classifiers': [x for x in classifiers.split('\n') if x],
     'license': 'BSD',
-    'packages': ['pysmi',
-                 'pysmi.reader',
-                 'pysmi.searcher',
-                 'pysmi.lexer',
-                 'pysmi.parser',
-                 'pysmi.codegen',
-                 'pysmi.borrower',
-                 'pysmi.writer'],
+    'packages': [
+        'pysmi',
+        'pysmi.reader',
+        'pysmi.searcher',
+        'pysmi.lexer',
+        'pysmi.parser',
+        'pysmi.codegen',
+        'pysmi.borrower',
+        'pysmi.writer'
+    ],
+    'package_data': {
+        'pysmi.codegen': [
+            'templates/*.j2',
+            'templates/*/*.j2',
+            'templates/*/*/*.j2'
+        ],
+    },
     'scripts': [os.path.join('scripts', 'mibdump.py'),
                 os.path.join('scripts', 'mibcopy.py')]
 })
