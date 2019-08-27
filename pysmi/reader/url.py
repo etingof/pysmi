@@ -9,10 +9,13 @@ import sys
 try:
     # noinspection PyUnresolvedReferences
     import urlparse
+    from urllib import url2pathname
+
 except ImportError:
     # noinspection PyUnresolvedReferences
     from urllib import parse as urlparse
-    from urllib import request as urlrequest
+    from urllib.request import url2pathname
+
 from pysmi.reader.localfile import FileReader
 from pysmi.reader.zipreader import ZipReader
 from pysmi.reader.httpclient import HttpReader
@@ -43,7 +46,7 @@ def getReadersFromUrls(*sourceUrls, **options):
 
         if mibSource.scheme in ('', 'file', 'zip'):
             scheme = mibSource.scheme
-            filePath = urlrequest.url2pathname(mibSource.path)
+            filePath = url2pathname(mibSource.path)
             if scheme != 'file' and (filePath.endswith('.zip') or
                                      filePath.endswith('.ZIP')):
                 scheme = 'zip'

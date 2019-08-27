@@ -2,7 +2,7 @@
 Revision 0.3.5, XX-09-2019
 --------------------------
 
-No changes yet
+- Fixed MIB file load by URI on Windows
 
 Revision 0.3.4, 14-04-2019
 --------------------------
