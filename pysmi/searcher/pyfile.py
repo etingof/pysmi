@@ -12,6 +12,7 @@ try:
     import importlib
 
     try:
+        PY_MAGIC_NUMBER = importlib.util.MAGIC_NUMBER
         SOURCE_SUFFIXES = importlib.machinery.SOURCE_SUFFIXES
         BYTECODE_SUFFIXES = importlib.machinery.BYTECODE_SUFFIXES
 
@@ -21,6 +22,7 @@ try:
 except ImportError:
     import imp
 
+    PY_MAGIC_NUMBER = imp.get_magic()
     SOURCE_SUFFIXES = [s[0] for s in imp.get_suffixes()
                        if s[2] == imp.PY_SOURCE]
     BYTECODE_SUFFIXES = [s[0] for s in imp.get_suffixes()
@@ -70,7 +72,7 @@ class PyFileSearcher(AbstractSearcher):
             except IOError:
                 raise error.PySmiSearcherError('failure opening compiled file %s: %s' % (f, sys.exc_info()[1]),
                                                searcher=self)
-            if pyData[:4] == imp.get_magic():
+            if pyData[:4] == PY_MAGIC_NUMBER:
                 pyData = pyData[4:]
                 pyTime = struct.unpack('<L', pyData[:4])[0]
                 debug.logger & debug.flagSearcher and debug.logger(
