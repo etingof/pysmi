@@ -985,7 +985,7 @@ class IntermediateCodeGen(AbstractCodeGen):
 
     def genCode(self, ast, symbolTable, **kwargs):
         self.genRules['text'] = kwargs.get('genTexts', False)
-        self.textFilter = kwargs.get('textFilter') or (lambda symbol, text: re.sub('\s+', ' ', text))
+        self.textFilter = kwargs.get('textFilter') or (lambda symbol, text: re.sub(r'\s+', ' ', text))
         self.symbolTable = symbolTable
         self._rows.clear()
         self._cols.clear()
