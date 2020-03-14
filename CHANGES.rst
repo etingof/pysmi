@@ -1,5 +1,4 @@
-
-Revision 0.4.0, XX-01-2019
+Revision 0.4.0, XX-03-2020
 --------------------------
 
 - Introduced Jinja2 templates for code generation.
@@ -32,9 +31,10 @@ Revision 0.4.0, XX-01-2019
   given ASN.1 MIB. The tapping points include SMI Managed Object
   read/readnext/write/create and destroy work flows.
 
-Revision 0.3.5, XX-09-2019
+Revision 0.3.5, XX-03-2020
 --------------------------
 
+- Added tox runner with a handful of basic jobs
 - Fixed MIB file load by URI on Windows
 
 Revision 0.3.4, 14-04-2019
