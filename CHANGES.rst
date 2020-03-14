@@ -1,7 +1,8 @@
 
-Revision 0.3.5, XX-09-2019
+Revision 0.3.5, XX-03-2020
 --------------------------
 
+- Added tox runner with a handful of basic jobs
 - Fixed MIB file load by URI on Windows
 
 Revision 0.3.4, 14-04-2019
