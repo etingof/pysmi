@@ -79,12 +79,8 @@ class PyFileWriter(AbstractWriter):
 
         except (OSError, IOError, UnicodeEncodeError):
             exc = sys.exc_info()
-            if tfile:
-                try:
-                    os.unlink(tfile)
-
-                except OSError:
-                    pass
+            if tfile and os.access(tfile, os.F_OK):
+                os.unlink(tfile)
 
             raise error.PySmiWriterError('failure writing file %s: %s' % (pyfile, exc[1]), file=pyfile, writer=self)
 
@@ -102,11 +98,9 @@ class PyFileWriter(AbstractWriter):
             except (SyntaxError, py_compile.PyCompileError):
                 pass  # XXX
 
-            except:
-                try:
+            except Exception:
+                if pyfile and os.access(pyfile, os.F_OK):
                     os.unlink(pyfile)
-                except Exception:
-                    pass
 
                 raise error.PySmiWriterError('failure compiling %s: %s' % (pyfile, sys.exc_info()[1]), file=mibname, writer=self)
 
