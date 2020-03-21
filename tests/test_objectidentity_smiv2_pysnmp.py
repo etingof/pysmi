@@ -70,7 +70,7 @@ END
     def testObjectIdentityReference(self):
         self.assertEqual(
             self.ctx['testObject'].getReference(),
-            'ABC',
+            'ABC\n',
             'bad REFERENCE'
         )
 
