@@ -82,7 +82,7 @@ class HttpReader(AbstractReader):
 
             try:
                 req = Request(url, headers=headers)
-                response = urlopen(req)
+                response = urlopen(req)  # nosec
 
             except Exception:
                 debug.logger & debug.flagReader and debug.logger('failed to fetch MIB from %s: %s' % (url, sys.exc_info()[1]))

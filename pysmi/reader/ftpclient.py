@@ -6,7 +6,7 @@
 #
 import sys
 import time
-import ftplib
+import ftplib  # nosec
 from pysmi.reader.base import AbstractReader
 from pysmi.mibinfo import MibInfo
 from pysmi.compat import decode
@@ -20,8 +20,10 @@ class FtpReader(AbstractReader):
        by name and return their contents to caller.
     """
 
-    def __init__(self, host, locationTemplate, timeout=5, ssl=False, port=21,
-                 user='anonymous', password='anonymous@'):
+    def __init__(  # nosec
+            self, host, locationTemplate, timeout=5,
+            ssl=False, port=21, user='anonymous',
+            password='anonymous@'):
         """Create an instance of *FtpReader* bound to specific FTP server
            directory.
 
@@ -52,9 +54,9 @@ class FtpReader(AbstractReader):
 
     def getData(self, mibname, **options):
         if self._ssl:
-            conn = ftplib.FTP_TLS()
+            conn = ftplib.FTP_TLS()  # nosec
         else:
-            conn = ftplib.FTP()
+            conn = ftplib.FTP()  # nosec
 
         try:
             conn.connect(self._host, self._port, self._timeout)
