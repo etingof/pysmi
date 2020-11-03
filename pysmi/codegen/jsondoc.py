@@ -45,7 +45,7 @@ class JsonCodeGen(IntermediateCodeGen):
 
         # TODO: reduce code duplication with the other codegens
 
-        searchPath = os.path.join(os.path.dirname(__file__), 'templates')
+        searchPath = [os.path.join(os.path.dirname(__file__), 'templates')]
 
         dstTemplate = kwargs.get('dstTemplate')
         if dstTemplate:
