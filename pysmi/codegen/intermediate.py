@@ -1005,10 +1005,16 @@ class IntermediateCodeGen(AbstractCodeGen):
                 self.handlersTable[declr[0]](self, self.prepData(declr[1:]))
 
         for sym in self.symbolTable[self.moduleName[0]]['_symtable_order']:
-            if sym not in self._out:
+            true_sym = sym
+
+            if sym.startswith("pysmi_"):
+                # Removing prefix added for reserved keywords
+                true_sym = sym[6:]
+
+            if true_sym not in self._out:
                 raise error.PySmiCodegenError('No generated code for symbol %s' % sym)
 
-            outDict[sym] = self._out[sym]
+            outDict[sym] = self._out[true_sym]
 
         outDict['meta'] = OrderedDict()
         outDict['meta']['module'] = self.moduleName[0]
