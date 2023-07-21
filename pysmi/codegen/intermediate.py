@@ -20,6 +20,8 @@ if sys.version_info[0] > 2:
     unicode = str
     long = int
 
+RESERVED_KEYWORDS_PREFIX = 'pysmi_'
+
 
 class IntermediateCodeGen(AbstractCodeGen):
     """Turns MIB AST into an intermediate representation.
@@ -1007,9 +1009,9 @@ class IntermediateCodeGen(AbstractCodeGen):
         for sym in self.symbolTable[self.moduleName[0]]['_symtable_order']:
             true_sym = sym
 
-            if sym.startswith("pysmi_"):
+            if sym.startswith(RESERVED_KEYWORDS_PREFIX):
                 # Removing prefix added for reserved keywords
-                true_sym = sym[6:]
+                true_sym = sym[len(RESERVED_KEYWORDS_PREFIX):]
 
             if true_sym not in self._out:
                 raise error.PySmiCodegenError('No generated code for symbol %s' % sym)
